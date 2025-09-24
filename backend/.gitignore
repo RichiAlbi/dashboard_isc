@@ -1,0 +1,25 @@
+# PyCharm / IntelliJ
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+
+# Virtualenv
+.venv/
+env/
+venv/
+
+# Alembic migration cache
+alembic/versions/*.pyc
+
+# Env files
+.env
+*.env
+
+# OS-specific
+.DS_Store
+Thumbs.db
