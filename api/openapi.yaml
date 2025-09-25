@@ -1,0 +1,119 @@
+openapi: 3.0.3
+info:
+  title: Backend API (Mock)
+  version: "1.0.0"
+  description: |
+    FastAPI-Backend mit Mock-Endpoints für Users (ohne CRUD/DB).
+    Diese Spec beschreibt nur READ-Endpunkte:
+      - GET /api/v1/users           (Liste)
+      - GET /api/v1/users/{userID}  (Detail)
+
+servers:
+  - url: http://127.0.0.1:8000
+    description: Lokale Entwicklung
+
+tags:
+  - name: users
+    description: User Endpoints (Mock-Daten)
+
+paths:
+  /api/v1/users:
+    get:
+      tags: [users]
+      summary: Liste aller Users (Mock)
+      operationId: listUsers
+      responses:
+        "200":
+          description: Erfolgreich
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+              examples:
+                sample:
+                  value:
+                    - userID: 1
+                      mode: "AUTO"
+                      columnAmount: 10
+                      weather: true
+                      systemStartup: false
+                    - userID: 2
+                      mode: "MANUAL"
+                      columnAmount: 5
+                      weather: false
+                      systemStartup: true
+                    - userID: 3
+                      mode: "TEST"
+                      columnAmount: 7
+                      weather: true
+                      systemStartup: true
+  /api/v1/users/{userID}:
+    get:
+      tags: [users]
+      summary: Hole einen User per ID (Mock)
+      operationId: getUserById
+      parameters:
+        - name: userID
+          in: path
+          required: true
+          description: Eindeutige numerische ID des Users
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+      responses:
+        "200":
+          description: Erfolgreich
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+              examples:
+                sample:
+                  value:
+                    userID: 1
+                    mode: "AUTO"
+                    columnAmount: 10
+                    weather: true
+                    systemStartup: false
+        "404":
+          description: User nicht gefunden
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: User not found
+
+components:
+  schemas:
+    User:
+      type: object
+      required:
+        - userID
+        - mode
+        - columnAmount
+        - weather
+        - systemStartup
+      properties:
+        userID:
+          type: integer
+          format: int32
+          example: 1
+        mode:
+          type: string
+          example: AUTO
+        columnAmount:
+          type: integer
+          format: int32
+          example: 10
+        weather:
+          type: boolean
+          example: true
+        systemStartup:
+          type: boolean
+          example: false
