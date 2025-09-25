@@ -35,17 +35,17 @@ paths:
                 sample:
                   value:
                     - userID: 1
-                      mode: "AUTO"
+                      mode: "dark"
                       columnAmount: 10
                       weather: true
                       systemStartup: false
                     - userID: 2
-                      mode: "MANUAL"
+                      mode: "dark"
                       columnAmount: 5
                       weather: false
                       systemStartup: true
                     - userID: 3
-                      mode: "TEST"
+                      mode: "dark"
                       columnAmount: 7
                       weather: true
                       systemStartup: true
@@ -74,7 +74,7 @@ paths:
                 sample:
                   value:
                     userID: 1
-                    mode: "AUTO"
+                    mode: "dark"
                     columnAmount: 10
                     weather: true
                     systemStartup: false
@@ -106,7 +106,7 @@ components:
           example: 1
         mode:
           type: string
-          example: AUTO
+          example: dark
         columnAmount:
           type: integer
           format: int32
