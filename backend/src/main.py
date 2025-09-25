@@ -2,12 +2,12 @@ from fastapi import FastAPI
 import uvicorn
 
 from src.core.config import settings
-# from src.api.users import router as users_router
+from api.v1.users import router as users_router
 
 
 def create_app() -> FastAPI:
     app = FastAPI(title=settings.app_name)
-#    app.include_router(users_router, prefix=settings.api_prefix, tags=["users"])
+    app.include_router(users_router, prefix=settings.api_prefix, tags=["users"])
     return app
 
 

@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     )
 
     # Allgemein
-    app_name: str = "starter-api"
+    app_name: str = "dashboard-isc"
     api_prefix: str = "/api"
     cors_origins: str = "*"   # Kommagetrennt, falls mehrere
     log_level: str = "INFO"
@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     postgres_host: str = "localhost"
     postgres_port: int = 5432
     postgres_user: str = "app_user"
-    postgres_password: str = "app_password"
+    postgres_password: str = "password"
     postgres_db: str = "app_db"
 
     # SQLAlchemy
