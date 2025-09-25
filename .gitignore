@@ -1,0 +1,59 @@
+# --- IDE / Editor ---
+.idea/
+.vscode/
+*.iml
+
+# --- Python / Backend ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.sqlite3
+
+# Virtualenv
+.venv/
+env/
+venv/
+
+# Alembic migration cache
+backend/alembic/versions/*.pyc
+
+# Local env files
+.env
+*.env
+
+# --- Node.js / Frontend ---
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp.*
+.pnp.js
+.pnp.cjs
+
+# Production build outputs
+frontend/build/
+frontend/dist/
+frontend/.next/
+frontend/out/
+
+# Cache
+frontend/.cache/
+frontend/.nuxt/
+frontend/.vite/
+frontend/.turbo/
+frontend/.parcel-cache/
+
+# --- Logs ---
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- OS-specific ---
+.DS_Store
+Thumbs.db
+
+# --- Misc ---
+coverage/
