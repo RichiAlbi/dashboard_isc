@@ -8,12 +8,14 @@ from sqlalchemy import engine_from_config, pool
 from alembic import context
 
 # --------------------------------------------------------
-# Pfade setzen (damit src/ gefunden wird)
+# Pfade setzen (Projektwurzel auf sys.path)
 # --------------------------------------------------------
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SRC_DIR = os.path.join(BASE_DIR, "src")
-if SRC_DIR not in sys.path:
-    sys.path.insert(0, SRC_DIR)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(BASE_DIR)
+SRC_DIR = os.path.join(PROJECT_ROOT, "src")
+for p in (PROJECT_ROOT, SRC_DIR):
+    if p not in sys.path:
+        sys.path.insert(0, p)
 
 # --------------------------------------------------------
 # Alembic-Konfiguration
@@ -34,6 +36,7 @@ from src.db.base import Base
 config.set_main_option("sqlalchemy.url", settings.sqlalchemy_database_uri)
 
 target_metadata = Base.metadata
+
 
 # --------------------------------------------------------
 # Migration-Setup
