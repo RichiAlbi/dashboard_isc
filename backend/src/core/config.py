@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     # Allgemein
     app_name: str = "dashboard-isc"
     api_prefix: str = "/api"
-    cors_origins: str = "*"   # Kommagetrennt, falls mehrere
+    cors_origins: str = "*"  # Kommagetrennt, falls mehrere
     log_level: str = "INFO"
 
     # PostgreSQL
@@ -24,6 +24,21 @@ class Settings(BaseSettings):
 
     # SQLAlchemy
     db_echo: bool = False
+
+    # LDAP
+    ldap_enabled: bool = False
+    ldap_sync_on_startup: bool = False
+    ldap_server: str = "ldap://localhost:389"
+    ldap_bind_dn: str = ""
+    ldap_bind_password: str = ""
+    ldap_base_dn: str = "dc=example,dc=com"
+    ldap_user_filter: str = "(objectClass=person)"
+    ldap_user_search_base: str = ""
+    ldap_username_attr: str = "sAMAccountName"
+    ldap_email_attr: str = "mail"
+    ldap_firstname_attr: str = "givenName"
+    ldap_lastname_attr: str = "sn"
+    ldap_display_name_attr: str = "displayName"
 
     @property
     def sqlalchemy_database_uri(self) -> str:

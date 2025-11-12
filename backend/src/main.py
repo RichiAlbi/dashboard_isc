@@ -1,9 +1,29 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
+import logging
 
 from src.core.config import settings as app_settings
 from src.api.v1 import users, widgets, widget, settings as settings_router, newsfeed
+from src.services.ldap_service import ldap_service
+from src.db.session import async_session_maker
+
+logger = logging.getLogger(__name__)
+
+
+async def startup_event():
+    """Wird beim Start der Anwendung ausgeführt"""
+    logger.info("Application startup...")
+
+    # LDAP-Sync beim Start, falls aktiviert
+    if app_settings.ldap_enabled and app_settings.ldap_sync_on_startup:
+        logger.info("LDAP-Sync beim Startup aktiviert")
+        try:
+            async with async_session_maker() as db:
+                stats = await ldap_service.sync_users(db)
+                logger.info(f"LDAP-Sync erfolgreich: {stats}")
+        except Exception as e:
+            logger.error(f"Fehler beim LDAP-Sync: {e}")
 
 
 def create_app() -> FastAPI:
@@ -22,6 +42,9 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    # Startup Event
+    app.add_event_handler("startup", startup_event)
 
     # Router registrieren
     api_prefix = app_settings.api_prefix + "/v1"

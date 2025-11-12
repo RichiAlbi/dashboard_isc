@@ -1,9 +1,16 @@
 from pydantic import BaseModel, Field, ConfigDict
 from uuid import UUID
 from typing import Optional
+from datetime import datetime
 
 
 class UserBase(BaseModel):
+    username: Optional[str] = None
+    email: Optional[str] = None
+    first_name: Optional[str] = Field(None, alias="firstName")
+    last_name: Optional[str] = Field(None, alias="lastName")
+    display_name: Optional[str] = Field(None, alias="displayName")
+    is_active: Optional[bool] = Field(True, alias="isActive")
     theme: Optional[str] = None  # light|dark|system
 
 
@@ -12,11 +19,18 @@ class UserCreate(UserBase):
 
 
 class UserUpdate(BaseModel):
+    email: Optional[str] = None
+    first_name: Optional[str] = Field(None, alias="firstName")
+    last_name: Optional[str] = Field(None, alias="lastName")
+    display_name: Optional[str] = Field(None, alias="displayName")
+    is_active: Optional[bool] = Field(None, alias="isActive")
     theme: Optional[str] = None
 
 
 class UserRead(UserBase):
     user_id: UUID = Field(alias="userId")
+    from_ldap: bool = Field(False, alias="fromLdap")
+    last_ldap_sync: Optional[datetime] = Field(None, alias="lastLdapSync")
 
     model_config = ConfigDict(
         from_attributes=True,

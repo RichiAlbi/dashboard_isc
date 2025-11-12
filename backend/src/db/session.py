@@ -19,6 +19,9 @@ AsyncSessionLocal = async_sessionmaker(
     class_=AsyncSession,
 )
 
+# Alias für bessere Lesbarkeit
+async_session_maker = AsyncSessionLocal
+
 
 # Dependency für FastAPI
 async def get_db() -> AsyncSession:
