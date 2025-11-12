@@ -1,0 +1,1096 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ISC Dashboard Backend API",
+    "description": "Backend API für das ISC Dashboard mit LDAP-Integration, Benutzer-, Widget- und News-Verwaltung",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:8000",
+      "description": "Lokaler Development Server"
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "Root",
+        "description": "API Willkommens-Endpoint",
+        "operationId": "root",
+        "responses": {
+          "200": {
+            "description": "Erfolgreiche Antwort",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Prüft, ob die API läuft",
+        "operationId": "health_check",
+        "responses": {
+          "200": {
+            "description": "API ist gesund",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Liste aller Users",
+        "description": "Ruft eine Liste aller Benutzer ab mit optionaler Suche und Paginierung",
+        "operationId": "list_users",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "description": "Suchbegriff für username, email, display_name"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "minimum": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste der Benutzer",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserRead"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Neuen User erstellen",
+        "operationId": "create_user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Benutzer erfolgreich erstellt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserRead"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/{user_id}": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Einzelnen User abrufen",
+        "description": "Ruft einen einzelnen Benutzer ab. Bei aktiviertem LDAP werden aktuelle LDAP-Daten integriert.",
+        "operationId": "get_user",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Benutzer gefunden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserRead"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Benutzer nicht gefunden"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "users"
+        ],
+        "summary": "User aktualisieren",
+        "operationId": "update_user",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Benutzer aktualisiert",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserRead"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Benutzer nicht gefunden"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "users"
+        ],
+        "summary": "User löschen",
+        "operationId": "delete_user",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Benutzer gelöscht"
+          },
+          "404": {
+            "description": "Benutzer nicht gefunden"
+          }
+        }
+      }
+    },
+    "/api/v1/users/sync-ldap": {
+      "post": {
+        "tags": [
+          "users"
+        ],
+        "summary": "LDAP-Synchronisation",
+        "description": "Startet eine manuelle LDAP-Synchronisation. Synchronisiert alle LDAP-Benutzer mit der Datenbank.",
+        "operationId": "sync_ldap_users",
+        "responses": {
+          "200": {
+            "description": "Synchronisation erfolgreich",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "stats": {
+                      "type": "object",
+                      "properties": {
+                        "added": {
+                          "type": "integer"
+                        },
+                        "updated": {
+                          "type": "integer"
+                        },
+                        "deactivated": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "LDAP ist nicht aktiviert"
+          },
+          "500": {
+            "description": "Fehler bei der Synchronisation"
+          }
+        }
+      }
+    },
+    "/api/v1/widgets/": {
+      "get": {
+        "tags": [
+          "widgets"
+        ],
+        "summary": "Liste aller Widgets",
+        "operationId": "list_widgets",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "minimum": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste der Widgets",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WidgetRead"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "widgets"
+        ],
+        "summary": "Neues Widget erstellen",
+        "operationId": "create_widget",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WidgetCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Widget erstellt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WidgetRead"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "widgets"
+        ],
+        "summary": "Bulk-Update von Widgets",
+        "operationId": "bulk_update_widgets",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/WidgetUpdate"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Widgets aktualisiert",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WidgetRead"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Fehler beim Update"
+          }
+        }
+      }
+    },
+    "/api/v1/widgets/{user_id}": {
+      "get": {
+        "tags": [
+          "widgets"
+        ],
+        "summary": "Widgets eines Users",
+        "description": "Ruft alle Widgets eines bestimmten Benutzers ab",
+        "operationId": "get_user_widgets",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "minimum": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste der User-Widgets",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserWidgetRead"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/widget/{widget_id}": {
+      "put": {
+        "tags": [
+          "widgets"
+        ],
+        "summary": "Einzelnes Widget aktualisieren",
+        "operationId": "update_widget",
+        "parameters": [
+          {
+            "name": "widget_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WidgetUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Widget aktualisiert",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WidgetRead"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Widget nicht gefunden"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "widgets"
+        ],
+        "summary": "Widget löschen",
+        "operationId": "delete_widget",
+        "parameters": [
+          {
+            "name": "widget_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Widget gelöscht"
+          },
+          "404": {
+            "description": "Widget nicht gefunden"
+          }
+        }
+      }
+    },
+    "/api/v1/newsfeed/": {
+      "get": {
+        "tags": [
+          "newsfeed"
+        ],
+        "summary": "Liste aller News",
+        "operationId": "list_news",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "minimum": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste der News-Einträge",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NewsRead"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "newsfeed"
+        ],
+        "summary": "News-Eintrag erstellen",
+        "operationId": "create_news",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewsCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "News-Eintrag erstellt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewsRead"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/newsfeed/{news_id}": {
+      "get": {
+        "tags": [
+          "newsfeed"
+        ],
+        "summary": "Einzelnen News-Eintrag abrufen",
+        "operationId": "get_news",
+        "parameters": [
+          {
+            "name": "news_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "News-Eintrag gefunden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewsRead"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "News-Eintrag nicht gefunden"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "newsfeed"
+        ],
+        "summary": "News-Eintrag aktualisieren",
+        "operationId": "update_news",
+        "parameters": [
+          {
+            "name": "news_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewsUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "News-Eintrag aktualisiert",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewsRead"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "News-Eintrag nicht gefunden"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "newsfeed"
+        ],
+        "summary": "News-Eintrag löschen",
+        "operationId": "delete_news",
+        "parameters": [
+          {
+            "name": "news_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "News-Eintrag gelöscht"
+          },
+          "404": {
+            "description": "News-Eintrag nicht gefunden"
+          }
+        }
+      }
+    },
+    "/api/v1/settings/": {
+      "get": {
+        "tags": [
+          "settings"
+        ],
+        "summary": "Globale Einstellungen abrufen",
+        "operationId": "get_global_settings",
+        "responses": {
+          "200": {
+            "description": "Globale Einstellungen",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "settings": {
+                      "type": "object"
+                    },
+                    "note": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/settings/{user_id}": {
+      "get": {
+        "tags": [
+          "settings"
+        ],
+        "summary": "Benutzer-Einstellungen abrufen",
+        "operationId": "get_user_settings",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Benutzer-Einstellungen",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserRead"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Benutzer nicht gefunden"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "UserRead": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "username": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "default": true
+          },
+          "fromLdap": {
+            "type": "boolean",
+            "default": false
+          },
+          "lastLdapSync": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "theme": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "light",
+              "dark",
+              "system"
+            ]
+          }
+        },
+        "required": [
+          "userId"
+        ]
+      },
+      "UserCreate": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "default": true
+          },
+          "theme": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "UserUpdate": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "theme": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "WidgetRead": {
+        "type": "object",
+        "properties": {
+          "widgetId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "target": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "widgetId",
+          "target",
+          "icon",
+          "title",
+          "color"
+        ]
+      },
+      "WidgetCreate": {
+        "type": "object",
+        "properties": {
+          "target": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "target",
+          "icon",
+          "title",
+          "color"
+        ]
+      },
+      "WidgetUpdate": {
+        "type": "object",
+        "properties": {
+          "widgetId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "target": {
+            "type": "string",
+            "nullable": true
+          },
+          "icon": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "color": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "UserWidgetRead": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "widgetId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "target": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          },
+          "visible": {
+            "type": "boolean"
+          },
+          "config": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "userId",
+          "widgetId",
+          "target",
+          "icon",
+          "title",
+          "color",
+          "visible",
+          "config"
+        ]
+      },
+      "NewsRead": {
+        "type": "object",
+        "properties": {
+          "newsId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "newsId",
+          "title",
+          "description"
+        ]
+      },
+      "NewsCreate": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "description"
+        ]
+      },
+      "NewsUpdate": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "users",
+      "description": "Benutzerverwaltung mit LDAP-Integration"
+    },
+    {
+      "name": "widgets",
+      "description": "Widget-Verwaltung und Benutzer-Widget-Zuordnungen"
+    },
+    {
+      "name": "newsfeed",
+      "description": "News-Feed-Verwaltung"
+    },
+    {
+      "name": "settings",
+      "description": "Einstellungsverwaltung"
+    }
+  ]
+}
+
