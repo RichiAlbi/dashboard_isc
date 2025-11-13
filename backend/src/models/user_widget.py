@@ -2,7 +2,7 @@ import uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy import Boolean, ForeignKey
-from src.db.session import Base
+from db.session import Base
 
 
 class UserWidget(Base):

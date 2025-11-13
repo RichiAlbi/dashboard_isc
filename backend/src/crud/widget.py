@@ -2,7 +2,7 @@ from typing import Optional, List
 from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.models.widget import Widget
+from models.widget import Widget
 from schemas.widget import WidgetCreate, WidgetUpdate
 
 

@@ -3,10 +3,10 @@ from typing import List, TYPE_CHECKING
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import String
-from src.db.session import Base
+from db.session import Base
 
 if TYPE_CHECKING:
-    from src.models.user_widget import UserWidget
+    from models.user_widget import UserWidget
 
 
 class Widget(Base):

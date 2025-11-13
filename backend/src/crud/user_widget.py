@@ -2,9 +2,9 @@ from typing import List, Optional
 from uuid import UUID
 from sqlalchemy import select, join
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.models.user_widget import UserWidget
-from src.models.widget import Widget
-from src.schemas.user_widget import UserWidgetCreate, UserWidgetUpdate
+from models.user_widget import UserWidget
+from models.widget import Widget
+from schemas.user_widget import UserWidgetCreate, UserWidgetUpdate
 
 
 async def get(session: AsyncSession, user_id: UUID, widget_id: UUID) -> Optional[UserWidget]:

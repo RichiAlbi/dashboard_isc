@@ -8,8 +8,8 @@ from ldap3 import Server, Connection, ALL, SUBTREE
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from src.core.config import settings
-from src.models.user import User
+from core.config import settings
+from models.user import User
 
 logger = logging.getLogger(__name__)
 

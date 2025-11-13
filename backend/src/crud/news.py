@@ -2,8 +2,8 @@ from typing import Optional, List
 from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.models.news import News
-from src.schemas.news import NewsCreate, NewsUpdate
+from models.news import News
+from schemas.news import NewsCreate, NewsUpdate
 
 
 async def get(session: AsyncSession, news_id: UUID) -> Optional[News]:

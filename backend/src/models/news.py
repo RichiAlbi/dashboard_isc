@@ -2,7 +2,7 @@ import uuid
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import String, Text
-from src.db.session import Base
+from db.session import Base
 
 
 class News(Base):

@@ -4,7 +4,7 @@ from sqlalchemy.dialects.postgresql import UUID
 import uuid
 from typing import List, TYPE_CHECKING
 from datetime import datetime
-from src.db.session import Base
+from db.session import Base
 
 if TYPE_CHECKING:
     from models.user_widget import UserWidget

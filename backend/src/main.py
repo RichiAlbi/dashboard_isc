@@ -3,10 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import logging
 
-from src.core.config import settings as app_settings
-from src.api.v1 import users, widgets, widget, settings as settings_router, newsfeed
-from src.services.ldap_service import ldap_service
-from src.db.session import async_session_maker
+from core.config import settings as app_settings
+from api.v1 import users, widgets, widget, settings as settings_router, newsfeed
+from services.ldap_service import ldap_service
+from db.session import async_session_maker
 
 logger = logging.getLogger(__name__)
 
@@ -71,4 +71,4 @@ def health_check():
 
 
 if __name__ == "__main__":
-    uvicorn.run("src.main:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)

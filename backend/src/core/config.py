@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     # LDAP
     ldap_enabled: bool = False
     ldap_sync_on_startup: bool = False
-    ldap_server: str = "ldap://localhost:389"
+    ldap_server: str = "ldaps://localhost:636"
     ldap_bind_dn: str = ""
     ldap_bind_password: str = ""
     ldap_base_dn: str = "dc=example,dc=com"

@@ -2,8 +2,8 @@ from typing import Optional, List
 from uuid import UUID
 from sqlalchemy import select, or_
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.models.user import User
-from src.schemas.user import UserCreate, UserUpdate
+from models.user import User
+from schemas.user import UserCreate, UserUpdate
 
 
 async def get(session: AsyncSession, user_id: UUID) -> Optional[User]:

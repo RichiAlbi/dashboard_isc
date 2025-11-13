@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 
-from src.schemas.news import NewsRead, NewsCreate, NewsUpdate
-from src.crud import news as crud_news
-from src.api.v1.deps import get_db
+from schemas.news import NewsRead, NewsCreate, NewsUpdate
+from crud import news as crud_news
+from api.v1.deps import get_db
 
 router = APIRouter(prefix="/newsfeed", tags=["newsfeed"])
 

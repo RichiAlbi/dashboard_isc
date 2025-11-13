@@ -2,11 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 
-from src.schemas.widget import WidgetRead, WidgetCreate, WidgetUpdate
-from src.schemas.user_widget import UserWidgetRead
-from src.crud import widget as crud_widget
-from src.crud import user_widget as crud_user_widget
-from src.api.v1.deps import get_db
+from schemas.widget import WidgetRead, WidgetCreate, WidgetUpdate
+from schemas.user_widget import UserWidgetRead
+from crud import widget as crud_widget
+from crud import user_widget as crud_user_widget
+from api.v1.deps import get_db
 
 router = APIRouter(prefix="/widgets", tags=["widgets"])
 

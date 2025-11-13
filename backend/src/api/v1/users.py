@@ -3,11 +3,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 from typing import Optional
 
-from src.schemas.user import UserRead, UserCreate, UserUpdate
-from src.crud import user as crud_user
-from src.api.v1.deps import get_db
-from src.services.ldap_service import ldap_service
-from src.core.config import settings
+from schemas.user import UserRead, UserCreate, UserUpdate
+from crud import user as crud_user
+from api.v1.deps import get_db
+from services.ldap_service import ldap_service
+from core.config import settings
 
 router = APIRouter(prefix="/users", tags=["users"])
 
