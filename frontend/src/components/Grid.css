@@ -1,0 +1,12 @@
+/* Grid Layout Styles */
+
+.react-grid-item {
+  transition: all 200ms ease;
+  transition-property: left, top, width, height;
+}
+
+.react-grid-item.react-grid-placeholder {
+  background: var(--color-primary-blue);
+  opacity: 0.2;
+  border-radius: 12px;
+}
