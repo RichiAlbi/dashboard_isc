@@ -10,6 +10,8 @@ class UserBase(BaseModel):
     first_name: Optional[str] = Field(None, alias="firstName")
     last_name: Optional[str] = Field(None, alias="lastName")
     display_name: Optional[str] = Field(None, alias="displayName")
+    role: Optional[str] = None  # student, teacher, etc.
+    class_name: Optional[str] = Field(None, alias="className")  # z.B. eeg24a
     is_active: Optional[bool] = Field(True, alias="isActive")
     theme: Optional[str] = None  # light|dark|system
 
@@ -23,6 +25,8 @@ class UserUpdate(BaseModel):
     first_name: Optional[str] = Field(None, alias="firstName")
     last_name: Optional[str] = Field(None, alias="lastName")
     display_name: Optional[str] = Field(None, alias="displayName")
+    role: Optional[str] = None
+    class_name: Optional[str] = Field(None, alias="className")
     is_active: Optional[bool] = Field(None, alias="isActive")
     theme: Optional[str] = None
 

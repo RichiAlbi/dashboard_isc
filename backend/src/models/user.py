@@ -21,6 +21,8 @@ class User(Base):
     first_name: Mapped[str | None] = mapped_column(String, nullable=True)
     last_name: Mapped[str | None] = mapped_column(String, nullable=True)
     display_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    role: Mapped[str | None] = mapped_column(String, nullable=True)  # z.B. "student", "teacher"
+    class_name: Mapped[str | None] = mapped_column(String, nullable=True)  # z.B. "eeg24a"
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     from_ldap: Mapped[bool] = mapped_column(Boolean, default=False)
     last_ldap_sync: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)

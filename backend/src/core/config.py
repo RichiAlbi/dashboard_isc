@@ -32,13 +32,15 @@ class Settings(BaseSettings):
     ldap_bind_dn: str = ""
     ldap_bind_password: str = ""
     ldap_base_dn: str = "dc=example,dc=com"
-    ldap_user_filter: str = "(objectClass=person)"
+    ldap_user_filter: str = "(&(objectCategory=person)(objectClass=user))"
     ldap_user_search_base: str = ""
     ldap_username_attr: str = "sAMAccountName"
     ldap_email_attr: str = "mail"
     ldap_firstname_attr: str = "givenName"
     ldap_lastname_attr: str = "sn"
     ldap_display_name_attr: str = "displayName"
+    ldap_role_attr: str = "sophomorixRole"
+    ldap_class_attr: str = "sophomorixAdminClass"
 
     @property
     def sqlalchemy_database_uri(self) -> str:

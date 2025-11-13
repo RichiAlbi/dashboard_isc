@@ -4,7 +4,8 @@ LDAP Service für Benutzer-Synchronisation
 import logging
 from typing import List, Dict, Optional
 from datetime import datetime
-from ldap3 import Server, Connection, ALL, SUBTREE
+from ldap3 import Server, Connection, ALL, SUBTREE, Tls
+import ssl
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -21,7 +22,21 @@ class LDAPService:
             logger.info("LDAP ist deaktiviert")
             return
 
-        self.server = Server(settings.ldap_server, get_info=ALL)
+        # TLS-Konfiguration für LDAPS (nicht für STARTTLS)
+        # LDAPS verwendet bereits SSL, daher nur für Zertifikatsvalidierung
+        tls_configuration = Tls(
+            validate=ssl.CERT_NONE,
+            version=ssl.PROTOCOL_TLS,
+            ca_certs_file=None
+        )
+
+        # Server ohne TLS, da ldaps:// bereits verschlüsselt ist
+        self.server = Server(
+            settings.ldap_server,
+            get_info=ALL,
+            use_ssl=True,
+            tls=tls_configuration
+        )
         self.bind_dn = settings.ldap_bind_dn
         self.bind_password = settings.ldap_bind_password
         self.base_dn = settings.ldap_base_dn
@@ -34,6 +49,10 @@ class LDAPService:
         self.firstname_attr = settings.ldap_firstname_attr
         self.lastname_attr = settings.ldap_lastname_attr
         self.display_name_attr = settings.ldap_display_name_attr
+        self.role_attr = settings.ldap_role_attr
+        self.class_attr = settings.ldap_class_attr
+
+        logger.info(f"LDAP konfiguriert: Server={settings.ldap_server}, Base DN={self.base_dn}")
 
     def _get_connection(self) -> Optional[Connection]:
         """Erstellt eine LDAP-Verbindung"""
@@ -41,15 +60,28 @@ class LDAPService:
             return None
 
         try:
+            logger.debug(f"Verbinde zu LDAP Server: {settings.ldap_server}")
+            logger.debug(f"Bind DN: {self.bind_dn}")
+
             conn = Connection(
                 self.server,
                 user=self.bind_dn,
                 password=self.bind_password,
-                auto_bind=True
+                auto_bind='NONE',
+                raise_exceptions=True
             )
+
+            # Manuell binden
+            if not conn.bind():
+                logger.error(f"LDAP Bind fehlgeschlagen: {conn.result}")
+                return None
+
+            logger.info("LDAP-Verbindung erfolgreich hergestellt")
             return conn
         except Exception as e:
-            logger.error(f"LDAP-Verbindung fehlgeschlagen: {e}")
+            logger.error(f"LDAP-Verbindung fehlgeschlagen: {e}", exc_info=True)
+            logger.error(f"Server: {settings.ldap_server}")
+            logger.error(f"Bind DN: {self.bind_dn}")
             return None
 
     def get_all_users(self) -> List[Dict[str, any]]:
@@ -63,6 +95,8 @@ class LDAPService:
 
         users = []
         try:
+            logger.info(f"Starte LDAP-Suche: Base={self.search_base}, Filter={self.user_filter}")
+
             conn.search(
                 search_base=self.search_base,
                 search_filter=self.user_filter,
@@ -72,9 +106,15 @@ class LDAPService:
                     self.email_attr,
                     self.firstname_attr,
                     self.lastname_attr,
-                    self.display_name_attr
+                    self.display_name_attr,
+                    self.role_attr,
+                    self.class_attr,
+                    'cn',  # Zum Debuggen
+                    'objectClass'  # Zum Debuggen
                 ]
             )
+
+            logger.info(f"{len(conn.entries)} LDAP-Einträge gefunden")
 
             for entry in conn.entries:
                 user_data = {
@@ -83,15 +123,20 @@ class LDAPService:
                     'first_name': self._get_attr(entry, self.firstname_attr),
                     'last_name': self._get_attr(entry, self.lastname_attr),
                     'display_name': self._get_attr(entry, self.display_name_attr),
+                    'role': self._get_attr(entry, self.role_attr),
+                    'class_name': self._get_attr(entry, self.class_attr),
                 }
 
                 # Nur Benutzer mit username hinzufügen
                 if user_data['username']:
                     users.append(user_data)
+                else:
+                    cn = self._get_attr(entry, 'cn')
+                    logger.debug(f"Überspringe Eintrag ohne sAMAccountName: cn={cn}")
 
-            logger.info(f"{len(users)} Benutzer aus LDAP abgerufen")
+            logger.info(f"{len(users)} gültige Benutzer aus LDAP extrahiert")
         except Exception as e:
-            logger.error(f"Fehler beim Abrufen der LDAP-Benutzer: {e}")
+            logger.error(f"Fehler beim Abrufen der LDAP-Benutzer: {e}", exc_info=True)
         finally:
             conn.unbind()
 
@@ -109,6 +154,8 @@ class LDAPService:
         user_data = None
         try:
             search_filter = f"(&{self.user_filter}({self.username_attr}={username}))"
+            logger.debug(f"Suche Benutzer: {username} mit Filter: {search_filter}")
+
             conn.search(
                 search_base=self.search_base,
                 search_filter=search_filter,
@@ -118,7 +165,9 @@ class LDAPService:
                     self.email_attr,
                     self.firstname_attr,
                     self.lastname_attr,
-                    self.display_name_attr
+                    self.display_name_attr,
+                    self.role_attr,
+                    self.class_attr
                 ]
             )
 
@@ -130,9 +179,14 @@ class LDAPService:
                     'first_name': self._get_attr(entry, self.firstname_attr),
                     'last_name': self._get_attr(entry, self.lastname_attr),
                     'display_name': self._get_attr(entry, self.display_name_attr),
+                    'role': self._get_attr(entry, self.role_attr),
+                    'class_name': self._get_attr(entry, self.class_attr),
                 }
+                logger.info(f"Benutzer {username} in LDAP gefunden")
+            else:
+                logger.warning(f"Benutzer {username} nicht in LDAP gefunden")
         except Exception as e:
-            logger.error(f"Fehler beim Abrufen des LDAP-Benutzers {username}: {e}")
+            logger.error(f"Fehler beim Abrufen des LDAP-Benutzers {username}: {e}", exc_info=True)
         finally:
             conn.unbind()
 
@@ -144,11 +198,11 @@ class LDAPService:
             if hasattr(entry, attr_name):
                 value = getattr(entry, attr_name).value
                 if isinstance(value, list) and len(value) > 0:
-                    return str(value[0])
+                    return str(value[0]) if value[0] else None
                 elif value:
                     return str(value)
-        except:
-            pass
+        except Exception as e:
+            logger.debug(f"Konnte Attribut {attr_name} nicht extrahieren: {e}")
         return None
 
     async def sync_users(self, db: AsyncSession) -> Dict[str, int]:
@@ -190,6 +244,8 @@ class LDAPService:
                 db_user.first_name = ldap_user.get('first_name')
                 db_user.last_name = ldap_user.get('last_name')
                 db_user.display_name = ldap_user.get('display_name')
+                db_user.role = ldap_user.get('role')
+                db_user.class_name = ldap_user.get('class_name')
                 db_user.is_active = True
                 db_user.last_ldap_sync = current_time
                 stats["updated"] += 1
@@ -201,6 +257,8 @@ class LDAPService:
                     first_name=ldap_user.get('first_name'),
                     last_name=ldap_user.get('last_name'),
                     display_name=ldap_user.get('display_name'),
+                    role=ldap_user.get('role'),
+                    class_name=ldap_user.get('class_name'),
                     from_ldap=True,
                     is_active=True,
                     last_ldap_sync=current_time
