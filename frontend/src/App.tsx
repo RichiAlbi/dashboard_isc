@@ -44,8 +44,11 @@ function App() {
   useEffect(() => {
     const updateWidth = () => {
       if (mainContentRef.current) {
-        // main-content has 2rem (32px) padding on each side = 64px total
-        const horizontalPadding = 64
+        // Dynamically calculate horizontal padding from computed styles
+        const computedStyle = window.getComputedStyle(mainContentRef.current)
+        const paddingLeft = parseFloat(computedStyle.paddingLeft)
+        const paddingRight = parseFloat(computedStyle.paddingRight)
+        const horizontalPadding = paddingLeft + paddingRight
         setGridWidth(mainContentRef.current.clientWidth - horizontalPadding)
       }
     }
@@ -67,12 +70,12 @@ function App() {
 
   // Grid layout configuration
   const layout = [
-    { i: 'home', x: 0, y: 0, w: 1, h: 2 },
-    { i: 'stundenplan', x: 1, y: 0, w: 1, h: 2 },
-    { i: 'raumplansystem', x: 2, y: 0, w: 1, h: 2 },
-    { i: 'schulportal', x: 0, y: 2, w: 1, h: 2 },
-    { i: 'vertretungsplan', x: 1, y: 2, w: 1, h: 2 },
-    { i: 'newsfeed', x: 2, y: 2, w: 1, h: 2 }
+    { i: 'home', x: 0, y: 0, w: 1, h: 1 },
+    { i: 'stundenplan', x: 1, y: 0, w: 1, h: 1 },
+    { i: 'raumplansystem', x: 2, y: 0, w: 1, h: 1 },
+    { i: 'schulportal', x: 0, y: 1, w: 1, h: 1 },
+    { i: 'vertretungsplan', x: 1, y: 1, w: 1, h: 1 },
+    { i: 'newsfeed', x: 2, y: 1, w: 1, h: 2 }
   ]
 
   return (
@@ -174,7 +177,7 @@ function App() {
           className="grid-layout"
           layout={layout}
           cols={3}
-          rowHeight={100}
+          rowHeight={200}
           width={gridWidth}
           isDraggable={true}
           isResizable={false}

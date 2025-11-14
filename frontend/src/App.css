@@ -41,7 +41,7 @@ body {
   background-color: var(--color-darkest-blue);
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 2rem;
+  padding: 1.5rem;
   box-sizing: border-box;
 }
 

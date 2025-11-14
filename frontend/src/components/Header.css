@@ -1,7 +1,7 @@
 /* Header Component Styles */
 
 .header {
-  height: 15vh;
+  height: 12vh;
   width: 100%;
   background-color: var(--color-dark-blue);
   display: flex;
