@@ -1,4 +1,4 @@
-# LDAP-Integration - Implementierungsübersicht
+# LDAP-Integration - Implementierungsübersicht (Teachers Only)
 
 ## Implementierte Features
 
@@ -6,7 +6,8 @@
 
 - ✅ Vollständige LDAP-Konfiguration über Umgebungsvariablen
 - ✅ Steuerung über `LDAP_ENABLED` und `LDAP_SYNC_ON_STARTUP`
-- ✅ Konfigurierbare LDAP-Attribute-Mappings
+- ✅ Konfigurierbare LDAP-Attribute-Mappings für Lehrer
+- ✅ Standard Search Base: OU=Teachers,OU=default-school,OU=SCHOOLS,DC=industrieschule,DC=de
 
 ### 2. User-Model Erweiterungen (src/models/user.py)
 
@@ -14,7 +15,6 @@
 - ✅ `email` - E-Mail-Adresse
 - ✅ `first_name` - Vorname
 - ✅ `last_name` - Nachname
-- ✅ `display_name` - Anzeigename
 - ✅ `is_active` - Aktiv-Status
 - ✅ `from_ldap` - Flag für LDAP-Herkunft
 - ✅ `last_ldap_sync` - Timestamp der letzten Synchronisation
@@ -22,8 +22,8 @@
 ### 3. LDAP-Service (src/services/ldap_service.py)
 
 - ✅ Verbindung zum LDAP-Server
-- ✅ Abrufen aller LDAP-Benutzer
-- ✅ Abrufen einzelner Benutzer nach Username
+- ✅ Abrufen aller LDAP-Lehrer aus Teachers OU
+- ✅ Abrufen einzelner Lehrer nach Username
 - ✅ Automatische Synchronisation beim Startup
 - ✅ Manuelle Synchronisation über API
 - ✅ Statistiken über Sync-Vorgänge (added, updated, deactivated)
@@ -32,19 +32,20 @@
 
 - ✅ GET /api/v1/users - Liste mit erweiterten Suchoptionen
 - ✅ GET /api/v1/users/{user_id} - Mit LDAP-Daten-Integration
-- ✅ POST /api/v1/users/sync-ldap - Manuelle LDAP-Synchronisation
+- ✅ POST /api/v1/users/sync-ldap - Manuelle LDAP-Synchronisation für Lehrer
 - ✅ Aktualisierte CRUD-Operationen für neue Felder
 
-### 5. Datenbank-Migration (alembic/versions/add_ldap_fields.py)
+### 5. Datenbank-Migration
 
-- ✅ Migration für neue User-Felder
+- ✅ Migration für LDAP-Felder (alembic/versions/add_ldap_fields.py)
+- ✅ Migration zum Entfernen von Schüler-Feldern (alembic/versions/remove_student_fields.py)
 - ✅ Index auf username-Feld
 - ✅ Upgrade und Downgrade implementiert
 
 ### 6. Schemas (src/schemas/user.py)
 
-- ✅ UserRead - Mit allen LDAP-Feldern
-- ✅ UserCreate - Für neue Benutzer
+- ✅ UserRead - Mit Lehrer-Feldern (firstName, lastName, email, username)
+- ✅ UserCreate - Für neue Lehrer
 - ✅ UserUpdate - Für Updates
 - ✅ Camel-Case Aliase für Frontend-Kompatibilität
 
@@ -62,14 +63,14 @@
 
 1. Anwendung startet
 2. Wenn `LDAP_SYNC_ON_STARTUP=true`: LDAP-Sync wird ausgeführt
-3. Neue Benutzer werden angelegt
-4. Bestehende Benutzer werden aktualisiert
-5. Fehlende Benutzer werden deaktiviert
+3. Neue Lehrer werden angelegt
+4. Bestehende Lehrer werden aktualisiert
+5. Fehlende Lehrer werden deaktiviert
 
-### Abruf eines Benutzers mit LDAP-Daten
+### Abruf eines Lehrers mit LDAP-Daten
 
 1. GET /api/v1/users/{user_id}
-2. Benutzer wird aus Datenbank geladen
+2. Lehrer wird aus Datenbank geladen
 3. Wenn LDAP aktiviert und username vorhanden: LDAP-Daten werden abgerufen
 4. LDAP-Daten überschreiben DB-Daten in der Response (DB bleibt unverändert)
 5. Response mit aktuellen LDAP-Daten
@@ -77,7 +78,7 @@
 ### Manuelle Synchronisation
 
 1. POST /api/v1/users/sync-ldap
-2. Alle LDAP-Benutzer werden abgerufen
+2. Alle LDAP-Lehrer werden aus Teachers OU abgerufen
 3. Synchronisation wird durchgeführt
 4. Statistiken werden zurückgegeben
 
@@ -91,26 +92,23 @@ LDAP_ENABLED=true|false
 LDAP_SYNC_ON_STARTUP=true|false
 
 # LDAP-Server Verbindung
-LDAP_SERVER=ldap://server:389
+LDAP_SERVER=ldaps://server:636
 LDAP_BIND_DN=cn=admin,dc=example,dc=com
 LDAP_BIND_PASSWORD=password
-LDAP_BASE_DN=dc=example,dc=com
-LDAP_USER_SEARCH_BASE=ou=users,dc=example,dc=com
+LDAP_BASE_DN=dc=industrieschule,dc=de
+LDAP_USER_SEARCH_BASE=OU=Teachers,OU=default-school,OU=SCHOOLS,DC=industrieschule,DC=de
 
-# LDAP-Filter und Attribute
-LDAP_USER_FILTER=(objectClass=person)
+# LDAP-Filter und Attribute (Teachers Only)
+LDAP_USER_FILTER=(&(objectCategory=person)(objectClass=user))
 LDAP_USERNAME_ATTR=sAMAccountName
 LDAP_EMAIL_ATTR=mail
 LDAP_FIRSTNAME_ATTR=givenName
 LDAP_LASTNAME_ATTR=sn
-LDAP_DISPLAY_NAME_ATTR=displayName
 ```
 
 ## Nächste Schritte (Optional)
 
 - [ ] LDAP-Authentifizierung implementieren
-- [ ] Gruppen-Synchronisation
-- [ ] Benutzer-Rollen aus LDAP-Gruppen
 - [ ] LDAP-Caching für Performance
 - [ ] Background-Task für periodische Synchronisation
 - [ ] Detailliertes Logging für LDAP-Operationen

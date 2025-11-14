@@ -2,11 +2,24 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import logging
+import sys
 
 from core.config import settings as app_settings
 from api.v1 import users, widgets, widget, settings as settings_router, newsfeed
 from services.ldap_service import ldap_service
 from db.session import async_session_maker
+
+# Logging-Konfiguration
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout)
+    ]
+)
+
+# Setze LDAP-Service Logger auf DEBUG für detaillierte Ausgaben
+logging.getLogger('src.services.ldap_service').setLevel(logging.DEBUG)
 
 logger = logging.getLogger(__name__)
 

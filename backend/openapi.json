@@ -80,7 +80,7 @@
               "type": "string",
               "nullable": true
             },
-            "description": "Suchbegriff für username, email, display_name"
+            "description": "Suchbegriff für username, email"
           },
           {
             "name": "limit",

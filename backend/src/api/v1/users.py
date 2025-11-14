@@ -14,12 +14,12 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 @router.get("/", response_model=list[UserRead])
 async def list_users(
-        q: Optional[str] = Query(None, description="Suchbegriff für username, email, display_name"),
+        q: Optional[str] = Query(None, description="Suchbegriff für username, email, firstName, lastName"),
         limit: int = Query(50, ge=1, le=100),
         offset: int = Query(0, ge=0),
         db: AsyncSession = Depends(get_db)
 ):
-    """Liste aller Users mit optionaler Suche und Paginierung"""
+    """Liste aller Lehrer mit optionaler Suche und Paginierung"""
     users = await crud_user.get_multi(db, skip=offset, limit=limit, search=q)
     return users
 
@@ -30,8 +30,8 @@ async def get_user(
         db: AsyncSession = Depends(get_db)
 ):
     """
-    Einzelnen User anhand ID abrufen.
-    Wenn LDAP aktiviert ist und der User einen username hat,
+    Einzelnen Lehrer anhand ID abrufen.
+    Wenn LDAP aktiviert ist und der Lehrer einen username hat,
     werden aktuelle LDAP-Daten abgerufen und in die Response integriert.
     """
     user = await crud_user.get(db, user_id)
@@ -50,7 +50,6 @@ async def get_user(
             user.email = ldap_data.get('email') or user.email
             user.first_name = ldap_data.get('first_name') or user.first_name
             user.last_name = ldap_data.get('last_name') or user.last_name
-            user.display_name = ldap_data.get('display_name') or user.display_name
 
     return user
 
@@ -60,7 +59,7 @@ async def create_user(
         user_in: UserCreate,
         db: AsyncSession = Depends(get_db)
 ):
-    """Neuen User erstellen"""
+    """Neuen Lehrer erstellen"""
     return await crud_user.create(db, user_in)
 
 
@@ -70,7 +69,7 @@ async def update_user(
         user_in: UserUpdate,
         db: AsyncSession = Depends(get_db)
 ):
-    """User aktualisieren"""
+    """Lehrer aktualisieren"""
     user = await crud_user.get(db, user_id)
     if not user:
         raise HTTPException(
@@ -85,7 +84,7 @@ async def delete_user(
         user_id: UUID,
         db: AsyncSession = Depends(get_db)
 ):
-    """User löschen"""
+    """Lehrer löschen"""
     user = await crud_user.get(db, user_id)
     if not user:
         raise HTTPException(
@@ -101,7 +100,7 @@ async def sync_ldap_users(
 ):
     """
     Manuelle LDAP-Synchronisation durchführen.
-    Synchronisiert alle LDAP-Benutzer mit der Datenbank.
+    Synchronisiert alle LDAP-Lehrer mit der Datenbank.
     """
     if not settings.ldap_enabled:
         raise HTTPException(

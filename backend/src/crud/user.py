@@ -24,7 +24,6 @@ async def get_multi(session: AsyncSession, skip: int = 0, limit: int = 50, searc
             or_(
                 User.username.ilike(like),
                 User.email.ilike(like),
-                User.display_name.ilike(like),
                 User.first_name.ilike(like),
                 User.last_name.ilike(like)
             )
@@ -40,7 +39,6 @@ async def create(session: AsyncSession, obj_in: UserCreate) -> User:
         email=obj_in.email,
         first_name=obj_in.first_name,
         last_name=obj_in.last_name,
-        display_name=obj_in.display_name,
         is_active=obj_in.is_active if obj_in.is_active is not None else True,
         theme=obj_in.theme,
         from_ldap=False
