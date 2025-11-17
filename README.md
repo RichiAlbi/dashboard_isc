@@ -11,7 +11,7 @@
 
 ## Farbthema
 
-- Corporate Design Herr Rein
+- Corporate Design in Nextcloud: Tauschen\projects\p_schuelerprojekt_corperate_identity
 
 ## Tech Stack
 
@@ -19,10 +19,10 @@
 
 ### Electron App
 
-- **Frontend**: React + Vite (JavaScript, Bundler)  
-  → NodeJS (Chromium-Browser-basiert)
+- **Frontend**: React + TypeScript
 - **Backend**: Java / Kotlin / Python
-- **Kundenabsprache**: Login-Möglichkeiten für Schulweb
+- **Bundler**: Vite
+- **Architecture**: PWA (Progressive Web App)
 
 ---
 
