@@ -4,7 +4,8 @@ import './components/Header.css'
 import './components/Dropdown.css'
 import './components/Buttons.css'
 import './components/Grid.css'
-import { useState, useRef, useEffect } from 'react'
+import './components/StatusBanner.css'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import GridLayout from 'react-grid-layout'
 import 'react-grid-layout/css/styles.css'
 import Widget from './components/Widget'
@@ -18,27 +19,38 @@ import {
   HelpIcon,
   SettingsIcon,
 } from './components/icons'
+import { useInfiniteUsers } from './services/userService'
+import { getUserFullName } from './types/user'
+import { useDebounce } from './hooks/useDebounce'
 
 function App() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [gridWidth, setGridWidth] = useState(1200)
+  const [isBannerDismissed, setIsBannerDismissed] = useState(false)
   const mainContentRef = useRef<HTMLDivElement>(null)
+  const userListRef = useRef<HTMLDivElement>(null)
 
-  // Sample user data
-  const users = [
-    { username: 'mmueller', fullName: 'Max Müller' },
-    { username: 'sschmidt', fullName: 'Sarah Schmidt' },
-    { username: 'jbecker', fullName: 'Jonas Becker' },
-    { username: 'lweber', fullName: 'Lisa Weber' },
-    { username: 'tmeyer', fullName: 'Thomas Meyer' },
-    { username: 'kfischer', fullName: 'Kathrin Fischer' },
-  ]
+  // Debounce search query to avoid too many API calls
+  const debouncedSearchQuery = useDebounce(searchQuery, 300)
 
-  const filteredUsers = users.filter(user =>
-    user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.fullName.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  // Fetch users from API with infinite scrolling
+  const {
+    data: usersData,
+    isLoading: usersLoading,
+    error: usersError,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteUsers(debouncedSearchQuery)
+
+  // Flatten all pages into a single array of users
+  const users = useMemo(() => {
+    return usersData?.pages.flatMap(page => page) ?? []
+  }, [usersData])
+
+  // Show banner if there's an error and it hasn't been dismissed
+  const showErrorBanner = usersError && !isBannerDismissed
 
   // Update grid width based on container size
   useEffect(() => {
@@ -57,6 +69,25 @@ function App() {
     window.addEventListener('resize', updateWidth)
     return () => window.removeEventListener('resize', updateWidth)
   }, [])
+
+  // Handle scroll to load more users
+  useEffect(() => {
+    const userList = userListRef.current
+    if (!userList) return
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = userList
+      // Load more when user scrolls to within 100px of the bottom
+      if (scrollHeight - scrollTop - clientHeight < 100) {
+        if (hasNextPage && !isFetchingNextPage) {
+          fetchNextPage()
+        }
+      }
+    }
+
+    userList.addEventListener('scroll', handleScroll)
+    return () => userList.removeEventListener('scroll', handleScroll)
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
 
   // Widget data
   const widgets = [
@@ -79,8 +110,28 @@ function App() {
   ]
 
   return (
-    <div className="app-container">
-      <header className="header">
+    <>
+      {showErrorBanner && (
+        <div className="status-banner error">
+          <div className="status-banner-icon">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <div className="status-banner-message">
+            Backend nicht erreichbar. Die Anwendung läuft im Offline-Modus.
+          </div>
+          <button
+            className="status-banner-close"
+            onClick={() => setIsBannerDismissed(true)}
+            aria-label="Schließen"
+          >
+            ×
+          </button>
+        </div>
+      )}
+      <div className={`app-container ${showErrorBanner ? 'has-banner' : ''}`}>
+        <header className="header">
         <div className="header-content">
           <div className="header-left">
             <div className="user-dropdown-container">
@@ -124,23 +175,32 @@ function App() {
                       />
                     </div>
 
-                    <div className="user-list">
-                      {filteredUsers.map((user) => (
+                    <div className="user-list" ref={userListRef}>
+                      {usersLoading && (
+                        <div className="no-users">Laden...</div>
+                      )}
+                      {usersError && (
+                        <div className="no-users">Fehler beim Laden der Benutzer</div>
+                      )}
+                      {!usersLoading && !usersError && users.map((user) => (
                         <button
-                          key={user.username}
+                          key={user.userId}
                           className="user-item"
                           onClick={() => {
-                            console.log('Selected user:', user.username)
+                            console.log('Selected user:', user.username, user)
                             setIsDropdownOpen(false)
                             setSearchQuery('')
                           }}
                         >
-                          <div className="user-item-fullname">{user.fullName}</div>
+                          <div className="user-item-fullname">{getUserFullName(user)}</div>
                           <div className="user-item-username">{user.username}</div>
                         </button>
                       ))}
-                      {filteredUsers.length === 0 && (
+                      {!usersLoading && !usersError && users.length === 0 && (
                         <div className="no-users">Keine Benutzer gefunden</div>
+                      )}
+                      {isFetchingNextPage && (
+                        <div className="no-users">Weitere laden...</div>
                       )}
                     </div>
 
@@ -189,7 +249,8 @@ function App() {
           ))}
         </GridLayout>
       </main>
-    </div>
+      </div>
+    </>
   )
 }
 
