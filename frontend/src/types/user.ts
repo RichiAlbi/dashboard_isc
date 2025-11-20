@@ -42,7 +42,7 @@ export interface UserSearchParams {
  * Helper to get full name from user
  */
 export function getUserFullName(user: User): string {
-  return `${user.firstName} ${user.lastName}`.trim();
+  return `${user.lastName}, ${user.firstName}`.trim();
 }
 
 /**

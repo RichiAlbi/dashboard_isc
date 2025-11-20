@@ -9,6 +9,7 @@ import { useState, useRef, useEffect, useMemo } from 'react'
 import GridLayout from 'react-grid-layout'
 import 'react-grid-layout/css/styles.css'
 import Widget from './components/Widget'
+import LoginModal from './components/LoginModal'
 import {
   FolderIcon,
   CalendarIcon,
@@ -18,16 +19,19 @@ import {
   NewsIcon,
   HelpIcon,
   SettingsIcon,
+  WarningIcon,
 } from './components/icons'
 import { useInfiniteUsers } from './services/userService'
 import { getUserFullName } from './types/user'
 import { useDebounce } from './hooks/useDebounce'
+import type { User } from './types/user'
 
 function App() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [gridWidth, setGridWidth] = useState(1200)
   const [isBannerDismissed, setIsBannerDismissed] = useState(false)
+  const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const mainContentRef = useRef<HTMLDivElement>(null)
   const userListRef = useRef<HTMLDivElement>(null)
 
@@ -87,7 +91,7 @@ function App() {
 
     userList.addEventListener('scroll', handleScroll)
     return () => userList.removeEventListener('scroll', handleScroll)
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
+  }, [isDropdownOpen, hasNextPage, isFetchingNextPage, fetchNextPage])
 
   // Widget data
   const widgets = [
@@ -114,12 +118,10 @@ function App() {
       {showErrorBanner && (
         <div className="status-banner error">
           <div className="status-banner-icon">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-            </svg>
+            <WarningIcon />
           </div>
           <div className="status-banner-message">
-            Backend nicht erreichbar. Die Anwendung läuft im Offline-Modus.
+            Datenbank nicht erreichbar. Die Anwendung läuft im Offline-Modus.
           </div>
           <button
             className="status-banner-close"
@@ -130,7 +132,7 @@ function App() {
           </button>
         </div>
       )}
-      <div className={`app-container ${showErrorBanner ? 'has-banner' : ''}`}>
+      <div className="app-container">
         <header className="header">
         <div className="header-content">
           <div className="header-left">
@@ -187,7 +189,7 @@ function App() {
                           key={user.userId}
                           className="user-item"
                           onClick={() => {
-                            console.log('Selected user:', user.username, user)
+                            setSelectedUser(user)
                             setIsDropdownOpen(false)
                             setSearchQuery('')
                           }}
@@ -250,6 +252,17 @@ function App() {
         </GridLayout>
       </main>
       </div>
+      {selectedUser && (
+        <LoginModal
+          username={selectedUser.username}
+          fullName={getUserFullName(selectedUser)}
+          onClose={() => setSelectedUser(null)}
+          onSubmit={(username, password) => {
+            // TODO: Implement login logic
+            console.log('Login attempt:', username, password)
+          }}
+        />
+      )}
     </>
   )
 }
