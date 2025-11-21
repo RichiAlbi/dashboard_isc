@@ -5,11 +5,12 @@ import './components/Dropdown.css'
 import './components/Buttons.css'
 import './components/Grid.css'
 import './components/StatusBanner.css'
-import { useState, useRef, useEffect, useMemo } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import GridLayout from 'react-grid-layout'
 import 'react-grid-layout/css/styles.css'
 import Widget from './components/Widget'
 import LoginModal from './components/LoginModal'
+import { UserDropdown } from './components/UserDropdown'
 import {
   FolderIcon,
   CalendarIcon,
@@ -23,35 +24,18 @@ import {
 } from './components/icons'
 import { useInfiniteUsers } from './services/userService'
 import { getUserFullName } from './types/user'
-import { useDebounce } from './hooks/useDebounce'
+import { MousePositionProvider } from './context/MousePositionContext'
+import { BackgroundGradient } from './components/BackgroundGradient'
 import type { User } from './types/user'
 
 function App() {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
   const [gridWidth, setGridWidth] = useState(1200)
   const [isBannerDismissed, setIsBannerDismissed] = useState(false)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const mainContentRef = useRef<HTMLDivElement>(null)
-  const userListRef = useRef<HTMLDivElement>(null)
 
-  // Debounce search query to avoid too many API calls
-  const debouncedSearchQuery = useDebounce(searchQuery, 300)
-
-  // Fetch users from API with infinite scrolling
-  const {
-    data: usersData,
-    isLoading: usersLoading,
-    error: usersError,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useInfiniteUsers(debouncedSearchQuery)
-
-  // Flatten all pages into a single array of users
-  const users = useMemo(() => {
-    return usersData?.pages.flatMap(page => page) ?? []
-  }, [usersData])
+  // Fetch users to check for connection errors (for banner display)
+  const { error: usersError } = useInfiniteUsers('')
 
   // Show banner if there's an error and it hasn't been dismissed
   const showErrorBanner = usersError && !isBannerDismissed
@@ -60,7 +44,6 @@ function App() {
   useEffect(() => {
     const updateWidth = () => {
       if (mainContentRef.current) {
-        // Dynamically calculate horizontal padding from computed styles
         const computedStyle = window.getComputedStyle(mainContentRef.current)
         const paddingLeft = parseFloat(computedStyle.paddingLeft)
         const paddingRight = parseFloat(computedStyle.paddingRight)
@@ -73,25 +56,6 @@ function App() {
     window.addEventListener('resize', updateWidth)
     return () => window.removeEventListener('resize', updateWidth)
   }, [])
-
-  // Handle scroll to load more users
-  useEffect(() => {
-    const userList = userListRef.current
-    if (!userList) return
-
-    const handleScroll = () => {
-      const { scrollTop, scrollHeight, clientHeight } = userList
-      // Load more when user scrolls to within 100px of the bottom
-      if (scrollHeight - scrollTop - clientHeight < 100) {
-        if (hasNextPage && !isFetchingNextPage) {
-          fetchNextPage()
-        }
-      }
-    }
-
-    userList.addEventListener('scroll', handleScroll)
-    return () => userList.removeEventListener('scroll', handleScroll)
-  }, [isDropdownOpen, hasNextPage, isFetchingNextPage, fetchNextPage])
 
   // Widget data
   const widgets = [
@@ -114,7 +78,8 @@ function App() {
   ]
 
   return (
-    <>
+    <MousePositionProvider>
+      <BackgroundGradient />
       {showErrorBanner && (
         <div className="status-banner error">
           <div className="status-banner-icon">
@@ -136,89 +101,7 @@ function App() {
         <header className="header">
         <div className="header-content">
           <div className="header-left">
-            <div className="user-dropdown-container">
-              <button
-                className="user-dropdown-button"
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              >
-                <span>Benutzer auswählen</span>
-                <svg
-                  className={`dropdown-arrow ${isDropdownOpen ? 'open' : ''}`}
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                >
-                  <path
-                    d="M4 6L8 10L12 6"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
-
-              {isDropdownOpen && (
-                <>
-                  <div
-                    className="dropdown-overlay"
-                    onClick={() => setIsDropdownOpen(false)}
-                  />
-                  <div className="user-dropdown-panel">
-                    <div className="dropdown-search-container">
-                      <input
-                        type="text"
-                        className="dropdown-search"
-                        placeholder="Benutzer suchen..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        autoFocus
-                      />
-                    </div>
-
-                    <div className="user-list" ref={userListRef}>
-                      {usersLoading && (
-                        <div className="no-users">Laden...</div>
-                      )}
-                      {usersError && (
-                        <div className="no-users">Fehler beim Laden der Benutzer</div>
-                      )}
-                      {!usersLoading && !usersError && users.map((user) => (
-                        <button
-                          key={user.userId}
-                          className="user-item"
-                          onClick={() => {
-                            setSelectedUser(user)
-                            setIsDropdownOpen(false)
-                            setSearchQuery('')
-                          }}
-                        >
-                          <div className="user-item-fullname">{getUserFullName(user)}</div>
-                          <div className="user-item-username">{user.username}</div>
-                        </button>
-                      ))}
-                      {!usersLoading && !usersError && users.length === 0 && (
-                        <div className="no-users">Keine Benutzer gefunden</div>
-                      )}
-                      {isFetchingNextPage && (
-                        <div className="no-users">Weitere laden...</div>
-                      )}
-                    </div>
-
-                    <button
-                      className="logout-button"
-                      onClick={() => {
-                        console.log('Logout clicked')
-                        setIsDropdownOpen(false)
-                      }}
-                    >
-                      Abmelden
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
+            <UserDropdown onUserSelect={setSelectedUser} />
           </div>
           <div className="header-center">
             <h1 className="title">Verwaltungstafel</h1>
@@ -263,7 +146,7 @@ function App() {
           }}
         />
       )}
-    </>
+    </MousePositionProvider>
   )
 }
 

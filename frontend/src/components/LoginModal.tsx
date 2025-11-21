@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react'
+import { useBlockSpotlight } from '../context/MousePositionContext'
 import './LoginModal.css'
 
 interface LoginModalProps {
@@ -11,6 +12,9 @@ interface LoginModalProps {
 const LoginModal: React.FC<LoginModalProps> = ({ username, onClose, onSubmit }) => {
   const passwordInputRef = useRef<HTMLInputElement>(null)
   const usernameInputRef = useRef<HTMLInputElement>(null)
+
+  // Block spotlight effect while modal is open
+  useBlockSpotlight(true)
 
   // Focus password input when modal opens
   useEffect(() => {

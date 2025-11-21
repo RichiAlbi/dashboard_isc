@@ -8,11 +8,7 @@
 
 html,
 body {
-  background: radial-gradient(
-    ellipse at top,
-    var(--color-gradient-start) 0%,
-    var(--color-gradient-end) 100%
-  );
+  background-color: var(--color-gradient-end);
   height: 100vh;
   width: 100vw;
   overflow: hidden;
