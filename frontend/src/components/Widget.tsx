@@ -4,7 +4,7 @@ import './Widget.css'
 
 interface WidgetProps {
   title: string
-  icon: React.ReactNode
+  icon?: React.ReactNode
   color: string
 }
 
@@ -24,7 +24,7 @@ const Widget: React.FC<WidgetProps> = ({ title, icon, color }) => {
       className="widget"
       style={spotlightStyle}
     >
-      <div className="widget-icon">{icon}</div>
+      {icon && <div className="widget-icon">{icon}</div>}
       <div className="widget-title">{title}</div>
     </div>
   )

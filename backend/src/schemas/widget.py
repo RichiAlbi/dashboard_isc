@@ -8,6 +8,7 @@ class WidgetBase(BaseModel):
     icon: str
     title: str
     color: str
+    default: bool = False
 
 
 class WidgetCreate(WidgetBase):
@@ -20,6 +21,7 @@ class WidgetUpdate(BaseModel):
     icon: Optional[str] = None
     title: Optional[str] = None
     color: Optional[str] = None
+    default: Optional[bool] = None
 
 
 class WidgetBulkUpdate(BaseModel):

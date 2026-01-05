@@ -23,10 +23,31 @@ import {
   WarningIcon,
 } from './components/icons'
 import { useInfiniteUsers } from './services/userService'
+import { useDefaultWidgets } from './services/widgetService'
 import { getUserFullName } from './types/user'
 import { MousePositionProvider } from './context/MousePositionContext'
 import { BackgroundGradient } from './components/BackgroundGradient'
 import type { User } from './types/user'
+import type { Widget as WidgetType } from './types/widget'
+
+/**
+ * Icon mapping - currently disabled, keeping for future use
+ * Uncomment when icons are needed again
+ */
+/*
+const iconMap: Record<string, React.ReactNode> = {
+  FolderIcon: <FolderIcon />,
+  CalendarIcon: <CalendarIcon />,
+  GridIcon: <GridIcon />,
+  SchoolIcon: <SchoolIcon />,
+  ListIcon: <ListIcon />,
+  NewsIcon: <NewsIcon />,
+}
+
+function getIconComponent(iconName: string): React.ReactNode {
+  return iconMap[iconName] || <GridIcon />
+}
+*/
 
 function App() {
   const [gridWidth, setGridWidth] = useState(1200)
@@ -37,8 +58,11 @@ function App() {
   // Fetch users to check for connection errors (for banner display)
   const { error: usersError } = useInfiniteUsers('')
 
+  // Fetch default widgets from API
+  const { data: widgets = [], isLoading: widgetsLoading, error: widgetsError } = useDefaultWidgets()
+
   // Show banner if there's an error and it hasn't been dismissed
-  const showErrorBanner = usersError && !isBannerDismissed
+  const showErrorBanner = (usersError || widgetsError) && !isBannerDismissed
 
   // Update grid width based on container size
   useEffect(() => {
@@ -57,25 +81,17 @@ function App() {
     return () => window.removeEventListener('resize', updateWidth)
   }, [])
 
-  // Widget data
-  const widgets = [
-    { id: 'home', title: 'Home', icon: <FolderIcon />, color: '#3b82f6' },
-    { id: 'stundenplan', title: 'Stundenplan', icon: <CalendarIcon />, color: '#10b981' },
-    { id: 'raumplansystem', title: 'Raumplansystem', icon: <GridIcon />, color: '#8b5cf6' },
-    { id: 'schulportal', title: 'Schulportal Sachsen', icon: <SchoolIcon />, color: '#f59e0b' },
-    { id: 'vertretungsplan', title: 'Vertretungsplan', icon: <ListIcon />, color: '#ef4444' },
-    { id: 'newsfeed', title: 'Newsfeed', icon: <NewsIcon />, color: '#06b6d4' }
-  ]
-
-  // Grid layout configuration
-  const layout = [
-    { i: 'home', x: 0, y: 0, w: 1, h: 1 },
-    { i: 'stundenplan', x: 1, y: 0, w: 1, h: 1 },
-    { i: 'raumplansystem', x: 2, y: 0, w: 1, h: 1 },
-    { i: 'schulportal', x: 0, y: 1, w: 1, h: 1 },
-    { i: 'vertretungsplan', x: 1, y: 1, w: 1, h: 1 },
-    { i: 'newsfeed', x: 2, y: 1, w: 1, h: 2 }
-  ]
+  /**
+   * Generate grid layout dynamically based on widgets
+   * Arranges widgets in a 3-column grid
+   */
+  const layout = widgets.map((widget, index) => ({
+    i: widget.widgetId,
+    x: index % 3, // Column (0, 1, 2, 0, 1, 2, ...)
+    y: Math.floor(index / 3), // Row
+    w: 1,
+    h: 1,
+  }))
 
   return (
     <MousePositionProvider>
@@ -118,21 +134,35 @@ function App() {
         </div>
       </header>
       <main className="main-content" ref={mainContentRef}>
-        <GridLayout
-          className="grid-layout"
-          layout={layout}
-          cols={3}
-          rowHeight={200}
-          width={gridWidth}
-          isDraggable={true}
-          isResizable={false}
-        >
-          {widgets.map((widget) => (
-            <div key={widget.id}>
-              <Widget title={widget.title} icon={widget.icon} color={widget.color} />
-            </div>
-          ))}
-        </GridLayout>
+        {widgetsLoading ? (
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Widgets werden geladen...</p>
+          </div>
+        ) : widgets.length === 0 ? (
+          <div className="empty-state">
+            <p>Keine Widgets verfügbar</p>
+          </div>
+        ) : (
+          <GridLayout
+            className="grid-layout"
+            layout={layout}
+            cols={3}
+            rowHeight={200}
+            width={gridWidth}
+            isDraggable={true}
+            isResizable={false}
+          >
+            {widgets.map((widget) => (
+              <div key={widget.widgetId}>
+                <Widget
+                  title={widget.title}
+                  color={widget.color}
+                />
+              </div>
+            ))}
+          </GridLayout>
+        )}
       </main>
       </div>
       {selectedUser && (

@@ -11,8 +11,11 @@ async def get(session: AsyncSession, widget_id: UUID) -> Optional[Widget]:
     return result.scalar_one_or_none()
 
 
-async def get_multi(session: AsyncSession, skip: int = 0, limit: int = 50) -> List[Widget]:
-    stmt = select(Widget).offset(skip).limit(limit)
+async def get_multi(session: AsyncSession, skip: int = 0, limit: int = 50, default: Optional[bool] = None) -> List[Widget]:
+    stmt = select(Widget)
+    if default is not None:
+        stmt = stmt.where(Widget.default == default)
+    stmt = stmt.offset(skip).limit(limit)
     result = await session.execute(stmt)
     return list(result.scalars().all())
 

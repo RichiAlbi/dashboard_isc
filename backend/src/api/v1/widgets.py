@@ -12,9 +12,13 @@ router = APIRouter(prefix="/widgets", tags=["widgets"])
 
 
 @router.get("/", response_model=list[WidgetRead])
-async def list_widgets(limit: int = Query(50, ge=1, le=100), offset: int = Query(0, ge=0),
-                       db: AsyncSession = Depends(get_db)):
-    widgets = await crud_widget.get_multi(db, skip=offset, limit=limit)
+async def list_widgets(
+    limit: int = Query(50, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    default: bool | None = Query(None, description="Filter widgets by default status"),
+    db: AsyncSession = Depends(get_db)
+):
+    widgets = await crud_widget.get_multi(db, skip=offset, limit=limit, default=default)
     return widgets
 
 
