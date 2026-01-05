@@ -1,0 +1,47 @@
+name: dashboard
+
+services:
+  db:
+    image: postgres:16
+    container_name: dashboard_postgres
+    volumes:
+      - dashboard_postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-dashboard_db}
+      POSTGRES_USER: ${POSTGRES_USER:-dashboard_docker}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: dashboard_backend
+    env_file:
+      - ./backend/.env
+    environment:
+      - PYTHONPATH=/app/src
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: dashboard_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  dashboard_postgres_data:
