@@ -1,0 +1,45 @@
+# Docker Registry mit Web-Frontend
+# Auf der VM ausführen: docker compose up -d
+
+name: docker-registry
+
+services:
+  registry:
+    image: registry:2
+    container_name: docker-registry
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      REGISTRY_AUTH: htpasswd
+      REGISTRY_AUTH_HTPASSWD_REALM: Registry Realm
+      REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
+      REGISTRY_STORAGE_DELETE_ENABLED: "true"
+    volumes:
+      - registry_data:/var/lib/registry
+      - ./auth:/auth:ro
+
+  registry-ui:
+    image: joxit/docker-registry-ui:latest
+    container_name: registry-ui
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      - SINGLE_REGISTRY=true
+      - REGISTRY_TITLE=Dashboard Registry
+      - REGISTRY_URL=http://registry:5000
+      - DELETE_IMAGES=true
+      - SHOW_CONTENT_DIGEST=true
+      - NGINX_PROXY_PASS_URL=http://registry:5000
+      - SHOW_CATALOG_NB_TAGS=true
+      - CATALOG_MIN_BRANCHES=1
+      - CATALOG_MAX_BRANCHES=0
+      - TAGLIST_PAGE_SIZE=100
+      - REGISTRY_SECURED=false
+      - CATALOG_ELEMENTS_LIMIT=1000
+    depends_on:
+      - registry
+
+volumes:
+  registry_data:
