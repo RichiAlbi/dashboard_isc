@@ -40,3 +40,5 @@ services:
 networks:
   dashboard_network:
     name: dashboard_network
+volumes:
+  dashboard_postgres_data:

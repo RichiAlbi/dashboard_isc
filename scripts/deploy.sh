@@ -21,6 +21,8 @@ GITHUB_TOKEN="${GITHUB_TOKEN:-}"          # Token als Env-Variable oder hier ein
 # Lokale Pfade
 BASE_DIR="/opt/disc"
 REGISTRY_URL="localhost:5000"             # Lokale Registry
+REGISTRY_USER="${REGISTRY_USER:-}"        # Registry Benutzername
+REGISTRY_PASS="${REGISTRY_PASS:-}"        # Registry Passwort
 DOWNLOAD_DIR="/tmp/dashboard-artifacts"
 
 # Image Namen (müssen mit Workflow übereinstimmen)
@@ -52,7 +54,7 @@ check_requirements() {
         exit 1
     fi
     
-    for cmd in curl jq docker; do
+    for cmd in curl unzip docker; do
         if ! command -v $cmd &> /dev/null; then
             log_error "$cmd ist nicht installiert!"
             exit 1
@@ -60,6 +62,27 @@ check_requirements() {
     done
     
     log_info "Alle Voraussetzungen erfüllt ✓"
+}
+
+registry_login() {
+    if [[ -n "$REGISTRY_USER" && -n "$REGISTRY_PASS" ]]; then
+        log_info "Melde bei Registry an..."
+        echo "$REGISTRY_PASS" | docker login "$REGISTRY_URL" -u "$REGISTRY_USER" --password-stdin
+    fi
+}
+
+# Prüft ob ein Image mit Tag bereits in der Registry existiert
+image_exists_in_registry() {
+    local image_name="$1"
+    local tag="$2"
+    
+    # Versuche das Manifest abzurufen (funktioniert auch ohne Pull)
+    local response=$(curl -s -o /dev/null -w "%{http_code}" \
+        -u "${REGISTRY_USER}:${REGISTRY_PASS}" \
+        "http://${REGISTRY_URL}/v2/${image_name}/manifests/${tag}" \
+        -H "Accept: application/vnd.docker.distribution.manifest.v2+json" 2>/dev/null)
+    
+    [[ "$response" == "200" ]]
 }
 
 # ============================================================================
@@ -79,15 +102,18 @@ get_latest_run_id() {
     
     local runs=$(api_call "/repos/$GITHUB_OWNER/$GITHUB_REPO/actions/runs?status=success&per_page=20")
     
+    local run_id=""
     if [[ -n "$tag_filter" ]]; then
         # Suche nach Run mit spezifischem Tag
-        local run_id=$(echo "$runs" | jq -r ".workflow_runs[] | select(.head_branch == \"$tag_filter\") | .id" | head -1)
-    else
-        # Nimm den neuesten erfolgreichen Run
-        local run_id=$(echo "$runs" | jq -r '.workflow_runs[0].id')
+        run_id=$(echo "$runs" | tr ',' '\n' | grep -A5 "\"head_branch\":\"$tag_filter\"" | grep '"id"' | head -1 | sed 's/.*"id":\([0-9]*\).*/\1/')
     fi
     
-    if [[ -z "$run_id" || "$run_id" == "null" ]]; then
+    # Fallback: Nimm die erste Run-ID
+    if [[ -z "$run_id" ]]; then
+        run_id=$(echo "$runs" | sed 's/.*"workflow_runs":\[{"id":\([0-9]*\).*/\1/')
+    fi
+    
+    if [[ -z "$run_id" || "$run_id" == "null" || ! "$run_id" =~ ^[0-9]+$ ]]; then
         log_error "Kein passender Workflow Run gefunden!"
         exit 1
     fi
@@ -103,9 +129,11 @@ download_artifact() {
     log_info "Suche Artifact '$artifact_name'..."
     
     local artifacts=$(api_call "/repos/$GITHUB_OWNER/$GITHUB_REPO/actions/runs/$run_id/artifacts")
-    local artifact_id=$(echo "$artifacts" | jq -r ".artifacts[] | select(.name == \"$artifact_name\") | .id")
     
-    if [[ -z "$artifact_id" || "$artifact_id" == "null" ]]; then
+    # Da das JSON formatiert ist: finde die Zeile mit dem Namen und hole die ID aus dem Block davor
+    local artifact_id=$(echo "$artifacts" | grep -B10 "\"name\": \"$artifact_name\"" | grep '"id"' | tail -1 | sed 's/[^0-9]//g')
+    
+    if [[ -z "$artifact_id" || ! "$artifact_id" =~ ^[0-9]+$ ]]; then
         log_error "Artifact '$artifact_name' nicht gefunden!"
         exit 1
     fi
@@ -179,12 +207,17 @@ main() {
                 run_id="$2"
                 shift 2
                 ;;
+            --force|-f)
+                FORCE_DOWNLOAD=true
+                shift
+                ;;
             -h|--help)
                 echo "Verwendung: $0 [TAG] [--run-id ID]"
                 echo ""
                 echo "Optionen:"
                 echo "  TAG           Version/Tag zum Deployen (z.B. v1.0.0)"
                 echo "  --run-id ID   Spezifische Workflow Run ID"
+                echo "  --force, -f   Download erzwingen (auch wenn Version existiert)"
                 echo ""
                 echo "Beispiele:"
                 echo "  $0                    # Latest successful run"
@@ -205,6 +238,7 @@ main() {
     echo ""
     
     check_requirements
+    registry_login
     
     # Workflow Run ID ermitteln
     if [[ -z "$run_id" ]]; then
@@ -213,37 +247,66 @@ main() {
     
     log_info "Verwende Workflow Run: $run_id"
     
-    # Download-Verzeichnis vorbereiten
-    rm -rf "$DOWNLOAD_DIR"
-    mkdir -p "$DOWNLOAD_DIR"
-    
-    # Artifacts herunterladen
-    download_artifact "$run_id" "backend-image" "$DOWNLOAD_DIR/backend.zip"
-    download_artifact "$run_id" "frontend-image" "$DOWNLOAD_DIR/frontend.zip"
-    
-    # Entpacken
-    log_info "Entpacke Artifacts..."
-    cd "$DOWNLOAD_DIR"
-    unzip -q backend.zip -d backend/
-    unzip -q frontend.zip -d frontend/
-    
-    # Image Tag aus Workflow ermitteln (aus dem tar-Dateinamen oder API)
+    # Image Tag aus Workflow ermitteln
     local image_tag="${tag:-latest}"
     if [[ -z "$tag" ]]; then
         # Versuche Tag aus Run zu ermitteln
         local run_info=$(api_call "/repos/$GITHUB_OWNER/$GITHUB_REPO/actions/runs/$run_id")
-        image_tag=$(echo "$run_info" | jq -r '.head_branch // "latest"')
+        image_tag=$(echo "$run_info" | grep '"head_branch"' | head -1 | sed 's/.*"head_branch": *"\([^"]*\)".*/\1/')
+        image_tag="${image_tag:-latest}"
     fi
     
     log_info "Image Tag: $image_tag"
     
-    # Images laden und taggen
-    load_and_tag_image "$DOWNLOAD_DIR/backend/backend-image.tar" "$BACKEND_IMAGE" "$image_tag"
-    load_and_tag_image "$DOWNLOAD_DIR/frontend/frontend-image.tar" "$FRONTEND_IMAGE" "$image_tag"
+    # Prüfe ob Images bereits existieren
+    local need_download=false
     
-    # Aufräumen
-    log_info "Räume auf..."
-    rm -rf "$DOWNLOAD_DIR"
+    if [[ "$FORCE_DOWNLOAD" == "true" ]]; then
+        log_info "Force-Modus: Download wird erzwungen"
+        need_download=true
+    else
+        log_info "Prüfe ob Images bereits in Registry vorhanden sind..."
+        
+        if image_exists_in_registry "$BACKEND_IMAGE" "$image_tag"; then
+            log_info "Backend-Image $image_tag bereits vorhanden ✓"
+        else
+            log_warn "Backend-Image $image_tag nicht gefunden"
+            need_download=true
+        fi
+        
+        if image_exists_in_registry "$FRONTEND_IMAGE" "$image_tag"; then
+            log_info "Frontend-Image $image_tag bereits vorhanden ✓"
+        else
+            log_warn "Frontend-Image $image_tag nicht gefunden"
+            need_download=true
+        fi
+    fi
+    
+    if [[ "$need_download" == "true" ]]; then
+        # Download-Verzeichnis vorbereiten
+        rm -rf "$DOWNLOAD_DIR"
+        mkdir -p "$DOWNLOAD_DIR"
+        
+        # Artifacts herunterladen
+        download_artifact "$run_id" "backend-image" "$DOWNLOAD_DIR/backend.zip"
+        download_artifact "$run_id" "frontend-image" "$DOWNLOAD_DIR/frontend.zip"
+        
+        # Entpacken
+        log_info "Entpacke Artifacts..."
+        cd "$DOWNLOAD_DIR"
+        unzip -q backend.zip -d backend/
+        unzip -q frontend.zip -d frontend/
+        
+        # Images laden und taggen
+        load_and_tag_image "$DOWNLOAD_DIR/backend/backend-image.tar" "$BACKEND_IMAGE" "$image_tag"
+        load_and_tag_image "$DOWNLOAD_DIR/frontend/frontend-image.tar" "$FRONTEND_IMAGE" "$image_tag"
+        
+        # Aufräumen
+        log_info "Räume auf..."
+        rm -rf "$DOWNLOAD_DIR"
+    else
+        log_info "Alle Images bereits vorhanden - überspringe Download"
+    fi
     
     # Deployment
     deploy_stack
