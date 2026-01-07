@@ -1,4 +1,4 @@
-name: Build and Deploy Docker Images
+name: Build Docker Images
 
 on:
   push:
@@ -12,7 +12,6 @@ on:
         default: 'manual'
 
 env:
-  REGISTRY: ${{ secrets.REGISTRY_URL }}  # z.B. 192.168.1.100:5000
   BACKEND_IMAGE: dashboard-backend
   FRONTEND_IMAGE: dashboard-frontend
   IMAGE_TAG: ${{ github.ref_type == 'tag' && github.ref_name || inputs.tag || 'manual' }}
@@ -54,82 +53,11 @@ jobs:
         with:
           name: backend-image
           path: /tmp/backend-image.tar
-          retention-days: 7
+          retention-days: 30
 
       - name: Upload Frontend Image as Artifact
         uses: actions/upload-artifact@v4
         with:
           name: frontend-image
           path: /tmp/frontend-image.tar
-          retention-days: 7
-
-  push-to-registry:
-    name: Push to Docker Registry
-    needs: build
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Download Backend Image
-        uses: actions/download-artifact@v4
-        with:
-          name: backend-image
-          path: /tmp
-
-      - name: Download Frontend Image
-        uses: actions/download-artifact@v4
-        with:
-          name: frontend-image
-          path: /tmp
-
-      - name: Load Docker Images
-        run: |
-          docker load -i /tmp/backend-image.tar
-          docker load -i /tmp/frontend-image.tar
-
-      - name: Configure Insecure Registry
-        run: |
-          # Docker Daemon für insecure registry konfigurieren
-          echo '{"insecure-registries": ["${{ env.REGISTRY }}"]}' | sudo tee /etc/docker/daemon.json
-          sudo systemctl restart docker
-
-      - name: Login to Private Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ secrets.REGISTRY_USERNAME }}
-          password: ${{ secrets.REGISTRY_PASSWORD }}
-
-      - name: Tag and Push Images
-        run: |
-          # Tag mit Version und latest
-          docker tag ${{ env.BACKEND_IMAGE }}:${{ env.IMAGE_TAG }} ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE }}:${{ env.IMAGE_TAG }}
-          docker tag ${{ env.BACKEND_IMAGE }}:${{ env.IMAGE_TAG }} ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE }}:latest
-          
-          docker tag ${{ env.FRONTEND_IMAGE }}:${{ env.IMAGE_TAG }} ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE }}:${{ env.IMAGE_TAG }}
-          docker tag ${{ env.FRONTEND_IMAGE }}:${{ env.IMAGE_TAG }} ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE }}:latest
-          
-          # Push alle Tags
-          docker push ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE }}:${{ env.IMAGE_TAG }}
-          docker push ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE }}:latest
-          
-          docker push ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE }}:${{ env.IMAGE_TAG }}
-          docker push ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE }}:latest
-
-  # Optional: Deploy auf der VM
-  deploy:
-    name: Deploy to Production VM
-    needs: push-to-registry
-    runs-on: ubuntu-latest
-    if: github.ref_type == 'tag'
-    
-    steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USERNAME }}
-          key: ${{ secrets.VM_SSH_KEY }}
-          script: |
-            cd /path/to/your/deployment  # Anpassen!
-            docker compose pull
-            docker compose up -d --remove-orphans
+          retention-days: 30

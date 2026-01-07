@@ -1,0 +1,17 @@
+# Dashboard Frontend - Production
+# Pfad: /opt/disc/frontend/docker-compose.yml
+
+services:
+  frontend:
+    image: localhost:5000/dashboard-frontend:latest
+    container_name: dashboard_frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    networks:
+      - dashboard_network
+
+networks:
+  dashboard_network:
+    external: true
+    name: dashboard_network

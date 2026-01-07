@@ -18,30 +18,30 @@ services:
       timeout: 3s
       retries: 20
 
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: dashboard_backend
-    env_file:
-      - ./backend/.env
-    environment:
-      - PYTHONPATH=/app/src
-    depends_on:
-      db:
-        condition: service_healthy
-    ports:
-      - "8000:8000"
+  # backend:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   container_name: dashboard_backend
+  #   env_file:
+  #     - ./backend/.env
+  #   environment:
+  #     - PYTHONPATH=/app/src
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #   ports:
+  #     - "8000:8000"
 
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: dashboard_frontend
-    ports:
-      - "3000:80"
-    depends_on:
-      - backend
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   container_name: dashboard_frontend
+  #   ports:
+  #     - "3000:80"
+  #   depends_on:
+  #     - backend
 
 volumes:
   dashboard_postgres_data:
