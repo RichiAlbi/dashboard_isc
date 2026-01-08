@@ -9,6 +9,7 @@ import { useState, useRef, useEffect } from 'react'
 import GridLayout from 'react-grid-layout'
 import 'react-grid-layout/css/styles.css'
 import Widget from './components/Widget'
+import AddWidget from './components/AddWidget'
 import LoginModal from './components/LoginModal'
 import { UserDropdown } from './components/UserDropdown'
 import {
@@ -21,6 +22,7 @@ import {
   HelpIcon,
   SettingsIcon,
   WarningIcon,
+  PlusIcon,
 } from './components/icons'
 import { useInfiniteUsers } from './services/userService'
 import { useDefaultWidgets } from './services/widgetService'
@@ -83,15 +85,25 @@ function App() {
 
   /**
    * Generate grid layout dynamically based on widgets
-   * Arranges widgets in a 3-column grid
+   * Arranges widgets in a 3-column grid, with AddWidget always at the end
    */
-  const layout = widgets.map((widget, index) => ({
-    i: widget.widgetId,
-    x: index % 3, // Column (0, 1, 2, 0, 1, 2, ...)
-    y: Math.floor(index / 3), // Row
-    w: 1,
-    h: 1,
-  }))
+  const layout = [
+    ...widgets.map((widget, index) => ({
+      i: widget.widgetId,
+      x: index % 3, // Column (0, 1, 2, 0, 1, 2, ...)
+      y: Math.floor(index / 3), // Row
+      w: 1,
+      h: 1,
+    })),
+    // Add widget always at the end
+    {
+      i: 'add-widget',
+      x: widgets.length % 3,
+      y: Math.floor(widgets.length / 3),
+      w: 1,
+      h: 1,
+    },
+  ]
 
   return (
     <MousePositionProvider>
@@ -120,7 +132,7 @@ function App() {
             <UserDropdown onUserSelect={setSelectedUser} />
           </div>
           <div className="header-center">
-            <h1 className="title">Verwaltungstafel</h1>
+            <h1 className="title">Dashboard</h1>
             <h2 className="subtitle">Industrieschule Chemnitz</h2>
           </div>
           <div className="header-right">
@@ -138,10 +150,6 @@ function App() {
           <div className="loading-container">
             <div className="loading-spinner"></div>
             <p>Widgets werden geladen...</p>
-          </div>
-        ) : widgets.length === 0 ? (
-          <div className="empty-state">
-            <p>Keine Widgets verfügbar</p>
           </div>
         ) : (
           <GridLayout
@@ -161,6 +169,9 @@ function App() {
                 />
               </div>
             ))}
+            <div key="add-widget">
+              <AddWidget />
+            </div>
           </GridLayout>
         )}
       </main>
