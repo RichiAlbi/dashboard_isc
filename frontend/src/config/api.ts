@@ -2,8 +2,17 @@
  * API configuration and base fetch wrapper
  */
 
-// Get API base URL from environment variable
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+// Get API base URL from runtime config (Docker) or environment variable (dev)
+const getApiBaseUrl = (): string => {
+  // Check for runtime config (injected by Docker at container start)
+  if (typeof window !== 'undefined' && (window as any).__RUNTIME_CONFIG__?.VITE_API_BASE_URL) {
+    return (window as any).__RUNTIME_CONFIG__.VITE_API_BASE_URL;
+  }
+  // Fallback to Vite env variable (for local development)
+  return import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 export const apiConfig = {
   baseURL: API_BASE_URL,

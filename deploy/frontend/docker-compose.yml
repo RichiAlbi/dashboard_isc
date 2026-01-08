@@ -6,8 +6,12 @@ services:
     image: localhost:5000/dashboard-frontend:latest
     container_name: dashboard_frontend
     restart: unless-stopped
+    env_file:
+      - .env
     ports:
       - "80:80"
+    environment:
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://localhost:8000/api/v1}
     networks:
       - dashboard_network
 

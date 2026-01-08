@@ -11,7 +11,7 @@ from db.session import async_session_maker
 
 # Logging-Konfiguration
 logging.basicConfig(
-    level=logging.INFO,
+    level=getattr(logging, app_settings.log_level.upper(), logging.INFO),
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
         logging.StreamHandler(sys.stdout)
