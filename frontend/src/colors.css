@@ -12,6 +12,7 @@
   /* Text Colors */
   --color-text-primary: #FFFFFF;
   --color-text-secondary: #5B8ABB;
+  --color-text-muted: rgba(91, 138, 187, 0.7);
 
   /* Alert Colors */
   --color-danger: #DC3545;

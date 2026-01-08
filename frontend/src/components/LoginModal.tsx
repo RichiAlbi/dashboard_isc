@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useBlockSpotlight } from '../context/MousePositionContext'
 import './LoginModal.css'
 
@@ -7,9 +7,18 @@ interface LoginModalProps {
   fullName: string
   onClose: () => void
   onSubmit: (username: string, password: string) => void
+  error?: string | null
+  isLoading?: boolean
 }
 
-const LoginModal: React.FC<LoginModalProps> = ({ username, onClose, onSubmit }) => {
+const LoginModal: React.FC<LoginModalProps> = ({ 
+  username, 
+  fullName,
+  onClose, 
+  onSubmit,
+  error,
+  isLoading = false
+}) => {
   const passwordInputRef = useRef<HTMLInputElement>(null)
   const usernameInputRef = useRef<HTMLInputElement>(null)
 
@@ -23,13 +32,14 @@ const LoginModal: React.FC<LoginModalProps> = ({ username, onClose, onSubmit }) 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    if (isLoading) return
     const usernameValue = usernameInputRef.current?.value || ''
     const passwordValue = passwordInputRef.current?.value || ''
     onSubmit(usernameValue, passwordValue)
   }
 
   const handleOverlayClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
+    if (e.target === e.currentTarget && !isLoading) {
       onClose()
     }
   }
@@ -43,11 +53,15 @@ const LoginModal: React.FC<LoginModalProps> = ({ username, onClose, onSubmit }) 
             className="login-modal-close"
             onClick={onClose}
             aria-label="Schließen"
+            disabled={isLoading}
           >
             ×
           </button>
         </div>
         <form className="login-modal-form" onSubmit={handleSubmit}>
+          <div className="login-modal-fullname">
+            {fullName}
+          </div>
           <div className="login-modal-field">
             <label htmlFor="username" className="login-modal-label">
               Benutzer
@@ -71,14 +85,29 @@ const LoginModal: React.FC<LoginModalProps> = ({ username, onClose, onSubmit }) 
               id="password"
               className="login-modal-input"
               autoComplete="current-password"
+              disabled={isLoading}
             />
           </div>
+          {error && (
+            <div className="login-modal-error">
+              {error}
+            </div>
+          )}
           <div className="login-modal-actions">
-            <button type="button" className="login-modal-button secondary" onClick={onClose}>
+            <button 
+              type="button" 
+              className="login-modal-button secondary" 
+              onClick={onClose}
+              disabled={isLoading}
+            >
               Abbrechen
             </button>
-            <button type="submit" className="login-modal-button primary">
-              Anmelden
+            <button 
+              type="submit" 
+              className="login-modal-button primary"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Anmelden...' : 'Anmelden'}
             </button>
           </div>
         </form>

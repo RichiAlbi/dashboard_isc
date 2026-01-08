@@ -25,12 +25,13 @@ import {
   PlusIcon,
 } from './components/icons'
 import { useInfiniteUsers } from './services/userService'
-import { useDefaultWidgets } from './services/widgetService'
+import { useDefaultWidgets, useUserWidgets } from './services/widgetService'
 import { getUserFullName } from './types/user'
 import { MousePositionProvider } from './context/MousePositionContext'
+import { AuthProvider, useAuth } from './context/AuthContext'
 import { BackgroundGradient } from './components/BackgroundGradient'
 import type { User } from './types/user'
-import type { Widget as WidgetType } from './types/widget'
+import type { Widget as WidgetType, UserWidget } from './types/widget'
 
 /**
  * Icon mapping - currently disabled, keeping for future use
@@ -51,17 +52,40 @@ function getIconComponent(iconName: string): React.ReactNode {
 }
 */
 
-function App() {
+function AppContent() {
   const [gridWidth, setGridWidth] = useState(1200)
   const [isBannerDismissed, setIsBannerDismissed] = useState(false)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
+  const [loginError, setLoginError] = useState<string | null>(null)
   const mainContentRef = useRef<HTMLDivElement>(null)
+
+  // Get auth state
+  const { user: authenticatedUser, isAuthenticated, login, isLoading: authLoading } = useAuth()
 
   // Fetch users to check for connection errors (for banner display)
   const { error: usersError } = useInfiniteUsers('')
 
-  // Fetch default widgets from API
-  const { data: widgets = [], isLoading: widgetsLoading, error: widgetsError } = useDefaultWidgets()
+  // Fetch default widgets (for non-logged-in state)
+  const { 
+    data: defaultWidgets = [], 
+    isLoading: defaultWidgetsLoading, 
+    error: defaultWidgetsError 
+  } = useDefaultWidgets()
+
+  // Fetch user-specific widgets (for logged-in state)
+  const { 
+    data: userWidgets = [], 
+    isLoading: userWidgetsLoading, 
+    error: userWidgetsError 
+  } = useUserWidgets(authenticatedUser?.userId)
+
+  // Determine which widgets to show
+  const widgets = isAuthenticated && userWidgets.length > 0 
+    ? userWidgets.filter(w => w.visible) // Only show visible user widgets
+    : defaultWidgets
+  
+  const widgetsLoading = isAuthenticated ? userWidgetsLoading : defaultWidgetsLoading
+  const widgetsError = isAuthenticated ? userWidgetsError : defaultWidgetsError
 
   // Show banner if there's an error and it hasn't been dismissed
   const showErrorBanner = (usersError || widgetsError) && !isBannerDismissed
@@ -106,8 +130,7 @@ function App() {
   ]
 
   return (
-    <MousePositionProvider>
-      <BackgroundGradient />
+    <>
       {showErrorBanner && (
         <div className="status-banner error">
           <div className="status-banner-icon">
@@ -180,14 +203,35 @@ function App() {
         <LoginModal
           username={selectedUser.username}
           fullName={getUserFullName(selectedUser)}
-          onClose={() => setSelectedUser(null)}
-          onSubmit={(username, password) => {
-            // TODO: Implement login logic
-            console.log('Login attempt:', username, password)
+          onClose={() => {
+            setSelectedUser(null)
+            setLoginError(null)
           }}
+          onSubmit={async (username, password) => {
+            setLoginError(null)
+            const success = await login(selectedUser, password)
+            if (success) {
+              setSelectedUser(null)
+            } else {
+              setLoginError('Anmeldung fehlgeschlagen. Bitte Passwort überprüfen.')
+            }
+          }}
+          error={loginError}
+          isLoading={authLoading}
         />
       )}
-    </MousePositionProvider>
+    </>
+  )
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <MousePositionProvider>
+        <BackgroundGradient />
+        <AppContent />
+      </MousePositionProvider>
+    </AuthProvider>
   )
 }
 

@@ -1,5 +1,6 @@
 # Dashboard Backend - Production
 # Pfad: /opt/disc/backend/docker-compose.yml
+# HINWEIS: Port 8000 wird vom Reverse Proxy geroutet, nicht direkt exposed
 
 services:
   backend:
@@ -10,8 +11,9 @@ services:
       - .env
     environment:
       - PYTHONPATH=/app/src
-    ports:
-      - "8000:8000"
+    # Port nicht mehr exposen - Zugriff nur über Reverse Proxy
+    # ports:
+    #   - "8000:8000"
     depends_on:
       db:
         condition: service_healthy

@@ -49,6 +49,7 @@ export async function apiFetch<T>(
   try {
     const response = await fetch(url, {
       ...options,
+      credentials: 'include', // Include session cookies for authentication
       headers: {
         'Content-Type': 'application/json',
         ...options?.headers,

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiFetch, ApiError } from '../config/api'
-import type { Widget, WidgetCreate, WidgetUpdate } from '../types/widget'
+import type { Widget, WidgetCreate, WidgetUpdate, UserWidget } from '../types/widget'
 
 /**
  * Query keys for React Query cache management
@@ -11,6 +11,7 @@ export const widgetKeys = {
   list: (filters?: Record<string, unknown>) => [...widgetKeys.lists(), filters] as const,
   details: () => [...widgetKeys.all, 'detail'] as const,
   detail: (id: string) => [...widgetKeys.details(), id] as const,
+  userWidgets: (userId: string) => [...widgetKeys.all, 'user', userId] as const,
 }
 
 /**
@@ -42,6 +43,13 @@ export async function fetchWidgets(params?: WidgetListParams): Promise<Widget[]>
  */
 export async function fetchDefaultWidgets(): Promise<Widget[]> {
   return fetchWidgets({ default: true, limit: 100 })
+}
+
+/**
+ * Fetch user-specific widgets (with user config)
+ */
+export async function fetchUserWidgets(userId: string): Promise<UserWidget[]> {
+  return apiFetch<UserWidget[]>(`/widgets/${userId}`)
 }
 
 /**
@@ -83,6 +91,19 @@ export function useDefaultWidgets() {
     queryKey: widgetKeys.list({ default: true }),
     queryFn: fetchDefaultWidgets,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes (default widgets rarely change)
+  })
+}
+
+/**
+ * React Query hook to fetch user-specific widgets
+ * Use this for logged-in users to get their personalized widget config
+ */
+export function useUserWidgets(userId: string | undefined) {
+  return useQuery<UserWidget[], ApiError>({
+    queryKey: widgetKeys.userWidgets(userId || ''),
+    queryFn: () => fetchUserWidgets(userId!),
+    enabled: !!userId, // Only fetch when userId is available
+    staleTime: 1 * 60 * 1000, // Cache for 1 minute (user settings may change)
   })
 }
 
