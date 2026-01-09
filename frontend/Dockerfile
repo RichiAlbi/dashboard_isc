@@ -2,6 +2,10 @@
 FROM node:20 AS build
 WORKDIR /app
 
+# Build arguments für Vite (werden zur Build-Zeit eingebaut)
+ARG VITE_ENCRYPTION_KEY=""
+ENV VITE_ENCRYPTION_KEY=$VITE_ENCRYPTION_KEY
+
 COPY package*.json ./
 RUN npm install
 

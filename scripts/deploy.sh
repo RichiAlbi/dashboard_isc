@@ -179,22 +179,19 @@ download_artifact() {
 load_and_tag_image() {
     local tar_file="$1"
     local image_name="$2"
-    local source_tag="$3"
+    # Source tag wird ignoriert - Workflow baut immer als 'latest'
     
     log_info "Lade Docker Image: $image_name..."
     
-    # Image laden
+    # Image laden (kommt als 'latest' aus dem Workflow)
     docker load -i "$tar_file"
     
-    # Nur als 'latest' taggen (spart Speicherplatz)
-    docker tag "$image_name:$source_tag" "$REGISTRY_URL/$image_name:latest"
+    # Für Registry taggen
+    docker tag "$image_name:latest" "$REGISTRY_URL/$image_name:latest"
     
-    # In Registry pushen (nur latest)
+    # In Registry pushen
     log_info "Pushe zu lokaler Registry als latest..."
     docker push "$REGISTRY_URL/$image_name:latest"
-    
-    # Lokales getaggtes Image entfernen (nur latest behalten)
-    docker rmi "$image_name:$source_tag" 2>/dev/null || true
     
     log_info "Image $image_name erfolgreich als latest geladen ✓"
 }
@@ -377,8 +374,8 @@ main() {
         unzip -q frontend.zip -d frontend/
         
         # Images laden und als 'latest' taggen
-        load_and_tag_image "$DOWNLOAD_DIR/backend/backend-image.tar" "$BACKEND_IMAGE" "$source_tag"
-        load_and_tag_image "$DOWNLOAD_DIR/frontend/frontend-image.tar" "$FRONTEND_IMAGE" "$source_tag"
+        load_and_tag_image "$DOWNLOAD_DIR/backend/backend-image.tar" "$BACKEND_IMAGE"
+        load_and_tag_image "$DOWNLOAD_DIR/frontend/frontend-image.tar" "$FRONTEND_IMAGE"
         
         # Alte Images aufräumen
         cleanup_old_images

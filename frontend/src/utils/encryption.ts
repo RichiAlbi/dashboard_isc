@@ -5,8 +5,17 @@
  * Der Schlüssel wird als Base64-kodierter 32-Byte Key erwartet.
  */
 
-// Encryption Key aus Environment Variable
-const ENCRYPTION_KEY = import.meta.env.VITE_ENCRYPTION_KEY || '';
+// Encryption Key aus Runtime Config (Docker) oder Environment Variable (dev)
+const getEncryptionKey = (): string => {
+  // Check for runtime config (injected by Docker at container start)
+  if (typeof window !== 'undefined' && (window as any).__RUNTIME_CONFIG__?.VITE_ENCRYPTION_KEY) {
+    return (window as any).__RUNTIME_CONFIG__.VITE_ENCRYPTION_KEY;
+  }
+  // Fallback to Vite env variable (for local development)
+  return import.meta.env.VITE_ENCRYPTION_KEY || '';
+};
+
+const ENCRYPTION_KEY = getEncryptionKey();
 
 /**
  * Prüft ob Verschlüsselung aktiviert ist

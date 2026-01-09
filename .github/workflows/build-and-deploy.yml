@@ -52,6 +52,8 @@ jobs:
           outputs: type=docker,dest=/tmp/frontend-image.tar
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            VITE_ENCRYPTION_KEY=${{ secrets.VITE_ENCRYPTION_KEY }}
 
       - name: Upload Backend Image as Artifact
         uses: actions/upload-artifact@v4
