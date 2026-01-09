@@ -1,55 +1,78 @@
 /**
  * Authentication Service
- * Handles login/logout via the nginx LDAP auth proxy
+ * Handles login/logout via Backend LDAP verification with AES-256-GCM password encryption
  */
 
 import type { User } from '../types/user';
+import { encryptPassword, isEncryptionEnabled } from '../utils/encryption';
+import { getApiBaseUrl } from '../config/api';
 
-const AUTH_ENDPOINTS = {
-  verify: '/api/auth/verify',
-  logout: '/api/auth/logout',
-};
+export interface VerifyResponse {
+  success: boolean;
+  message: string;
+  user?: {
+    userId: string | null;
+    username: string;
+    email: string | null;
+    firstName: string | null;
+    lastName: string | null;
+    isActive: boolean;
+  };
+}
 
 export interface AuthResult {
   success: boolean;
   error?: string;
+  user?: User;
 }
 
 /**
- * Verify user credentials against LDAP via nginx proxy
+ * Verify user credentials against LDAP via backend
+ * Password is encrypted with AES-256-GCM if VITE_ENCRYPTION_KEY is set
  */
 export async function verifyCredentials(
   username: string,
   password: string
 ): Promise<AuthResult> {
   try {
-    const formData = new URLSearchParams();
-    formData.append('username', username);
-    formData.append('password', password);
-
-    const response = await fetch(AUTH_ENDPOINTS.verify, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: formData,
-      credentials: 'include', // Important for session cookie!
-    });
-
-    if (response.ok) {
-      return { success: true };
+    // Passwort verschlüsseln falls aktiviert
+    const encryptedPassword = await encryptPassword(password);
+    
+    if (isEncryptionEnabled()) {
+      console.debug('Passwort wurde für Übertragung verschlüsselt');
     }
 
-    if (response.status === 401) {
-      return {
-        success: false,
-        error: 'Ungültige Anmeldedaten',
+    const apiBaseUrl = getApiBaseUrl();
+    const response = await fetch(`${apiBaseUrl}/api/v1/auth/verify`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username,
+        password: encryptedPassword,
+      }),
+    });
+
+    const data: VerifyResponse = await response.json();
+
+    if (data.success && data.user) {
+      // Map backend user to frontend User type
+      const user: User = {
+        userId: data.user.userId || '',
+        username: data.user.username,
+        email: data.user.email || undefined,
+        firstName: data.user.firstName || undefined,
+        lastName: data.user.lastName || undefined,
+        isActive: data.user.isActive,
       };
+
+      return { success: true, user };
     }
 
     return {
       success: false,
-      error: `Authentifizierung fehlgeschlagen (${response.status})`,
+      error: data.message || 'Ungültige Anmeldedaten',
     };
   } catch (error) {
     console.error('Auth error:', error);
@@ -61,17 +84,10 @@ export async function verifyCredentials(
 }
 
 /**
- * Logout - clears the session cookie
+ * Logout - clears local storage (no backend session to clear)
  */
 export async function logout(): Promise<void> {
-  try {
-    await fetch(AUTH_ENDPOINTS.logout, {
-      method: 'GET',
-      credentials: 'include',
-    });
-  } catch (error) {
-    console.error('Logout error:', error);
-  }
+  clearStoredAuthUser();
 }
 
 /**

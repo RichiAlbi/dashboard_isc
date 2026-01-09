@@ -5,7 +5,7 @@ import logging
 import sys
 
 from core.config import settings as app_settings
-from api.v1 import users, widgets, widget, settings as settings_router, newsfeed
+from api.v1 import users, widgets, widget, settings as settings_router, newsfeed, auth
 from services.ldap_service import ldap_service
 from db.session import async_session_maker
 
@@ -61,6 +61,7 @@ def create_app() -> FastAPI:
 
     # Router registrieren
     api_prefix = app_settings.api_prefix + "/v1"
+    app.include_router(auth.router, prefix=api_prefix)
     app.include_router(users.router, prefix=api_prefix)
     app.include_router(widgets.router, prefix=api_prefix)
     app.include_router(widget.router, prefix=api_prefix)

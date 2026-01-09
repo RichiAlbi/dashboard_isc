@@ -16,11 +16,11 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
 
     # PostgreSQL
-    postgres_host: str = "localhost"
+    postgres_host: str = "10.25.1.9"
     postgres_port: int = 5432
-    postgres_user: str = "app_user"
-    postgres_password: str = "password"
-    postgres_db: str = "app_db"
+    postgres_user: str = "postgres"
+    postgres_password: str = "postgres"
+    postgres_db: str = "dashboard_db"
 
     # SQLAlchemy
     db_echo: bool = False
@@ -38,6 +38,10 @@ class Settings(BaseSettings):
     ldap_email_attr: str = "mail"
     ldap_firstname_attr: str = "givenName"
     ldap_lastname_attr: str = "sn"
+
+    # Encryption Key für Passwort-Verschlüsselung (Base64 encoded, 32 bytes für AES-256)
+    # Generieren mit: python -c "import secrets, base64; print(base64.b64encode(secrets.token_bytes(32)).decode())"
+    encryption_key: str = ""
 
     @property
     def sqlalchemy_database_uri(self) -> str:

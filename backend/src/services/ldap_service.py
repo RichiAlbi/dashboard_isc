@@ -192,6 +192,72 @@ class LDAPService:
             logger.debug(f"Konnte Attribut {attr_name} nicht extrahieren: {e}")
         return None
 
+    def verify_credentials(self, username: str, password: str) -> bool:
+        """
+        Verifiziert Benutzer-Credentials gegen LDAP.
+        
+        Versucht einen Bind mit den Benutzer-Credentials.
+        Gibt True zurück wenn der Bind erfolgreich ist, sonst False.
+        """
+        if not self.enabled:
+            logger.warning("LDAP ist deaktiviert - Credentials können nicht verifiziert werden")
+            return False
+        
+        if not username or not password:
+            logger.warning("Username oder Passwort leer")
+            return False
+        
+        try:
+            # Zuerst den Benutzer suchen um seinen DN zu bekommen
+            conn = self._get_connection()
+            if not conn:
+                logger.error("Konnte keine LDAP-Verbindung herstellen")
+                return False
+            
+            # Suche nach dem Benutzer
+            search_filter = f"(&{self.user_filter}({self.username_attr}={username}))"
+            logger.debug(f"Suche Benutzer für Auth: {username} mit Filter: {search_filter}")
+            
+            conn.search(
+                search_base=self.search_base,
+                search_filter=search_filter,
+                search_scope=SUBTREE,
+                attributes=['distinguishedName']
+            )
+            
+            if len(conn.entries) == 0:
+                logger.warning(f"Benutzer {username} nicht in LDAP gefunden")
+                conn.unbind()
+                return False
+            
+            # DN des Benutzers extrahieren
+            user_dn = conn.entries[0].entry_dn
+            logger.debug(f"Benutzer-DN gefunden: {user_dn}")
+            conn.unbind()
+            
+            # Versuche Bind mit Benutzer-Credentials
+            logger.debug(f"Versuche Bind für Benutzer: {user_dn}")
+            
+            user_conn = Connection(
+                self.server,
+                user=user_dn,
+                password=password,
+                auto_bind='NONE',
+                raise_exceptions=False
+            )
+            
+            if user_conn.bind():
+                logger.info(f"LDAP-Authentifizierung erfolgreich für: {username}")
+                user_conn.unbind()
+                return True
+            else:
+                logger.warning(f"LDAP-Authentifizierung fehlgeschlagen für: {username} - {user_conn.result}")
+                return False
+                
+        except Exception as e:
+            logger.error(f"Fehler bei LDAP-Authentifizierung für {username}: {e}", exc_info=True)
+            return False
+
     async def sync_users(self, db: AsyncSession) -> Dict[str, int]:
         """
         Synchronisiert LDAP-Lehrer mit der Datenbank
