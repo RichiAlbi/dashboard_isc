@@ -135,7 +135,7 @@ export async function checkServerEncryption(apiBaseUrl: string): Promise<{
   algorithm: string | null;
 }> {
   try {
-    const response = await fetch(`${apiBaseUrl}/api/v1/auth/encryption-status`);
+    const response = await fetch(`${apiBaseUrl}/auth/encryption-status`);
     if (response.ok) {
       return await response.json();
     }

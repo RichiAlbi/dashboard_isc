@@ -43,7 +43,7 @@ export async function verifyCredentials(
     }
 
     const apiBaseUrl = getApiBaseUrl();
-    const response = await fetch(`${apiBaseUrl}/api/v1/auth/verify`, {
+    const response = await fetch(`${apiBaseUrl}/auth/verify`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
