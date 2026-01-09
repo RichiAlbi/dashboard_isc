@@ -61,10 +61,13 @@ export async function verifyCredentials(
       const user: User = {
         userId: data.user.userId || '',
         username: data.user.username,
-        email: data.user.email || undefined,
-        firstName: data.user.firstName || undefined,
-        lastName: data.user.lastName || undefined,
+        email: data.user.email || '',
+        firstName: data.user.firstName || '',
+        lastName: data.user.lastName || '',
         isActive: data.user.isActive,
+        theme: 'system',
+        fromLdap: true,
+        lastLdapSync: null,
       };
 
       return { success: true, user };

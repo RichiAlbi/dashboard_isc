@@ -57,7 +57,7 @@ async function importKey(keyBase64: string): Promise<CryptoKey> {
   
   return await crypto.subtle.importKey(
     'raw',
-    keyBytes,
+    keyBytes.buffer as ArrayBuffer,
     { name: 'AES-GCM', length: 256 },
     false,
     ['encrypt']
@@ -96,7 +96,7 @@ export async function encryptPassword(password: string): Promise<string> {
     const ciphertext = await crypto.subtle.encrypt(
       {
         name: 'AES-GCM',
-        iv: nonce,
+        iv: nonce.buffer as ArrayBuffer,
         tagLength: 128, // 16 bytes auth tag
       },
       key,
