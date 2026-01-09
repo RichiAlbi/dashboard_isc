@@ -1,5 +1,5 @@
 .add-widget {
-  --spotlight-color: #ffffff;
+  --spotlight-color: var(--color-spotlight);
   --spotlight-x: 0px;
   --spotlight-y: 0px;
   --spotlight-opacity: 0;
