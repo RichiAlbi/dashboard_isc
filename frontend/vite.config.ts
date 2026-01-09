@@ -9,6 +9,13 @@ export default defineConfig({
     VitePWA()
   ],
   server: {
-    open: true
+      open: true,
+      proxy: {
+          '/api': {
+              target: 'http://disc.industrieschule.de',
+              changeOrigin: true,
+              secure: false
+          }
+      },
   }
 })
