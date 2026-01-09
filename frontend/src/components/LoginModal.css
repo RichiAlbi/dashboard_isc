@@ -102,7 +102,7 @@
 .login-modal-input:focus {
   outline: none;
   border-color: var(--color-gradient-start);
-  box-shadow: 0 0 0 3px rgba(91, 138, 187, 0.1);
+  box-shadow: 0 0 0 3px var(--color-shadow-focus);
 }
 
 .login-modal-input:read-only {
@@ -137,7 +137,7 @@
 
 .login-modal-button.primary:hover {
   background-color: var(--color-gradient-start);
-  box-shadow: 0 4px 12px rgba(51, 163, 255, 0.3);
+  box-shadow: 0 4px 12px var(--color-button-primary-hover-shadow);
 }
 
 .login-modal-button.secondary {

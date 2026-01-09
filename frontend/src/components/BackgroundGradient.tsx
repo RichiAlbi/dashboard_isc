@@ -2,7 +2,8 @@ import { useMousePosition } from '../context/MousePositionContext';
 import './BackgroundGradient.css';
 
 interface BackgroundGradientProps {
-  size?: number;
+  sizeX?: number;
+  sizeY?: number;
   colorStart?: string;
   colorEnd?: string;
   /** Damping factor: 0 = stays centered, 1 = follows cursor exactly */
@@ -12,9 +13,11 @@ interface BackgroundGradientProps {
 /**
  * Dynamic background gradient that follows the mouse cursor
  * Uses inline styles to ensure the gradient updates on mouse move
+ * Creates a horizontal ellipse shape to match typical screen aspect ratios
  */
 export function BackgroundGradient({
-  size = 800,
+  sizeX = 1200,
+  sizeY = 700,
   colorStart = 'var(--color-gradient-start)',
   colorEnd = 'var(--color-gradient-end)',
   damping = 0.3,
@@ -31,7 +34,7 @@ export function BackgroundGradient({
 
   const gradientStyle = {
     background: `radial-gradient(
-      ${size}px ${size}px at ${dampedX}px ${dampedY}px,
+      ${sizeX}px ${sizeY}px at ${dampedX}px ${dampedY}px,
       ${colorStart} 0%,
       ${colorEnd} 100%
     )`,
