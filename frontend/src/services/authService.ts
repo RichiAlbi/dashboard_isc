@@ -1,6 +1,6 @@
 /**
  * Authentication Service
- * Handles login/logout via Backend LDAP verification with AES-256-GCM password encryption
+ * Handles login/logout via Backend LDAP verification with XOR password encryption
  */
 
 import type { User } from '../types/user';
@@ -28,7 +28,7 @@ export interface AuthResult {
 
 /**
  * Verify user credentials against LDAP via backend
- * Password is encrypted with AES-256-GCM if VITE_ENCRYPTION_KEY is set
+ * Password is encrypted with XOR if VITE_ENCRYPTION_KEY is set
  */
 export async function verifyCredentials(
   username: string,
@@ -36,7 +36,7 @@ export async function verifyCredentials(
 ): Promise<AuthResult> {
   try {
     // Passwort verschlüsseln falls aktiviert
-    const encryptedPassword = await encryptPassword(password);
+    const encryptedPassword = encryptPassword(password);
     
     if (isEncryptionEnabled()) {
       console.debug('Passwort wurde für Übertragung verschlüsselt');

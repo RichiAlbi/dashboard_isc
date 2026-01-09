@@ -1,11 +1,10 @@
 """
-Encryption Service für sichere Passwort-Übertragung
-Verwendet AES-256-GCM für symmetrische Verschlüsselung
+Encryption Service für Passwort-Übertragung
+Verwendet einfache XOR-Verschlüsselung mit Base64
 """
 import base64
 import logging
 from typing import Optional
-from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 from core.config import settings
 
@@ -14,88 +13,71 @@ logger = logging.getLogger(__name__)
 
 class EncryptionService:
     """
-    Service für AES-256-GCM Verschlüsselung/Entschlüsselung.
+    Service für XOR-Verschlüsselung/Entschlüsselung.
     
-    Das Frontend verschlüsselt das Passwort mit dem Shared Key,
+    Das Frontend verschlüsselt das Passwort mit XOR + Base64,
     das Backend entschlüsselt es wieder.
     
-    Format der verschlüsselten Daten: base64(nonce + ciphertext + tag)
-    - nonce: 12 bytes (zufällig generiert vom Frontend)
-    - ciphertext: verschlüsseltes Passwort
-    - tag: 16 bytes (GCM authentication tag, automatisch angehängt)
+    Format der verschlüsselten Daten: ENC:<base64(xor_encrypted)>
     """
+    
+    ENCRYPTED_PREFIX = "ENC:"
     
     def __init__(self):
         self.enabled = False
-        self.aesgcm: Optional[AESGCM] = None
+        self.key = ""
         
         if not settings.encryption_key:
             logger.warning("ENCRYPTION_KEY nicht gesetzt - Passwort-Verschlüsselung deaktiviert!")
             return
         
-        try:
-            # Key aus Base64 dekodieren
-            key_bytes = base64.b64decode(settings.encryption_key)
-            
-            if len(key_bytes) != 32:
-                logger.error(f"ENCRYPTION_KEY muss 32 Bytes sein (AES-256), ist aber {len(key_bytes)} Bytes")
-                return
-            
-            self.aesgcm = AESGCM(key_bytes)
-            self.enabled = True
-            logger.info("Passwort-Verschlüsselung aktiviert (AES-256-GCM)")
-            
-        except Exception as e:
-            logger.error(f"Fehler beim Initialisieren der Verschlüsselung: {e}")
+        self.key = settings.encryption_key
+        self.enabled = True
+        logger.info("Passwort-Verschlüsselung aktiviert (XOR)")
+    
+    def _xor_decrypt(self, encrypted: str) -> str:
+        """XOR-Entschlüsselung mit dem Key"""
+        result = []
+        for i, char in enumerate(encrypted):
+            key_char = self.key[i % len(self.key)]
+            result.append(chr(ord(char) ^ ord(key_char)))
+        return ''.join(result)
+    
+    def is_encrypted(self, data: str) -> bool:
+        """Prüft ob die Daten verschlüsselt sind (beginnen mit ENC:)"""
+        return data.startswith(self.ENCRYPTED_PREFIX)
     
     def decrypt_password(self, encrypted_data: str) -> Optional[str]:
         """
         Entschlüsselt ein vom Frontend verschlüsseltes Passwort.
         
         Args:
-            encrypted_data: Base64-kodierte Daten (nonce + ciphertext + tag)
+            encrypted_data: "ENC:<base64>" oder Klartext-Passwort
             
         Returns:
             Das entschlüsselte Passwort oder None bei Fehler
         """
-        if not self.enabled or not self.aesgcm:
-            logger.warning("Verschlüsselung nicht aktiviert - gebe Daten unverändert zurück")
+        # Wenn nicht verschlüsselt, gib unverändert zurück
+        if not self.is_encrypted(encrypted_data):
             return encrypted_data
         
-        try:
-            # Base64 dekodieren
-            data = base64.b64decode(encrypted_data)
-            
-            # Nonce extrahieren (erste 12 Bytes)
-            if len(data) < 12:
-                logger.error("Verschlüsselte Daten zu kurz")
-                return None
-            
-            nonce = data[:12]
-            ciphertext_with_tag = data[12:]
-            
-            # Entschlüsseln
-            plaintext = self.aesgcm.decrypt(nonce, ciphertext_with_tag, None)
-            
-            return plaintext.decode('utf-8')
-            
-        except Exception as e:
-            logger.error(f"Fehler beim Entschlüsseln: {e}")
+        if not self.enabled:
+            logger.warning("Verschlüsselung nicht aktiviert - kann nicht entschlüsseln")
             return None
-    
-    def is_encrypted(self, data: str) -> bool:
-        """
-        Prüft ob die Daten verschlüsselt aussehen (Base64 mit Mindestlänge).
-        """
-        if not data:
-            return False
         
         try:
-            decoded = base64.b64decode(data)
-            # Mindestens 12 (nonce) + 16 (tag) + 1 (min ciphertext) = 29 bytes
-            return len(decoded) >= 29
-        except Exception:
-            return False
+            # Prefix entfernen und Base64 dekodieren
+            base64_data = encrypted_data[len(self.ENCRYPTED_PREFIX):]
+            decoded = base64.b64decode(base64_data).decode('latin-1')
+            
+            # XOR-Entschlüsselung
+            password = self._xor_decrypt(decoded)
+            
+            return password
+            
+        except Exception as e:
+            logger.error(f"Fehler bei Passwort-Entschlüsselung: {e}")
+            return None
 
 
 # Singleton-Instanz

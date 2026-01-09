@@ -1,8 +1,11 @@
 /**
- * AES-256-GCM Verschlüsselung für Passwort-Übertragung
+ * Einfache XOR-Verschlüsselung für Passwort-Übertragung
  * 
- * Nutzt die native Web Crypto API für sichere Verschlüsselung.
- * Der Schlüssel wird als Base64-kodierter 32-Byte Key erwartet.
+ * Funktioniert ohne Web Crypto API (auch über HTTP).
+ * Der Schlüssel wird als Base64-kodierter String erwartet.
+ * 
+ * HINWEIS: Dies ist KEINE sichere Verschlüsselung! 
+ * Für echte Sicherheit sollte HTTPS verwendet werden.
  */
 
 // Encryption Key aus Runtime Config (Docker) oder Environment Variable (dev)
@@ -25,66 +28,26 @@ export function isEncryptionEnabled(): boolean {
 }
 
 /**
- * Konvertiert Base64 String zu Uint8Array
+ * XOR-Verschlüsselung eines Strings mit einem Key
  */
-function base64ToBytes(base64: string): Uint8Array {
-  const binaryString = atob(base64);
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
+function xorEncrypt(text: string, key: string): string {
+  let result = '';
+  for (let i = 0; i < text.length; i++) {
+    const charCode = text.charCodeAt(i) ^ key.charCodeAt(i % key.length);
+    result += String.fromCharCode(charCode);
   }
-  return bytes;
+  return result;
 }
 
 /**
- * Konvertiert Uint8Array zu Base64 String
- */
-function bytesToBase64(bytes: Uint8Array): Uint8Array {
-  let binary = '';
-  for (let i = 0; i < bytes.length; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return new TextEncoder().encode(btoa(binary));
-}
-
-/**
- * Generiert eine zufällige 12-Byte Nonce für AES-GCM
- */
-function generateNonce(): Uint8Array {
-  return crypto.getRandomValues(new Uint8Array(12));
-}
-
-/**
- * Importiert den AES-256 Schlüssel für die Verschlüsselung
- */
-async function importKey(keyBase64: string): Promise<CryptoKey> {
-  const keyBytes = base64ToBytes(keyBase64);
-  
-  if (keyBytes.length !== 32) {
-    throw new Error(`Ungültige Schlüssellänge: ${keyBytes.length} bytes (erwartet: 32)`);
-  }
-  
-  return await crypto.subtle.importKey(
-    'raw',
-    keyBytes.buffer as ArrayBuffer,
-    { name: 'AES-GCM', length: 256 },
-    false,
-    ['encrypt']
-  );
-}
-
-/**
- * Verschlüsselt ein Passwort mit AES-256-GCM
+ * Verschlüsselt ein Passwort mit XOR + Base64
  * 
- * Format des Outputs: Base64(nonce + ciphertext + authTag)
- * - nonce: 12 bytes
- * - ciphertext: variable Länge
- * - authTag: 16 bytes (wird von Web Crypto an ciphertext angehängt)
+ * Format: ENC:<base64-encoded-xor-result>
  * 
  * @param password - Das zu verschlüsselnde Passwort
- * @returns Base64-kodierter verschlüsselter String oder das originale Passwort bei Fehler
+ * @returns Verschlüsselter String oder das originale Passwort wenn Verschlüsselung deaktiviert
  */
-export async function encryptPassword(password: string): Promise<string> {
+export function encryptPassword(password: string): string {
   // Wenn keine Verschlüsselung konfiguriert, gib Passwort unverschlüsselt zurück
   if (!isEncryptionEnabled()) {
     console.warn('Verschlüsselung nicht aktiviert - Passwort wird unverschlüsselt übertragen');
@@ -92,52 +55,20 @@ export async function encryptPassword(password: string): Promise<string> {
   }
   
   try {
-    // Key importieren
-    const key = await importKey(ENCRYPTION_KEY);
+    // XOR mit dem Key
+    const encrypted = xorEncrypt(password, ENCRYPTION_KEY);
     
-    // Zufällige Nonce generieren
-    const nonce = generateNonce();
-    
-    // Passwort zu Bytes konvertieren
-    const passwordBytes = new TextEncoder().encode(password);
-    
-    // Mit AES-GCM verschlüsseln
-    const ciphertext = await crypto.subtle.encrypt(
-      {
-        name: 'AES-GCM',
-        iv: nonce.buffer as ArrayBuffer,
-        tagLength: 128, // 16 bytes auth tag
-      },
-      key,
-      passwordBytes
-    );
-    
-    // Nonce + Ciphertext (inkl. AuthTag) zusammenfügen
-    const ciphertextArray = new Uint8Array(ciphertext);
-    const result = new Uint8Array(nonce.length + ciphertextArray.length);
-    result.set(nonce, 0);
-    result.set(ciphertextArray, nonce.length);
-    
-    // Zu Base64 konvertieren
-    let binary = '';
-    for (let i = 0; i < result.length; i++) {
-      binary += String.fromCharCode(result[i]);
-    }
-    return btoa(binary);
+    // Base64 kodieren und Prefix hinzufügen
+    return 'ENC:' + btoa(encrypted);
     
   } catch (error) {
     console.error('Fehler bei Passwort-Verschlüsselung:', error);
-    // Im Fehlerfall gib das Passwort unverschlüsselt zurück
-    // Das Backend kann dann entscheiden wie es damit umgeht
     return password;
   }
 }
 
 /**
  * Hilfsfunktion: Prüft beim Backend ob Verschlüsselung erwartet wird
- * 
- * @param apiBaseUrl - Die Basis-URL der API
- * @returns Objekt mit encryptionEnabled und algorithm
  */
 export async function checkServerEncryption(apiBaseUrl: string): Promise<{
   encryptionEnabled: boolean;
