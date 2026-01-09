@@ -7,6 +7,7 @@
 #   ./deploy.sh                    # Lädt latest successful workflow run
 #   ./deploy.sh v1.0.0             # Lädt Artifacts von Tag v1.0.0
 #   ./deploy.sh --run-id 12345     # Lädt Artifacts von spezifischem Workflow Run
+#   ./deploy.sh --restart-all      # Startet alle Container neu (ohne Download)
 #
 
 set -e
@@ -28,6 +29,10 @@ DOWNLOAD_DIR="/tmp/dashboard-artifacts"
 # Image Namen (müssen mit Workflow übereinstimmen)
 BACKEND_IMAGE="dashboard-backend"
 FRONTEND_IMAGE="dashboard-frontend"
+
+# Flags
+FORCE_DOWNLOAD=false
+RESTART_ALL=false
 
 # ============================================================================
 # HILFSFUNKTIONEN
@@ -83,6 +88,26 @@ image_exists_in_registry() {
         -H "Accept: application/vnd.docker.distribution.manifest.v2+json" 2>/dev/null)
     
     [[ "$response" == "200" ]]
+}
+
+# Löscht alte/ungenutzte Docker Images um Speicherplatz zu sparen
+cleanup_old_images() {
+    log_info "Räume alte Docker Images auf..."
+    
+    # Entferne dangling images (untagged)
+    docker image prune -f 2>/dev/null || true
+    
+    # Entferne alte Versionen der Dashboard Images (behalte nur latest)
+    for image in "$BACKEND_IMAGE" "$FRONTEND_IMAGE" "$REGISTRY_URL/$BACKEND_IMAGE" "$REGISTRY_URL/$FRONTEND_IMAGE"; do
+        # Hole alle Tags außer 'latest'
+        local old_images=$(docker images "$image" --format "{{.Repository}}:{{.Tag}}" 2>/dev/null | grep -v ":latest$" || true)
+        if [[ -n "$old_images" ]]; then
+            log_info "Lösche alte Images von $image..."
+            echo "$old_images" | xargs -r docker rmi 2>/dev/null || true
+        fi
+    done
+    
+    log_info "Aufräumen abgeschlossen ✓"
 }
 
 # ============================================================================
@@ -154,23 +179,24 @@ download_artifact() {
 load_and_tag_image() {
     local tar_file="$1"
     local image_name="$2"
-    local tag="$3"
+    local source_tag="$3"
     
     log_info "Lade Docker Image: $image_name..."
     
     # Image laden
     docker load -i "$tar_file"
     
-    # Für lokale Registry taggen
-    docker tag "$image_name:$tag" "$REGISTRY_URL/$image_name:$tag"
-    docker tag "$image_name:$tag" "$REGISTRY_URL/$image_name:latest"
+    # Nur als 'latest' taggen (spart Speicherplatz)
+    docker tag "$image_name:$source_tag" "$REGISTRY_URL/$image_name:latest"
     
-    # In Registry pushen
-    log_info "Pushe zu lokaler Registry..."
-    docker push "$REGISTRY_URL/$image_name:$tag"
+    # In Registry pushen (nur latest)
+    log_info "Pushe zu lokaler Registry als latest..."
     docker push "$REGISTRY_URL/$image_name:latest"
     
-    log_info "Image $image_name:$tag erfolgreich geladen ✓"
+    # Lokales getaggtes Image entfernen (nur latest behalten)
+    docker rmi "$image_name:$source_tag" 2>/dev/null || true
+    
+    log_info "Image $image_name erfolgreich als latest geladen ✓"
 }
 
 deploy_stack() {
@@ -182,15 +208,61 @@ deploy_stack() {
     log_info "Aktualisiere Backend..."
     cd "$BASE_DIR/backend"
     docker compose pull 2>/dev/null || true
-    docker compose up -d --remove-orphans
+    # Container stoppen und entfernen, dann neu erstellen
+    docker compose down --remove-orphans 2>/dev/null || true
+    docker compose up -d --force-recreate
     
-    # Frontend neu starten
+    # Frontend neu starten  
     log_info "Aktualisiere Frontend..."
     cd "$BASE_DIR/frontend"
     docker compose pull 2>/dev/null || true
-    docker compose up -d --remove-orphans
+    docker compose down --remove-orphans 2>/dev/null || true
+    docker compose up -d --force-recreate
+    
+    # Proxy neu starten (falls vorhanden)
+    if [[ -d "$BASE_DIR/proxy" ]]; then
+        log_info "Aktualisiere Proxy..."
+        cd "$BASE_DIR/proxy"
+        docker compose down --remove-orphans 2>/dev/null || true
+        docker compose up -d --force-recreate
+    fi
     
     log_info "Deployment abgeschlossen ✓"
+}
+
+# Startet alle Container neu ohne Download
+restart_all_containers() {
+    log_info "Starte alle Container neu..."
+    
+    # Backend
+    if [[ -d "$BASE_DIR/backend" ]]; then
+        log_info "Restarte Backend..."
+        cd "$BASE_DIR/backend"
+        docker compose restart
+    fi
+    
+    # Frontend
+    if [[ -d "$BASE_DIR/frontend" ]]; then
+        log_info "Restarte Frontend..."
+        cd "$BASE_DIR/frontend"
+        docker compose restart
+    fi
+    
+    # Proxy
+    if [[ -d "$BASE_DIR/nginx" ]]; then
+        log_info "Restarte Proxy..."
+        cd "$BASE_DIR/nginx"
+        docker compose restart
+    fi
+    
+    # Registry
+    if [[ -d "$BASE_DIR/registry" ]]; then
+        log_info "Restarte Registry..."
+        cd "$BASE_DIR/registry"
+        docker compose restart
+    fi
+    
+    log_info "Alle Container neu gestartet ✓"
 }
 
 # ============================================================================
@@ -211,18 +283,30 @@ main() {
                 FORCE_DOWNLOAD=true
                 shift
                 ;;
+            --restart-all|--restart)
+                RESTART_ALL=true
+                shift
+                ;;
+            --cleanup)
+                cleanup_old_images
+                exit 0
+                ;;
             -h|--help)
-                echo "Verwendung: $0 [TAG] [--run-id ID]"
+                echo "Verwendung: $0 [TAG] [OPTIONEN]"
                 echo ""
                 echo "Optionen:"
-                echo "  TAG           Version/Tag zum Deployen (z.B. v1.0.0)"
-                echo "  --run-id ID   Spezifische Workflow Run ID"
-                echo "  --force, -f   Download erzwingen (auch wenn Version existiert)"
+                echo "  TAG             Version/Tag zum Deployen (z.B. v1.0.0)"
+                echo "  --run-id ID     Spezifische Workflow Run ID"
+                echo "  --force, -f     Download erzwingen (auch wenn Version existiert)"
+                echo "  --restart-all   Alle Container neu starten (ohne Download)"
+                echo "  --cleanup       Alte Docker Images löschen und beenden"
                 echo ""
                 echo "Beispiele:"
-                echo "  $0                    # Latest successful run"
+                echo "  $0                    # Latest successful run deployen"
                 echo "  $0 v1.0.0             # Artifacts von Tag v1.0.0"
                 echo "  $0 --run-id 12345     # Spezifischer Run"
+                echo "  $0 --restart-all      # Alle Container neu starten"
+                echo "  $0 --cleanup          # Alte Images aufräumen"
                 exit 0
                 ;;
             *)
@@ -237,6 +321,16 @@ main() {
     echo "==========================================="
     echo ""
     
+    # Nur Restart - kein Download nötig
+    if [[ "$RESTART_ALL" == "true" ]]; then
+        restart_all_containers
+        echo ""
+        log_info "Restart abgeschlossen! ✓"
+        echo ""
+        echo "Status prüfen: docker ps"
+        exit 0
+    fi
+    
     check_requirements
     registry_login
     
@@ -247,39 +341,24 @@ main() {
     
     log_info "Verwende Workflow Run: $run_id"
     
-    # Image Tag aus Workflow ermitteln
-    local image_tag="${tag:-latest}"
+    # Image Tag aus Workflow ermitteln (für Download)
+    local source_tag="${tag:-latest}"
     if [[ -z "$tag" ]]; then
         # Versuche Tag aus Run zu ermitteln
         local run_info=$(api_call "/repos/$GITHUB_OWNER/$GITHUB_REPO/actions/runs/$run_id")
-        image_tag=$(echo "$run_info" | grep '"head_branch"' | head -1 | sed 's/.*"head_branch": *"\([^"]*\)".*/\1/')
-        image_tag="${image_tag:-latest}"
+        source_tag=$(echo "$run_info" | grep '"head_branch"' | head -1 | sed 's/.*"head_branch": *"\([^"]*\)".*/\1/')
+        source_tag="${source_tag:-latest}"
     fi
     
-    log_info "Image Tag: $image_tag"
+    log_info "Source Tag: $source_tag (wird als 'latest' deployed)"
     
-    # Prüfe ob Images bereits existieren
-    local need_download=false
+    # Immer neue Images laden wenn --force oder neuer Run
+    local need_download=true
     
-    if [[ "$FORCE_DOWNLOAD" == "true" ]]; then
-        log_info "Force-Modus: Download wird erzwungen"
-        need_download=true
-    else
-        log_info "Prüfe ob Images bereits in Registry vorhanden sind..."
-        
-        if image_exists_in_registry "$BACKEND_IMAGE" "$image_tag"; then
-            log_info "Backend-Image $image_tag bereits vorhanden ✓"
-        else
-            log_warn "Backend-Image $image_tag nicht gefunden"
-            need_download=true
-        fi
-        
-        if image_exists_in_registry "$FRONTEND_IMAGE" "$image_tag"; then
-            log_info "Frontend-Image $image_tag bereits vorhanden ✓"
-        else
-            log_warn "Frontend-Image $image_tag nicht gefunden"
-            need_download=true
-        fi
+    if [[ "$FORCE_DOWNLOAD" != "true" ]]; then
+        # Prüfe ob wir bereits die aktuelle Version haben
+        # (vereinfacht: immer downloaden um sicherzugehen)
+        log_info "Prüfe auf neue Images..."
     fi
     
     if [[ "$need_download" == "true" ]]; then
@@ -297,15 +376,16 @@ main() {
         unzip -q backend.zip -d backend/
         unzip -q frontend.zip -d frontend/
         
-        # Images laden und taggen
-        load_and_tag_image "$DOWNLOAD_DIR/backend/backend-image.tar" "$BACKEND_IMAGE" "$image_tag"
-        load_and_tag_image "$DOWNLOAD_DIR/frontend/frontend-image.tar" "$FRONTEND_IMAGE" "$image_tag"
+        # Images laden und als 'latest' taggen
+        load_and_tag_image "$DOWNLOAD_DIR/backend/backend-image.tar" "$BACKEND_IMAGE" "$source_tag"
+        load_and_tag_image "$DOWNLOAD_DIR/frontend/frontend-image.tar" "$FRONTEND_IMAGE" "$source_tag"
         
-        # Aufräumen
-        log_info "Räume auf..."
+        # Alte Images aufräumen
+        cleanup_old_images
+        
+        # Temp-Verzeichnis aufräumen
+        log_info "Räume temporäre Dateien auf..."
         rm -rf "$DOWNLOAD_DIR"
-    else
-        log_info "Alle Images bereits vorhanden - überspringe Download"
     fi
     
     # Deployment
