@@ -154,12 +154,11 @@
 /* Full Name Display */
 .login-modal-fullname {
   text-align: center;
-  color: var(--color-text-primary);
-  font-size: 1.1rem;
-  font-weight: 600;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
   margin-bottom: 1.25rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--color-primary-blue);
+  padding-bottom: 0;
 }
 
 /* Error Message */
