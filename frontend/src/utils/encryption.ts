@@ -58,8 +58,8 @@ export function encryptPassword(password: string): string {
     // XOR mit dem Key
     const encrypted = xorEncrypt(password, ENCRYPTION_KEY);
     
-    // Base64 kodieren und Prefix hinzufügen
-    return 'ENC:' + btoa(encrypted);
+    // Base64 kodieren
+    return btoa(encrypted);
     
   } catch (error) {
     console.error('Fehler bei Passwort-Verschlüsselung:', error);
