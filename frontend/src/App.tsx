@@ -7,7 +7,7 @@ import 'react-grid-layout/css/styles.css'
 import './components/Grid.css'
 import './components/StatusBanner.css'
 import { useState, useRef, useEffect } from 'react'
-import GridLayout, { Layout } from 'react-grid-layout'
+import GridLayout, { type Layout } from 'react-grid-layout'
 import Widget from './components/Widget'
 import AddWidget from './components/AddWidget'
 import LoginModal from './components/LoginModal'
@@ -120,11 +120,12 @@ function AppContent() {
   const layout: Layout[] = [
     ...widgets.map((widget, index) => {
       // For user widgets, use saved position from config if available
-      if (isAuthenticated && 'config' in widget && widget.config) {
+      const userWidget = widget as UserWidget
+      if (isAuthenticated && userWidget.config && 'x' in userWidget.config && 'y' in userWidget.config) {
         return {
           i: widget.widgetId,
-          x: widget.config.x,
-          y: widget.config.y,
+          x: userWidget.config.x,
+          y: userWidget.config.y,
           w: 1,
           h: 1,
         }
