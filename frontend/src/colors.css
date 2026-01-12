@@ -52,8 +52,11 @@
   --color-logout-bg: rgba(220, 53, 69, 0.15);
   --color-logout-bg-hover: rgba(220, 53, 69, 0.25);
   --color-logout-bg-active: rgba(220, 53, 69, 0.35);
+  --color-logout-bg-disabled: rgba(255, 255, 255, 0.05);
   --color-logout-border: rgba(220, 53, 69, 0.3);
   --color-logout-border-hover: rgba(220, 53, 69, 0.6);
+  --color-logout-border-disabled: rgba(255, 255, 255, 0.1);
+  --color-logout-text-disabled: rgba(255, 255, 255, 0.3);
 
   /* Shadow Colors */
   --color-shadow-default: rgba(0, 0, 0, 0.3);
