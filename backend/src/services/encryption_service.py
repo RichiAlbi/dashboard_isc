@@ -1,6 +1,6 @@
 """
 Encryption Service für Passwort-Übertragung
-Verwendet einfache XOR-Verschlüsselung mit Base64
+Verwendet XOR-Verschlüsselung mit Salt + Base64
 """
 import base64
 import logging
@@ -13,12 +13,14 @@ logger = logging.getLogger(__name__)
 
 class EncryptionService:
     """
-    Service für XOR-Verschlüsselung/Entschlüsselung.
+    Service für XOR-Verschlüsselung/Entschlüsselung mit Salt.
     
-    Das Frontend verschlüsselt das Passwort mit XOR + Base64,
+    Das Frontend verschlüsselt das Passwort mit XOR (Key+Salt) + Base64,
     das Backend entschlüsselt es wieder.
     
-    Format der verschlüsselten Daten: ENC:<base64(xor_encrypted)>
+    Format der verschlüsselten Daten: <salt>:<base64(xor_encrypted)>
+    - Salt: 16 Zeichen, zufällig generiert pro Request
+    - Dadurch ist jede Verschlüsselung anders
     """
     
     ENCRYPTED_PREFIX = "ENC:"
@@ -33,13 +35,14 @@ class EncryptionService:
         
         self.key = settings.encryption_key
         self.enabled = True
-        logger.info("Passwort-Verschlüsselung aktiviert (XOR)")
+        logger.info("Passwort-Verschlüsselung aktiviert (XOR mit Salt)")
     
-    def _xor_decrypt(self, encrypted: str) -> str:
-        """XOR-Entschlüsselung mit dem Key"""
+    def _xor_decrypt(self, encrypted: str, salt: str) -> str:
+        """XOR-Entschlüsselung mit Key + Salt"""
+        combined_key = self.key + salt
         result = []
         for i, char in enumerate(encrypted):
-            key_char = self.key[i % len(self.key)]
+            key_char = combined_key[i % len(combined_key)]
             result.append(chr(ord(char) ^ ord(key_char)))
         return ''.join(result)
     
@@ -52,7 +55,7 @@ class EncryptionService:
         Entschlüsselt ein vom Frontend verschlüsseltes Passwort.
         
         Args:
-            encrypted_data: "ENC:<base64>" oder Klartext-Passwort
+            encrypted_data: "ENC:<salt>:<base64>" oder Klartext-Passwort
             
         Returns:
             Das entschlüsselte Passwort oder None bei Fehler
@@ -66,12 +69,24 @@ class EncryptionService:
             return None
         
         try:
-            # Prefix entfernen und Base64 dekodieren
-            base64_data = encrypted_data[len(self.ENCRYPTED_PREFIX):]
+            # Format: ENC:<salt>:<base64>
+            # Prefix entfernen
+            data = encrypted_data[len(self.ENCRYPTED_PREFIX):]
+            
+            # Salt und verschlüsselte Daten trennen
+            parts = data.split(':', 1)
+            if len(parts) != 2:
+                logger.error("Ungültiges Verschlüsselungsformat - Salt fehlt")
+                return None
+            
+            salt = parts[0]
+            base64_data = parts[1]
+            
+            # Base64 dekodieren
             decoded = base64.b64decode(base64_data).decode('latin-1')
             
-            # XOR-Entschlüsselung
-            password = self._xor_decrypt(decoded)
+            # XOR-Entschlüsselung mit Key + Salt
+            password = self._xor_decrypt(decoded, salt)
             
             return password
             
