@@ -1,17 +1,19 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import { useSpotlight } from '../hooks/useSpotlight'
-import { BinIcon } from './icons'
+import { BinIcon, DragHandleIcon } from './icons'
 import './Widget.css'
 
 interface WidgetProps {
   title: string
   icon?: React.ReactNode
   color: string
+  target?: string
   onDelete?: () => void
 }
 
-const Widget: React.FC<WidgetProps> = ({ title, icon, color, onDelete }) => {
+const Widget: React.FC<WidgetProps> = ({ title, icon, color, target, onDelete }) => {
   const { containerRef, isHovering, position } = useSpotlight()
+  const isDragging = useRef(false)
 
   const spotlightStyle = {
     '--spotlight-color': color,
@@ -19,6 +21,21 @@ const Widget: React.FC<WidgetProps> = ({ title, icon, color, onDelete }) => {
     '--spotlight-y': `${position.y}px`,
     '--spotlight-opacity': isHovering ? 1 : 0,
   } as React.CSSProperties
+
+  const handleDragStart = () => {
+    isDragging.current = true
+  }
+
+  const handleClick = () => {
+    if (isDragging.current) {
+      isDragging.current = false
+      return
+    }
+
+    if (target) {
+      window.open(target, '_blank')
+    }
+  }
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -32,7 +49,15 @@ const Widget: React.FC<WidgetProps> = ({ title, icon, color, onDelete }) => {
       ref={containerRef}
       className="widget"
       style={spotlightStyle}
+      onClick={handleClick}
     >
+      <button
+        className="widget-drag-handle react-grid-drag-handle"
+        onMouseDown={handleDragStart}
+        aria-label="Widget verschieben"
+      >
+        <DragHandleIcon />
+      </button>
       <button
         className="widget-delete-button"
         onClick={handleDelete}

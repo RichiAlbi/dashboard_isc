@@ -183,12 +183,14 @@ function AppContent() {
             width={gridWidth}
             isDraggable={true}
             isResizable={false}
+            draggableHandle=".react-grid-drag-handle"
           >
             {widgets.map((widget) => (
               <div key={widget.widgetId}>
                 <Widget
                   title={widget.title}
                   color={widget.color}
+                  target={widget.target}
                 />
               </div>
             ))}
