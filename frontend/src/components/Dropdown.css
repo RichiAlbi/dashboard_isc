@@ -194,6 +194,20 @@
   background: var(--color-logout-bg-active);
 }
 
+.logout-button:disabled {
+  background: rgba(255, 255, 255, 0.05);
+  border-top-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.3);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.logout-button:disabled:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-top-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.3);
+}
+
 /* Authenticated User Info */
 .authenticated-user-info {
   padding: 1.25rem;

@@ -165,6 +165,7 @@ export function UserDropdown({ onUserSelect }: UserDropdownProps) {
             <button
               className="logout-button"
               onClick={handleLogout}
+              disabled={!isAuthenticated}
             >
               Abmelden
             </button>
