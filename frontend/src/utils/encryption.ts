@@ -28,36 +28,21 @@ export function isEncryptionEnabled(): boolean {
 }
 
 /**
- * Generiert einen zufälligen Salt-String
+ * XOR-Verschlüsselung eines Strings mit dem Key
  */
-function generateSalt(length: number = 16): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let salt = '';
-  for (let i = 0; i < length; i++) {
-    salt += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return salt;
-}
-
-/**
- * XOR-Verschlüsselung eines Strings mit einem kombinierten Key (key + salt)
- */
-function xorEncrypt(text: string, key: string, salt: string): string {
-  const combinedKey = key + salt;
+function xorEncrypt(text: string, key: string): string {
   let result = '';
   for (let i = 0; i < text.length; i++) {
-    const charCode = text.charCodeAt(i) ^ combinedKey.charCodeAt(i % combinedKey.length);
+    const charCode = text.charCodeAt(i) ^ key.charCodeAt(i % key.length);
     result += String.fromCharCode(charCode);
   }
   return result;
 }
 
 /**
- * Verschlüsselt ein Passwort mit XOR + Salt + Base64
+ * Verschlüsselt ein Passwort mit XOR + Base64
  * 
- * Format: ENC:<salt>:<base64-encoded-xor-result>
- * - Salt wird bei jeder Verschlüsselung zufällig generiert
- * - Dadurch ist das Ergebnis jedes Mal anders
+ * Format: base64(xor(password, key))
  * 
  * @param password - Das zu verschlüsselnde Passwort
  * @returns Verschlüsselter String oder das originale Passwort wenn Verschlüsselung deaktiviert
@@ -70,14 +55,11 @@ export function encryptPassword(password: string): string {
   }
   
   try {
-    // Zufälligen Salt generieren
-    const salt = generateSalt(16);
+    // XOR mit Key
+    const encrypted = xorEncrypt(password, ENCRYPTION_KEY);
     
-    // XOR mit Key + Salt
-    const encrypted = xorEncrypt(password, ENCRYPTION_KEY, salt);
-    
-    // Format: ENC:<salt>:<base64(encrypted)>
-    return 'ENC:' + salt + ':' + btoa(encrypted);
+    // Base64 enkodieren
+    return btoa(encrypted);
     
   } catch (error) {
     console.error('Fehler bei Passwort-Verschlüsselung:', error);

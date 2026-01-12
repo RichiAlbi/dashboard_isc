@@ -69,9 +69,9 @@ async def verify_credentials(
             detail="Authentifizierung nicht verfügbar (LDAP deaktiviert)"
         )
     
-    # Passwort entschlüsseln falls verschlüsselt
-    if encryption_service.enabled and encryption_service.is_encrypted(password):
-        logger.debug("Verschlüsseltes Passwort erkannt - entschlüssele...")
+    # Passwort entschlüsseln falls Verschlüsselung aktiviert
+    if encryption_service.enabled:
+        logger.debug("Verschlüsseltes Passwort - entschlüssele...")
         decrypted_password = encryption_service.decrypt_password(password)
         
         if decrypted_password is None:
@@ -83,8 +83,6 @@ async def verify_credentials(
         
         password = decrypted_password
         logger.debug("Passwort erfolgreich entschlüsselt")
-    elif encryption_service.enabled:
-        logger.warning(f"Unverschlüsseltes Passwort empfangen obwohl Verschlüsselung aktiviert ist: {username}")
     
     # Verifiziere Credentials gegen LDAP
     is_valid = ldap_service.verify_credentials(username, password)
