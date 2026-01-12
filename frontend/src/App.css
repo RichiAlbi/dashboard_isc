@@ -20,6 +20,7 @@ body {
 }
 
 .app-container {
+  position: relative;
   height: calc(100vh - 4rem);
   width: calc(100vw - 4rem);
   margin: 2rem;
@@ -31,6 +32,10 @@ body {
 }
 
 .main-content {
+  position: absolute;
+  top: 12vh;
+  left: 0;
+
   flex: 1;
   height: 85vh;
   width: 100%;
@@ -56,6 +61,20 @@ body {
 
 .main-content::-webkit-scrollbar-thumb:hover {
   background: var(--color-scrollbar-thumb-hover);
+}
+
+.main-window {
+  z-index: 2;
+}
+
+.help-window {
+  z-index: 1;
+  padding: 5%;
+}
+
+.markdown-body {
+  background-color: transparent;
+  color: white;
 }
 
 /* Loading and Empty States */

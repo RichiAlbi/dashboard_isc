@@ -1,4 +1,5 @@
 import './colors.css'
+import 'github-markdown-css/github-markdown.css'
 import './App.css'
 import './components/Header.css'
 import './components/Dropdown.css'
@@ -31,6 +32,7 @@ import { MousePositionProvider } from './context/MousePositionContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { BackgroundGradient } from './components/BackgroundGradient'
 import { useDebouncedCallback } from './hooks/useDebouncedCallback'
+import { marked } from "marked";
 import type { User } from './types/user'
 import type { Widget as WidgetType, UserWidget, UserWidgetUpdate } from './types/widget'
 
@@ -59,6 +61,8 @@ function AppContent() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [loginError, setLoginError] = useState<string | null>(null)
   const mainContentRef = useRef<HTMLDivElement>(null)
+  const [showHelp, setShowHelp] = useState(false);
+  const helpContentRef = useRef<HTMLDivElement>(null);
 
   // Get auth state
   const { user: authenticatedUser, isAuthenticated, login, isLoading: authLoading } = useAuth()
@@ -105,6 +109,16 @@ function AppContent() {
 
   // Mutation for adding widgets
   const { mutate: addWidget } = useAddUserWidget()
+
+  const loadHelp = async () => {
+    const response = await fetch("/help.md");
+    const mdText = await response.text();
+    const html = await marked.parse(mdText);
+    
+    if (helpContentRef.current) {
+      helpContentRef.current.innerHTML = html;
+    }
+  }
 
   // Update grid width based on container size
   useEffect(() => {
@@ -250,7 +264,7 @@ function AppContent() {
             <h2 className="subtitle">Industrieschule Chemnitz</h2>
           </div>
           <div className="header-right">
-            <button className="icon-button" aria-label="Hilfe">
+            <button className="icon-button" aria-label="Hilfe" onClick={() => {loadHelp(); setShowHelp(!showHelp)}}>
               <HelpIcon />
             </button>
             <button className="icon-button" aria-label="Einstellungen">
@@ -259,7 +273,12 @@ function AppContent() {
           </div>
         </div>
       </header>
-      <main className="main-content" ref={mainContentRef}>
+      <main className="main-content help-window" style={{ zIndex: showHelp ? 3 : 1}}>
+        <div className="markdown-body" ref={helpContentRef}>
+          
+        </div>
+      </main>
+      <main className="main-content main-window" ref={mainContentRef}>
         {widgetsLoading ? (
           <div className="loading-container">
             <div className="loading-spinner"></div>
