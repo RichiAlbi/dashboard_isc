@@ -14,8 +14,12 @@ class UserWidgetCreate(UserWidgetBase):
 
 
 class UserWidgetUpdate(BaseModel):
+    user_id: UUID = Field(alias="userId")
+    widget_id: UUID = Field(alias="widgetId")
     visible: Optional[bool] = None
     config: Optional[dict] = None
+
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class UserWidgetRead(BaseModel):

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiFetch, ApiError } from '../config/api'
-import type { Widget, WidgetCreate, WidgetUpdate, UserWidget } from '../types/widget'
+import type { Widget, WidgetCreate, WidgetUpdate, UserWidget, UserWidgetUpdate } from '../types/widget'
 
 /**
  * Query keys for React Query cache management
@@ -133,6 +133,61 @@ export function useBulkUpdateWidgets() {
     onSuccess: () => {
       // Invalidate all widget lists to refetch with updated data
       queryClient.invalidateQueries({ queryKey: widgetKeys.lists() })
+    },
+  })
+}
+
+/**
+ * Bulk update user widgets (positions, visibility)
+ * Backend endpoint: PUT /widgets/user-widgets/bulk
+ */
+export async function bulkUpdateUserWidgets(updates: UserWidgetUpdate[]): Promise<UserWidget[]> {
+  return apiFetch<UserWidget[]>('/widgets/user-widgets/bulk', {
+    method: 'PUT',
+    body: JSON.stringify(updates),
+  })
+}
+
+/**
+ * Remove a widget from user's view (sets visible=false)
+ * This doesn't delete the row, just hides it
+ */
+export async function removeUserWidget(userId: string, widgetId: string): Promise<UserWidget> {
+  return bulkUpdateUserWidgets([{
+    userId,
+    widgetId,
+    visible: false,
+  }]).then(results => results[0])
+}
+
+/**
+ * React Query mutation hook to bulk update user widget positions and visibility
+ * Use this to save layout changes after user drags widgets or toggles visibility
+ */
+export function useBulkUpdateUserWidgets() {
+  const queryClient = useQueryClient()
+
+  return useMutation<UserWidget[], ApiError, { userId: string; updates: UserWidgetUpdate[] }>({
+    mutationFn: ({ updates }) => bulkUpdateUserWidgets(updates),
+    onSuccess: (_, variables) => {
+      // Invalidate user widgets to refetch with updated positions
+      queryClient.invalidateQueries({ queryKey: widgetKeys.userWidgets(variables.userId) })
+    },
+  })
+}
+
+/**
+ * React Query mutation hook to remove a widget from user's view
+ * Sets visible=false without deleting the database row
+ */
+export function useRemoveUserWidget() {
+  const queryClient = useQueryClient()
+
+  return useMutation<UserWidget, ApiError, { userId: string; widgetId: string }>({
+    mutationFn: ({ userId, widgetId }) => removeUserWidget(userId, widgetId),
+    onSuccess: (_, variables) => {
+      // Invalidate user widgets to refetch without the removed widget
+      queryClient.invalidateQueries({ queryKey: widgetKeys.userWidgets(variables.userId) })
     },
   })
 }

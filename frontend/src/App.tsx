@@ -7,7 +7,7 @@ import 'react-grid-layout/css/styles.css'
 import './components/Grid.css'
 import './components/StatusBanner.css'
 import { useState, useRef, useEffect } from 'react'
-import GridLayout from 'react-grid-layout'
+import GridLayout, { Layout } from 'react-grid-layout'
 import Widget from './components/Widget'
 import AddWidget from './components/AddWidget'
 import LoginModal from './components/LoginModal'
@@ -25,13 +25,14 @@ import {
   PlusIcon,
 } from './components/icons'
 import { useInfiniteUsers } from './services/userService'
-import { useDefaultWidgets, useUserWidgets } from './services/widgetService'
+import { useDefaultWidgets, useUserWidgets, useBulkUpdateUserWidgets } from './services/widgetService'
 import { getUserFullName } from './types/user'
 import { MousePositionProvider } from './context/MousePositionContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { BackgroundGradient } from './components/BackgroundGradient'
+import { useDebouncedCallback } from './hooks/useDebouncedCallback'
 import type { User } from './types/user'
-import type { Widget as WidgetType, UserWidget } from './types/widget'
+import type { Widget as WidgetType, UserWidget, UserWidgetUpdate } from './types/widget'
 
 /**
  * Icon mapping - currently disabled, keeping for future use
@@ -80,15 +81,18 @@ function AppContent() {
   } = useUserWidgets(authenticatedUser?.userId)
 
   // Determine which widgets to show
-  const widgets = isAuthenticated && userWidgets.length > 0 
+  const widgets = isAuthenticated && userWidgets.length > 0
     ? userWidgets.filter(w => w.visible) // Only show visible user widgets
     : defaultWidgets
-  
+
   const widgetsLoading = isAuthenticated ? userWidgetsLoading : defaultWidgetsLoading
   const widgetsError = isAuthenticated ? userWidgetsError : defaultWidgetsError
 
   // Show banner if there's an error and it hasn't been dismissed
   const showErrorBanner = (usersError || widgetsError) && !isBannerDismissed
+
+  // Mutation for saving widget positions
+  const { mutate: saveWidgetPositions } = useBulkUpdateUserWidgets()
 
   // Update grid width based on container size
   useEffect(() => {
@@ -108,17 +112,33 @@ function AppContent() {
   }, [])
 
   /**
-   * Generate grid layout dynamically based on widgets
-   * Arranges widgets in a 3-column grid, with AddWidget always at the end
+   * Generate grid layout based on widgets
+   * For authenticated users: Use positions from backend config if available
+   * For non-authenticated users: Arrange in 3-column grid
+   * AddWidget always at the end
    */
-  const layout = [
-    ...widgets.map((widget, index) => ({
-      i: widget.widgetId,
-      x: index % 3, // Column (0, 1, 2, 0, 1, 2, ...)
-      y: Math.floor(index / 3), // Row
-      w: 1,
-      h: 1,
-    })),
+  const layout: Layout[] = [
+    ...widgets.map((widget, index) => {
+      // For user widgets, use saved position from config if available
+      if (isAuthenticated && 'config' in widget && widget.config) {
+        return {
+          i: widget.widgetId,
+          x: widget.config.x,
+          y: widget.config.y,
+          w: 1,
+          h: 1,
+        }
+      }
+
+      // Fallback: calculate position in 3-column grid
+      return {
+        i: widget.widgetId,
+        x: index % 3,
+        y: Math.floor(index / 3),
+        w: 1,
+        h: 1,
+      }
+    }),
     // Add widget always at the end
     {
       i: 'add-widget',
@@ -128,6 +148,36 @@ function AppContent() {
       h: 1,
     },
   ]
+
+  /**
+   * Handle layout changes (drag/drop)
+   * Debounced to avoid excessive API calls during dragging
+   */
+  const handleLayoutChange = useDebouncedCallback((newLayout: Layout[]) => {
+    // Only save if user is authenticated
+    if (!isAuthenticated || !authenticatedUser) return
+
+    // Filter out the add-widget element
+    const widgetLayouts = newLayout.filter(item => item.i !== 'add-widget')
+
+    // Create update payload for all visible widgets
+    const updates: UserWidgetUpdate[] = widgetLayouts.map(item => ({
+      userId: authenticatedUser.userId,
+      widgetId: item.i,
+      config: {
+        x: item.x,
+        y: item.y,
+      },
+    }))
+
+    // Save to backend
+    if (updates.length > 0) {
+      saveWidgetPositions({
+        userId: authenticatedUser.userId,
+        updates,
+      })
+    }
+  }, 500)
 
   return (
     <>
@@ -181,9 +231,10 @@ function AppContent() {
             cols={3}
             rowHeight={200}
             width={gridWidth}
-            isDraggable={true}
+            isDraggable={isAuthenticated} // Only allow dragging for logged-in users
             isResizable={false}
             draggableHandle=".react-grid-drag-handle"
+            onLayoutChange={handleLayoutChange}
           >
             {widgets.map((widget) => (
               <div key={widget.widgetId}>

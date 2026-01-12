@@ -61,3 +61,80 @@ async def remove(session: AsyncSession, db_obj: UserWidget) -> UserWidget:
     await session.delete(db_obj)
     await session.commit()
     return db_obj
+
+
+async def bulk_update(session: AsyncSession, updates: List[UserWidgetUpdate]) -> List[UserWidget]:
+    """
+    Bulk update user widgets (positions, visibility)
+    Creates new rows if they don't exist, updates if they do
+    """
+    updated: List[UserWidget] = []
+    try:
+        for u in updates:
+            # Try to get existing user_widget
+            uw = await get(session, u.user_id, u.widget_id)
+
+            if uw:
+                # Update existing
+                data = u.model_dump(exclude_unset=True)
+                data.pop("user_id", None)
+                data.pop("widget_id", None)
+                for field, value in data.items():
+                    setattr(uw, field, value)
+                updated.append(uw)
+            else:
+                # Create new if doesn't exist
+                create_data = UserWidgetCreate(
+                    user_id=u.user_id,
+                    widget_id=u.widget_id,
+                    visible=u.visible if u.visible is not None else True,
+                    config=u.config if u.config is not None else {},
+                )
+                uw = UserWidget(
+                    user_id=create_data.user_id,
+                    widget_id=create_data.widget_id,
+                    visible=create_data.visible,
+                    config=create_data.config,
+                )
+                session.add(uw)
+                updated.append(uw)
+
+        await session.commit()
+        for uw in updated:
+            await session.refresh(uw)
+        return updated
+    except Exception:
+        await session.rollback()
+        raise
+
+
+async def initialize_user_widgets(session: AsyncSession, user_id: UUID, default_widgets: List) -> List[UserWidget]:
+    """
+    Initialize user_widget rows for a new user with all default widgets
+    Calculates initial positions in a 3-column grid
+    """
+    created: List[UserWidget] = []
+    try:
+        for index, widget in enumerate(default_widgets):
+            create_data = UserWidgetCreate(
+                user_id=user_id,
+                widget_id=widget.widget_id,
+                visible=True,
+                config={"x": index % 3, "y": index // 3},
+            )
+            uw = UserWidget(
+                user_id=create_data.user_id,
+                widget_id=create_data.widget_id,
+                visible=create_data.visible,
+                config=create_data.config,
+            )
+            session.add(uw)
+            created.append(uw)
+
+        await session.commit()
+        for uw in created:
+            await session.refresh(uw)
+        return created
+    except Exception:
+        await session.rollback()
+        raise

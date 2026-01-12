@@ -29,10 +29,28 @@ export interface WidgetUpdate {
 }
 
 /**
+ * Widget position configuration stored in user_widget.config
+ */
+export interface WidgetPosition {
+  x: number
+  y: number
+}
+
+/**
  * Widget with user-specific configuration (for logged-in users)
  */
 export interface UserWidget extends Widget {
   userId: string
   visible: boolean
-  config: Record<string, unknown> | null
+  config: WidgetPosition | null
+}
+
+/**
+ * Update payload for user widget (position and visibility)
+ */
+export interface UserWidgetUpdate {
+  userId: string
+  widgetId: string
+  visible?: boolean
+  config?: WidgetPosition
 }

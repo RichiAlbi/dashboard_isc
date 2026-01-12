@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 
 from schemas.widget import WidgetRead, WidgetCreate, WidgetUpdate
-from schemas.user_widget import UserWidgetRead
+from schemas.user_widget import UserWidgetRead, UserWidgetUpdate
 from crud import widget as crud_widget
 from crud import user_widget as crud_user_widget
 from api.v1.deps import get_db
@@ -36,10 +36,49 @@ async def bulk_update_widgets(updates: list[WidgetUpdate], db: AsyncSession = De
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
+@router.put("/user-widgets/bulk", response_model=list[UserWidgetRead])
+async def bulk_update_user_widgets(updates: list[UserWidgetUpdate], db: AsyncSession = Depends(get_db)):
+    """
+    Bulk update user widget positions and visibility
+    Creates new rows if they don't exist, updates if they do
+    Used for saving widget layout changes
+    """
+    try:
+        updated = await crud_user_widget.bulk_update(db, updates)
+
+        # Transform to response format by joining with widget data
+        resp = []
+        for uw in updated:
+            widget = await crud_widget.get(db, uw.widget_id)
+            if widget:
+                resp.append({
+                    "userId": uw.user_id,
+                    "widgetId": widget.widget_id,
+                    "target": widget.target,
+                    "icon": widget.icon,
+                    "title": widget.title,
+                    "color": widget.color,
+                    "visible": uw.visible,
+                    "config": uw.config,
+                })
+        return resp
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
 @router.get("/{user_id}", response_model=list[UserWidgetRead])
 async def get_user_widgets(user_id: UUID, limit: int = Query(50, ge=1, le=100), offset: int = Query(0, ge=0),
                            db: AsyncSession = Depends(get_db)):
     rows = await crud_user_widget.list_for_user_with_widgets(db, user_id, skip=offset, limit=limit)
+
+    # Auto-initialize for new users: if no user_widgets exist, create them from default widgets
+    if not rows:
+        default_widgets = await crud_widget.get_multi(db, default=True, limit=100)
+        if default_widgets:
+            await crud_user_widget.initialize_user_widgets(db, user_id, default_widgets)
+            # Refetch after initialization
+            rows = await crud_user_widget.list_for_user_with_widgets(db, user_id, skip=offset, limit=limit)
+
     # Transformiere Tupel (UserWidget, Widget) in Schema-Dicts
     resp = []
     for uw, w in rows:

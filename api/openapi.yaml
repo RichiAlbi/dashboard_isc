@@ -274,12 +274,51 @@ paths:
                   $ref: "#/components/schemas/WidgetRead"
         "400":
           description: Fehler beim Update
+  /api/v1/widgets/user-widgets/bulk:
+    put:
+      tags:
+        - widgets
+      summary: Bulk-Update von User-Widget-Konfigurationen
+      description: Aktualisiert mehrere User-Widget-Einstellungen (Positionen, Sichtbarkeit) auf einmal. Wird verwendet, um Widget-Layout-Änderungen zu speichern. Erstellt neue Einträge, falls sie nicht existieren.
+      operationId: bulk_update_user_widgets
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/UserWidgetUpdate"
+            example:
+              - userId: "550e8400-e29b-41d4-a716-446655440000"
+                widgetId: "660e8400-e29b-41d4-a716-446655440001"
+                visible: true
+                config:
+                  x: 0
+                  y: 1
+              - userId: "550e8400-e29b-41d4-a716-446655440000"
+                widgetId: "660e8400-e29b-41d4-a716-446655440002"
+                visible: false
+                config:
+                  x: 1
+                  y: 1
+      responses:
+        "200":
+          description: User-Widgets aktualisiert
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserWidgetRead"
+        "400":
+          description: Fehler beim Update
   /api/v1/widgets/{user_id}:
     get:
       tags:
         - widgets
       summary: Widgets eines Users
-      description: Ruft alle Widgets eines bestimmten Benutzers ab
+      description: Ruft alle Widgets eines bestimmten Benutzers ab. Bei Erstanmeldung (keine User-Widgets vorhanden) werden automatisch alle Default-Widgets initialisiert.
       operationId: get_user_widgets
       parameters:
         - name: user_id
@@ -684,6 +723,10 @@ components:
           type: boolean
         config:
           type: object
+          description: Widget-Konfiguration (z.B. Position mit x und y Koordinaten)
+          example:
+            x: 0
+            y: 1
       required:
         - userId
         - widgetId
@@ -693,6 +736,29 @@ components:
         - color
         - visible
         - config
+    UserWidgetUpdate:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        widgetId:
+          type: string
+          format: uuid
+        visible:
+          type: boolean
+          nullable: true
+          description: Sichtbarkeit des Widgets (false = versteckt, nicht gelöscht)
+        config:
+          type: object
+          nullable: true
+          description: Widget-Konfiguration (Position, etc.)
+          example:
+            x: 0
+            y: 1
+      required:
+        - userId
+        - widgetId
     NewsRead:
       type: object
       properties:
