@@ -8,14 +8,14 @@ import { useCallback, useRef } from 'react'
  * @param delay - Delay in milliseconds (default: 500ms)
  * @returns The debounced callback function
  */
-export function useDebouncedCallback<T extends (...args: any[]) => void>(
+export function useDebouncedCallback<T extends (...args: never[]) => void>(
   callback: T,
   delay: number = 500
 ): T {
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   return useCallback(
-    ((...args: any[]) => {
+    ((...args: Parameters<T>) => {
       // Clear existing timeout
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current)
