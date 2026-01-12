@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiFetch, ApiError } from '../config/api'
-import type { Widget, WidgetCreate, WidgetUpdate, UserWidget, UserWidgetUpdate } from '../types/widget'
+import type { Widget, WidgetCreate, WidgetUpdate, UserWidget, UserWidgetUpdate, UserWidgetBulkUpdate } from '../types/widget'
 
 /**
  * Query keys for React Query cache management
@@ -12,6 +12,7 @@ export const widgetKeys = {
   details: () => [...widgetKeys.all, 'detail'] as const,
   detail: (id: string) => [...widgetKeys.details(), id] as const,
   userWidgets: (userId: string) => [...widgetKeys.all, 'user', userId] as const,
+  hiddenWidgets: (userId: string) => [...widgetKeys.all, 'user', userId, 'hidden'] as const,
 }
 
 /**
@@ -50,6 +51,13 @@ export async function fetchDefaultWidgets(): Promise<Widget[]> {
  */
 export async function fetchUserWidgets(userId: string): Promise<UserWidget[]> {
   return apiFetch<UserWidget[]>(`/widgets/${userId}`)
+}
+
+/**
+ * Fetch hidden user widgets (can be re-added)
+ */
+export async function fetchHiddenUserWidgets(userId: string): Promise<UserWidget[]> {
+  return apiFetch<UserWidget[]>(`/widgets/${userId}/hidden`)
 }
 
 /**
@@ -108,6 +116,19 @@ export function useUserWidgets(userId: string | undefined) {
 }
 
 /**
+ * React Query hook to fetch hidden user widgets
+ * These are widgets that can be re-added to the dashboard
+ */
+export function useHiddenUserWidgets(userId: string | undefined) {
+  return useQuery<UserWidget[], ApiError>({
+    queryKey: widgetKeys.hiddenWidgets(userId || ''),
+    queryFn: () => fetchHiddenUserWidgets(userId!),
+    enabled: !!userId,
+    staleTime: 1 * 60 * 1000,
+  })
+}
+
+/**
  * React Query mutation hook to create a new widget
  */
 export function useCreateWidget() {
@@ -139,12 +160,13 @@ export function useBulkUpdateWidgets() {
 
 /**
  * Bulk update user widgets (positions, visibility)
- * Backend endpoint: PUT /widgets/user-widgets/bulk
+ * Backend endpoint: PUT /widgets/{user_id}
  */
-export async function bulkUpdateUserWidgets(updates: UserWidgetUpdate[]): Promise<UserWidget[]> {
-  return apiFetch<UserWidget[]>('/widgets/user-widgets/bulk', {
+export async function bulkUpdateUserWidgets(userId: string, updates: UserWidgetUpdate[]): Promise<UserWidget[]> {
+  const payload: UserWidgetBulkUpdate = { widgets: updates }
+  return apiFetch<UserWidget[]>(`/widgets/${userId}`, {
     method: 'PUT',
-    body: JSON.stringify(updates),
+    body: JSON.stringify(payload),
   })
 }
 
@@ -153,10 +175,21 @@ export async function bulkUpdateUserWidgets(updates: UserWidgetUpdate[]): Promis
  * This doesn't delete the row, just hides it
  */
 export async function removeUserWidget(userId: string, widgetId: string): Promise<UserWidget> {
-  return bulkUpdateUserWidgets([{
-    userId,
+  return bulkUpdateUserWidgets(userId, [{
     widgetId,
     visible: false,
+  }]).then(results => results[0])
+}
+
+/**
+ * Add a widget back to user's view (sets visible=true)
+ * Used when re-adding a hidden widget
+ */
+export async function addUserWidget(userId: string, widgetId: string, position: { x: number; y: number }): Promise<UserWidget> {
+  return bulkUpdateUserWidgets(userId, [{
+    widgetId,
+    visible: true,
+    config: position,
   }]).then(results => results[0])
 }
 
@@ -168,10 +201,11 @@ export function useBulkUpdateUserWidgets() {
   const queryClient = useQueryClient()
 
   return useMutation<UserWidget[], ApiError, { userId: string; updates: UserWidgetUpdate[] }>({
-    mutationFn: ({ updates }) => bulkUpdateUserWidgets(updates),
+    mutationFn: ({ userId, updates }) => bulkUpdateUserWidgets(userId, updates),
     onSuccess: (_, variables) => {
       // Invalidate user widgets to refetch with updated positions
       queryClient.invalidateQueries({ queryKey: widgetKeys.userWidgets(variables.userId) })
+      queryClient.invalidateQueries({ queryKey: widgetKeys.hiddenWidgets(variables.userId) })
     },
   })
 }
@@ -188,6 +222,23 @@ export function useRemoveUserWidget() {
     onSuccess: (_, variables) => {
       // Invalidate user widgets to refetch without the removed widget
       queryClient.invalidateQueries({ queryKey: widgetKeys.userWidgets(variables.userId) })
+      queryClient.invalidateQueries({ queryKey: widgetKeys.hiddenWidgets(variables.userId) })
+    },
+  })
+}
+
+/**
+ * React Query mutation hook to add a hidden widget back to user's view
+ * Sets visible=true with the specified position
+ */
+export function useAddUserWidget() {
+  const queryClient = useQueryClient()
+
+  return useMutation<UserWidget, ApiError, { userId: string; widgetId: string; position: { x: number; y: number } }>({
+    mutationFn: ({ userId, widgetId, position }) => addUserWidget(userId, widgetId, position),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: widgetKeys.userWidgets(variables.userId) })
+      queryClient.invalidateQueries({ queryKey: widgetKeys.hiddenWidgets(variables.userId) })
     },
   })
 }

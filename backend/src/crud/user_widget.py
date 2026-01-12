@@ -21,13 +21,30 @@ async def list_for_user(session: AsyncSession, user_id: UUID, skip: int = 0, lim
     return list(result.scalars().all())
 
 
-async def list_for_user_with_widgets(session: AsyncSession, user_id: UUID, skip: int = 0, limit: int = 50) -> List[
+async def list_for_user_with_widgets(session: AsyncSession, user_id: UUID, skip: int = 0, limit: int = 50, visible_only: bool = True) -> List[
     tuple[UserWidget, Widget]]:
     j = join(UserWidget, Widget, UserWidget.widget_id == Widget.widget_id)
     stmt = (
         select(UserWidget, Widget)
         .select_from(j)
         .where(UserWidget.user_id == user_id)
+    )
+    if visible_only:
+        stmt = stmt.where(UserWidget.visible == True)
+    stmt = stmt.offset(skip).limit(limit)
+    result = await session.execute(stmt)
+    return result.all()
+
+
+async def list_hidden_for_user_with_widgets(session: AsyncSession, user_id: UUID, skip: int = 0, limit: int = 50) -> List[
+    tuple[UserWidget, Widget]]:
+    """Get user widgets where visible=false (can be re-added)"""
+    j = join(UserWidget, Widget, UserWidget.widget_id == Widget.widget_id)
+    stmt = (
+        select(UserWidget, Widget)
+        .select_from(j)
+        .where(UserWidget.user_id == user_id)
+        .where(UserWidget.visible == False)
         .offset(skip)
         .limit(limit)
     )
@@ -49,7 +66,9 @@ async def create(session: AsyncSession, obj_in: UserWidgetCreate) -> UserWidget:
 
 
 async def update(session: AsyncSession, db_obj: UserWidget, obj_in: UserWidgetUpdate) -> UserWidget:
-    data = obj_in.model_dump(exclude_unset=True)
+    data = obj_in.model_dump(exclude_unset=True, by_alias=False)
+    # Remove widget_id from update data (it's a key, not updatable)
+    data.pop("widget_id", None)
     for field, value in data.items():
         setattr(db_obj, field, value)
     await session.commit()
@@ -63,38 +82,31 @@ async def remove(session: AsyncSession, db_obj: UserWidget) -> UserWidget:
     return db_obj
 
 
-async def bulk_update(session: AsyncSession, updates: List[UserWidgetUpdate]) -> List[UserWidget]:
+async def bulk_update_for_user(session: AsyncSession, user_id: UUID, updates: List[UserWidgetUpdate]) -> List[UserWidget]:
     """
-    Bulk update user widgets (positions, visibility)
+    Bulk update user widgets for a specific user (positions, visibility)
     Creates new rows if they don't exist, updates if they do
     """
     updated: List[UserWidget] = []
     try:
         for u in updates:
             # Try to get existing user_widget
-            uw = await get(session, u.user_id, u.widget_id)
+            uw = await get(session, user_id, u.widget_id)
 
             if uw:
                 # Update existing
-                data = u.model_dump(exclude_unset=True)
-                data.pop("user_id", None)
+                data = u.model_dump(exclude_unset=True, by_alias=False)
                 data.pop("widget_id", None)
                 for field, value in data.items():
                     setattr(uw, field, value)
                 updated.append(uw)
             else:
                 # Create new if doesn't exist
-                create_data = UserWidgetCreate(
-                    user_id=u.user_id,
+                uw = UserWidget(
+                    user_id=user_id,
                     widget_id=u.widget_id,
                     visible=u.visible if u.visible is not None else True,
                     config=u.config if u.config is not None else {},
-                )
-                uw = UserWidget(
-                    user_id=create_data.user_id,
-                    widget_id=create_data.widget_id,
-                    visible=create_data.visible,
-                    config=create_data.config,
                 )
                 session.add(uw)
                 updated.append(uw)
@@ -108,6 +120,23 @@ async def bulk_update(session: AsyncSession, updates: List[UserWidgetUpdate]) ->
         raise
 
 
+async def bulk_update(session: AsyncSession, updates: List[UserWidgetUpdate]) -> List[UserWidget]:
+    """
+    Deprecated: Use bulk_update_for_user instead
+    Bulk update user widgets (positions, visibility)
+    Creates new rows if they don't exist, updates if they do
+    """
+    updated: List[UserWidget] = []
+    try:
+        for u in updates:
+            # This version doesn't have user_id in updates anymore
+            # So we can't use it - keeping for backwards compatibility
+            raise NotImplementedError("Use bulk_update_for_user with user_id from path")
+    except Exception:
+        await session.rollback()
+        raise
+
+
 async def initialize_user_widgets(session: AsyncSession, user_id: UUID, default_widgets: List) -> List[UserWidget]:
     """
     Initialize user_widget rows for a new user with all default widgets
@@ -116,17 +145,11 @@ async def initialize_user_widgets(session: AsyncSession, user_id: UUID, default_
     created: List[UserWidget] = []
     try:
         for index, widget in enumerate(default_widgets):
-            create_data = UserWidgetCreate(
+            uw = UserWidget(
                 user_id=user_id,
                 widget_id=widget.widget_id,
                 visible=True,
                 config={"x": index % 3, "y": index // 3},
-            )
-            uw = UserWidget(
-                user_id=create_data.user_id,
-                widget_id=create_data.widget_id,
-                visible=create_data.visible,
-                config=create_data.config,
             )
             session.add(uw)
             created.append(uw)

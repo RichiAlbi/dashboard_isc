@@ -9,9 +9,10 @@ interface WidgetProps {
   color: string
   target?: string
   onDelete?: () => void
+  showControls?: boolean // Show drag handle and delete button
 }
 
-const Widget: React.FC<WidgetProps> = ({ title, icon, color, target, onDelete }) => {
+const Widget: React.FC<WidgetProps> = ({ title, icon, color, target, onDelete, showControls = false }) => {
   const { containerRef, isHovering, position } = useSpotlight()
   const isDragging = useRef(false)
 
@@ -51,20 +52,24 @@ const Widget: React.FC<WidgetProps> = ({ title, icon, color, target, onDelete })
       style={spotlightStyle}
       onClick={handleClick}
     >
-      <button
-        className="widget-drag-handle react-grid-drag-handle"
-        onMouseDown={handleDragStart}
-        aria-label="Widget verschieben"
-      >
-        <DragHandleIcon />
-      </button>
-      <button
-        className="widget-delete-button"
-        onClick={handleDelete}
-        aria-label="Widget löschen"
-      >
-        <BinIcon />
-      </button>
+      {showControls && (
+        <>
+          <button
+            className="widget-drag-handle react-grid-drag-handle"
+            onMouseDown={handleDragStart}
+            aria-label="Widget verschieben"
+          >
+            <DragHandleIcon />
+          </button>
+          <button
+            className="widget-delete-button"
+            onClick={handleDelete}
+            aria-label="Widget löschen"
+          >
+            <BinIcon />
+          </button>
+        </>
+      )}
       {icon && <div className="widget-icon">{icon}</div>}
       <div className="widget-title">{title}</div>
     </div>

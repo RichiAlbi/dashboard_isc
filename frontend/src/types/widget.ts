@@ -46,11 +46,18 @@ export interface UserWidget extends Widget {
 }
 
 /**
- * Update payload for user widget (position and visibility)
+ * Update payload for a single user widget (position and visibility)
+ * userId is now in the path, not in the payload
  */
 export interface UserWidgetUpdate {
-  userId: string
   widgetId: string
   visible?: boolean
   config?: WidgetPosition
+}
+
+/**
+ * Bulk update payload - wraps array of updates
+ */
+export interface UserWidgetBulkUpdate {
+  widgets: UserWidgetUpdate[]
 }

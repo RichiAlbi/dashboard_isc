@@ -25,7 +25,7 @@ import {
   PlusIcon,
 } from './components/icons'
 import { useInfiniteUsers } from './services/userService'
-import { useDefaultWidgets, useUserWidgets, useBulkUpdateUserWidgets } from './services/widgetService'
+import { useDefaultWidgets, useUserWidgets, useHiddenUserWidgets, useBulkUpdateUserWidgets, useRemoveUserWidget, useAddUserWidget } from './services/widgetService'
 import { getUserFullName } from './types/user'
 import { MousePositionProvider } from './context/MousePositionContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
@@ -80,6 +80,12 @@ function AppContent() {
     error: userWidgetsError 
   } = useUserWidgets(authenticatedUser?.userId)
 
+  // Fetch hidden user widgets (for add widget modal)
+  const {
+    data: hiddenWidgets = [],
+    isLoading: hiddenWidgetsLoading,
+  } = useHiddenUserWidgets(authenticatedUser?.userId)
+
   // Determine which widgets to show
   const widgets = isAuthenticated && userWidgets.length > 0
     ? userWidgets.filter(w => w.visible) // Only show visible user widgets
@@ -93,6 +99,12 @@ function AppContent() {
 
   // Mutation for saving widget positions
   const { mutate: saveWidgetPositions } = useBulkUpdateUserWidgets()
+
+  // Mutation for removing widgets
+  const { mutate: removeWidget } = useRemoveUserWidget()
+
+  // Mutation for adding widgets
+  const { mutate: addWidget } = useAddUserWidget()
 
   // Update grid width based on container size
   useEffect(() => {
@@ -115,7 +127,7 @@ function AppContent() {
    * Generate grid layout based on widgets
    * For authenticated users: Use positions from backend config if available
    * For non-authenticated users: Arrange in 3-column grid
-   * AddWidget always at the end
+   * AddWidget only shown for authenticated users
    */
   const layout: Layout[] = [
     ...widgets.map((widget, index) => {
@@ -140,14 +152,15 @@ function AppContent() {
         h: 1,
       }
     }),
-    // Add widget always at the end
-    {
+    // Add widget only for authenticated users
+    ...(isAuthenticated ? [{
       i: 'add-widget',
       x: widgets.length % 3,
       y: Math.floor(widgets.length / 3),
       w: 1,
       h: 1,
-    },
+      static: true, // Prevent dragging the add widget button
+    }] : []),
   ]
 
   /**
@@ -161,9 +174,8 @@ function AppContent() {
     // Filter out the add-widget element
     const widgetLayouts = newLayout.filter(item => item.i !== 'add-widget')
 
-    // Create update payload for all visible widgets
+    // Create update payload for all visible widgets (userId is now in the path)
     const updates: UserWidgetUpdate[] = widgetLayouts.map(item => ({
-      userId: authenticatedUser.userId,
       widgetId: item.i,
       config: {
         x: item.x,
@@ -179,6 +191,34 @@ function AppContent() {
       })
     }
   }, 500)
+
+  /**
+   * Handle widget deletion (sets visible=false)
+   */
+  const handleDeleteWidget = (widgetId: string) => {
+    if (!isAuthenticated || !authenticatedUser) return
+    removeWidget({
+      userId: authenticatedUser.userId,
+      widgetId,
+    })
+  }
+
+  /**
+   * Handle adding a widget back (sets visible=true)
+   */
+  const handleAddWidget = (widgetId: string) => {
+    if (!isAuthenticated || !authenticatedUser) return
+    // Calculate position for the new widget (add at the end)
+    const nextPosition = {
+      x: widgets.length % 3,
+      y: Math.floor(widgets.length / 3),
+    }
+    addWidget({
+      userId: authenticatedUser.userId,
+      widgetId,
+      position: nextPosition,
+    })
+  }
 
   return (
     <>
@@ -243,12 +283,20 @@ function AppContent() {
                   title={widget.title}
                   color={widget.color}
                   target={widget.target}
+                  showControls={isAuthenticated}
+                  onDelete={() => handleDeleteWidget(widget.widgetId)}
                 />
               </div>
             ))}
-            <div key="add-widget">
-              <AddWidget />
-            </div>
+            {isAuthenticated && (
+              <div key="add-widget">
+                <AddWidget
+                  hiddenWidgets={hiddenWidgets}
+                  onAddWidget={handleAddWidget}
+                  isLoading={hiddenWidgetsLoading}
+                />
+              </div>
+            )}
           </GridLayout>
         )}
       </main>
