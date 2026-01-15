@@ -25,6 +25,8 @@ import {
   WarningIcon,
   PlusIcon,
   HomeIcon,
+  FullscreenIcon,
+  FullscreenExitIcon,
 } from './components/icons'
 import { useInfiniteUsers } from './services/userService'
 import { useDefaultWidgets, useUserWidgets, useHiddenUserWidgets, useBulkUpdateUserWidgets, useRemoveUserWidget, useAddUserWidget } from './services/widgetService'
@@ -68,6 +70,7 @@ function AppContent() {
   const [embeddedUrl, setEmbeddedUrl] = useState<string | null>(null);
   const [embeddedTitle, setEmbeddedTitle] = useState<string>('');
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(!!document.fullscreenElement);
 
   // Get auth state
   const { user: authenticatedUser, isAuthenticated, login, isLoading: authLoading } = useAuth()
@@ -144,20 +147,73 @@ function AppContent() {
   }
 
   /**
-   * Handle iframe load error - fallback to popup window
+   * Toggle fullscreen mode
+   */
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  }
+
+  /**
+   * Listen for fullscreen changes (e.g., user presses ESC)
+   * Also enter fullscreen on initial load
+   */
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    
+    // Enter fullscreen on initial load
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {
+        // Fullscreen request failed (e.g., user denied) - that's ok
+      });
+      setIsFullscreen(true);
+    }
+    
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  /**
+   * Open fallback popup window when iframe can't load the page
+   */
+  const openFallbackWindow = (url: string) => {
+    const width = Math.min(1200, window.innerWidth * 0.8);
+    const height = Math.min(800, window.innerHeight * 0.8);
+    const left = (window.innerWidth - width) / 2;
+    const top = (window.innerHeight - height) / 2;
+    window.open(
+      url,
+      '_blank',
+      `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+    );
+    closeEmbeddedPage();
+  }
+
+  /**
+   * Handle iframe load - check if page was blocked by X-Frame-Options
+   * This is difficult to detect reliably, so we just ensure iframe exists
+   */
+  const handleIframeLoad = () => {
+    // onLoad fired successfully - in most cases this means the page loaded
+    // X-Frame-Options blocking is hard to detect programmatically
+    // Users can manually use the home button if content doesn't show
+  }
+
+  /**
+   * Handle iframe error - fallback to popup window
    */
   const handleIframeError = () => {
     if (embeddedUrl) {
-      const width = Math.min(1200, window.innerWidth * 0.8);
-      const height = Math.min(800, window.innerHeight * 0.8);
-      const left = (window.innerWidth - width) / 2;
-      const top = (window.innerHeight - height) / 2;
-      window.open(
-        embeddedUrl,
-        '_blank',
-        `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
-      );
-      closeEmbeddedPage();
+      openFallbackWindow(embeddedUrl);
     }
   }
 
@@ -301,17 +357,20 @@ function AppContent() {
         <div className="header-content">
           <div className="header-left">
             <UserDropdown onUserSelect={setSelectedUser} />
+            {embeddedUrl && (
+              <button className="icon-button" aria-label="Zurück zur Startseite" onClick={closeEmbeddedPage}>
+                <HomeIcon />
+              </button>
+            )}
           </div>
           <div className="header-center">
             <h1 className="title">{embeddedUrl ? embeddedTitle : 'Dashboard'}</h1>
             <h2 className="subtitle">Industrieschule Chemnitz</h2>
           </div>
           <div className="header-right">
-            {embeddedUrl && (
-              <button className="icon-button" aria-label="Zurück zur Startseite" onClick={closeEmbeddedPage}>
-                <HomeIcon />
-              </button>
-            )}
+            <button className="icon-button" aria-label="Vollbildmodus" onClick={toggleFullscreen}>
+              {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+            </button>
             <button className="icon-button" aria-label="Hilfe" onClick={() => {loadHelp(); setShowHelp(!showHelp)}}>
               <HelpIcon />
             </button>
@@ -334,6 +393,7 @@ function AppContent() {
               src={embeddedUrl}
               title={embeddedTitle}
               className="embedded-iframe"
+              onLoad={handleIframeLoad}
               onError={handleIframeError}
             />
           </div>
@@ -363,6 +423,7 @@ function AppContent() {
                   showControls={isAuthenticated}
                   onDelete={() => setDeleteCandidate({ widgetId: widget.widgetId, title: widget.title })}
                   onNavigate={openEmbeddedPage}
+                  allowIframe={widget.allowIframe}
                 />
               </div>
             ))}

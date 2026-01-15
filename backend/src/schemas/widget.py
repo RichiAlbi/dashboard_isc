@@ -9,6 +9,7 @@ class WidgetBase(BaseModel):
     title: str
     color: str
     default: bool = False
+    allow_iframe: bool = True
 
 
 class WidgetCreate(WidgetBase):
@@ -22,6 +23,7 @@ class WidgetUpdate(BaseModel):
     title: Optional[str] = None
     color: Optional[str] = None
     default: Optional[bool] = None
+    allow_iframe: Optional[bool] = None
 
 
 class WidgetBulkUpdate(BaseModel):

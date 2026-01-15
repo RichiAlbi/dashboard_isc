@@ -18,6 +18,7 @@ class Widget(Base):
     title: Mapped[str] = mapped_column(String, nullable=False)
     color: Mapped[str] = mapped_column(String, nullable=False)
     default: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    allow_iframe: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default='true')
 
     users: Mapped[List["UserWidget"]] = relationship(
         "UserWidget", back_populates="widget", cascade="all, delete-orphan"
