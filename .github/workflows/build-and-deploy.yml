@@ -1,0 +1,78 @@
+name: Build Docker Images
+
+on:
+  push:
+    tags:
+      - 'v*'  # Trigger bei Tags wie v1.0.0, v2.1.3, etc.
+    branches:
+      - main  # Auch bei Push auf main
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Image Tag (wird als latest deployed)'
+        required: false
+        default: 'latest'
+
+env:
+  BACKEND_IMAGE: dashboard-backend
+  FRONTEND_IMAGE: dashboard-frontend
+  # Immer 'latest' als finalen Tag verwenden um Speicherplatz zu sparen
+  # Der Source-Tag wird nur für Artifact-Namen verwendet
+  IMAGE_TAG: latest
+  SOURCE_REF: ${{ github.ref_type == 'tag' && github.ref_name || github.sha }}
+
+jobs:
+  build:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Backend Image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          tags: ${{ env.BACKEND_IMAGE }}:${{ env.IMAGE_TAG }}
+          outputs: type=docker,dest=/tmp/backend-image.tar
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build Frontend Image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          tags: ${{ env.FRONTEND_IMAGE }}:${{ env.IMAGE_TAG }}
+          outputs: type=docker,dest=/tmp/frontend-image.tar
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            VITE_ENCRYPTION_KEY=${{ secrets.VITE_ENCRYPTION_KEY }}
+
+      - name: Upload Backend Image as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-image
+          path: /tmp/backend-image.tar
+          retention-days: 7  # Reduziert von 30 auf 7 Tage
+
+      - name: Upload Frontend Image as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-image
+          path: /tmp/frontend-image.tar
+          retention-days: 7  # Reduziert von 30 auf 7 Tage
+
+      - name: Build Summary
+        run: |
+          echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Source:** ${{ env.SOURCE_REF }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image Tag:** ${{ env.IMAGE_TAG }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Backend:** ${{ env.BACKEND_IMAGE }}:${{ env.IMAGE_TAG }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Frontend:** ${{ env.FRONTEND_IMAGE }}:${{ env.IMAGE_TAG }}" >> $GITHUB_STEP_SUMMARY

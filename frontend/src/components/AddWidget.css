@@ -1,0 +1,169 @@
+.add-widget {
+  --spotlight-color: var(--color-spotlight);
+  --spotlight-x: 0px;
+  --spotlight-y: 0px;
+  --spotlight-opacity: 0;
+  --spotlight-size: 300px;
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  background-color: transparent;
+  border: 2px dashed var(--color-button-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.add-widget::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle var(--spotlight-size) at var(--spotlight-x) var(--spotlight-y),
+    var(--spotlight-color),
+    transparent
+  );
+  opacity: var(--spotlight-opacity);
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.add-widget:hover {
+  border-color: var(--color-button-border-hover);
+  box-shadow: 0 4px 12px var(--color-shadow-blue);
+}
+
+.add-widget-icon {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-button-border-hover);
+  position: relative;
+  z-index: 1;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.add-widget:hover .add-widget-icon {
+  color: var(--color-text-primary);
+  transform: scale(1.1);
+}
+
+.add-widget-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Modal Styles */
+.add-widget-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.add-widget-modal {
+  background: var(--color-bg-secondary, #1a1a2e);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 400px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--color-button-border);
+}
+
+.add-widget-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--color-button-border);
+}
+
+.add-widget-modal-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--color-text-primary, #fff);
+}
+
+.add-widget-modal-close {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary, #888);
+  transition: color 0.2s ease;
+  border-radius: 8px;
+}
+
+.add-widget-modal-close:hover {
+  color: var(--color-text-primary, #fff);
+  background: var(--color-bg-hover, rgba(255, 255, 255, 0.1));
+}
+
+.add-widget-modal-close svg {
+  width: 24px;
+  height: 24px;
+}
+
+.add-widget-modal-content {
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.add-widget-loading,
+.add-widget-empty {
+  padding: 2rem;
+  text-align: center;
+  color: var(--color-text-secondary, #888);
+}
+
+.add-widget-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.add-widget-list-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.add-widget-list-item:hover {
+  background: var(--color-bg-hover, rgba(255, 255, 255, 0.1));
+}
+
+.add-widget-list-item-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.add-widget-list-item-title {
+  color: var(--color-text-primary, #fff);
+  font-size: 1rem;
+}

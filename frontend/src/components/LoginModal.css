@@ -1,0 +1,211 @@
+/* Login Modal Overlay */
+.login-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Login Modal Container */
+.login-modal {
+  background-color: var(--color-dark-blue);
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  animation: slideIn 0.3s ease-out;
+  border: 1px solid var(--color-primary-blue);
+}
+
+/* Modal Header */
+.login-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.2rem;
+  border-bottom: 1px solid var(--color-primary-blue);
+  position: relative;
+}
+
+.login-modal-title {
+  color: var(--color-text-primary);
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.login-modal-close {
+  position: absolute;
+  right: 1.2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: 28px;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.login-modal-close:hover {
+  background-color: var(--color-darker-blue);
+  color: var(--color-text-primary);
+}
+
+/* Form */
+.login-modal-form {
+  padding: 1.2rem;
+}
+
+.login-modal-field {
+  margin-bottom: 1.25rem;
+}
+
+.login-modal-field:last-of-type {
+  margin-bottom: 1.2rem;
+}
+
+.login-modal-label {
+  display: block;
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.login-modal-input {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: var(--color-darkest-blue);
+  border: 1px solid var(--color-primary-blue);
+  border-radius: 8px;
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+
+.login-modal-input:focus {
+  outline: none;
+  border-color: var(--color-gradient-start);
+  box-shadow: 0 0 0 3px var(--color-shadow-focus);
+}
+
+.login-modal-input:read-only {
+  background-color: var(--color-darker-blue);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Action Buttons */
+.login-modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 1.2rem;
+}
+
+.login-modal-button {
+  padding: 0.75rem 1.2rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  min-width: 100px;
+}
+
+.login-modal-button.primary {
+  background-color: var(--color-primary-blue);
+  color: var(--color-text-primary);
+}
+
+.login-modal-button.primary:hover {
+  background-color: var(--color-gradient-start);
+  box-shadow: 0 4px 12px var(--color-button-primary-hover-shadow);
+}
+
+.login-modal-button.secondary {
+  background-color: var(--color-darker-blue);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-primary-blue);
+}
+
+.login-modal-button.secondary:hover {
+  background-color: var(--color-darkest-blue);
+  border-color: var(--color-gradient-start);
+}
+
+/* Full Name Display */
+.login-modal-fullname {
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0;
+}
+
+/* Error Message */
+.login-modal-error {
+  background-color: rgba(220, 53, 69, 0.15);
+  border: 1px solid rgba(220, 53, 69, 0.4);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  color: #ff6b6b;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+/* Disabled State */
+.login-modal-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.login-modal-button.primary:disabled:hover {
+  background-color: var(--color-primary-blue);
+  box-shadow: none;
+}
+
+.login-modal-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

@@ -1,0 +1,74 @@
+/* Color Palette for Dashboard ISC */
+
+:root {
+  /* Primary Brand Colors */
+  --color-primary-blue: #33A3FF;
+  --color-dark-blue: #00346A;
+  --color-darker-blue: #001E3D;
+  --color-darkest-blue: #001E3D;
+  --color-gradient-start: #33A3FF;
+  --color-gradient-end: #00346A;
+
+  /* Text Colors */
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #33A3FF;
+  --color-text-muted: rgba(51, 163, 255, 0.7);
+
+  /* Alert Colors */
+  --color-danger: #DC3545;
+  --color-danger-hover: #FF4757;
+
+  /* Button Background Colors with Opacity */
+  --color-button-bg: rgba(51, 163, 255, 0.15);
+  --color-button-bg-hover: rgba(51, 163, 255, 0.25);
+  --color-button-bg-active: rgba(51, 163, 255, 0.3);
+
+  /* Button Border Colors with Opacity */
+  --color-button-border: rgba(51, 163, 255, 0.4);
+  --color-button-border-hover: rgba(51, 163, 255, 0.6);
+  --color-button-border-strong: rgba(51, 163, 255, 0.7);
+
+  /* Dropdown Colors */
+  --color-dropdown-bg: #001E3D;
+  --color-dropdown-search-bg: rgba(51, 163, 255, 0.1);
+  --color-dropdown-search-bg-focus: rgba(51, 163, 255, 0.15);
+  --color-dropdown-search-border: rgba(51, 163, 255, 0.3);
+  --color-dropdown-search-border-focus: rgba(51, 163, 255, 0.6);
+  --color-dropdown-search-placeholder: rgba(51, 163, 255, 0.6);
+  --color-dropdown-divider: rgba(51, 163, 255, 0.2);
+
+  /* User Item Colors */
+  --color-user-item-bg: rgba(51, 163, 255, 0.08);
+  --color-user-item-bg-hover: rgba(51, 163, 255, 0.2);
+  --color-user-item-border: rgba(51, 163, 255, 0.2);
+  --color-user-item-border-hover: rgba(51, 163, 255, 0.4);
+
+  /* Scrollbar Colors */
+  --color-scrollbar-track: rgba(51, 163, 255, 0.05);
+  --color-scrollbar-thumb: rgba(51, 163, 255, 0.3);
+  --color-scrollbar-thumb-hover: rgba(51, 163, 255, 0.5);
+
+  /* Logout Button Colors */
+  --color-logout-bg: rgba(220, 53, 69, 0.15);
+  --color-logout-bg-hover: rgba(220, 53, 69, 0.25);
+  --color-logout-bg-active: rgba(220, 53, 69, 0.35);
+  --color-logout-bg-disabled: rgba(255, 255, 255, 0.05);
+  --color-logout-border: rgba(220, 53, 69, 0.3);
+  --color-logout-border-hover: rgba(220, 53, 69, 0.6);
+  --color-logout-border-disabled: rgba(255, 255, 255, 0.1);
+  --color-logout-text-disabled: rgba(255, 255, 255, 0.3);
+
+  /* Shadow Colors */
+  --color-shadow-default: rgba(0, 0, 0, 0.3);
+  --color-shadow-strong: rgba(0, 0, 0, 0.4);
+  --color-shadow-blue: rgba(51, 163, 255, 0.2);
+  --color-shadow-blue-strong: rgba(51, 163, 255, 0.3);
+  --color-shadow-focus: rgba(51, 163, 255, 0.1);
+  --color-button-primary-hover-shadow: rgba(51, 163, 255, 0.3);
+
+  /* Spotlight Effect */
+  --color-spotlight: #ffffff;
+
+  /* No Results Text */
+  --color-no-results: rgba(51, 163, 255, 0.6);
+}

@@ -1,0 +1,40 @@
+.welcome-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 20000;
+}
+
+/* dark overlay */
+.welcome-screen__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+}
+
+/* blur layer (separate from content!) */
+.welcome-screen__blur {
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(6px);
+}
+
+/* content is above overlay + blur */
+.welcome-screen__content {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: var(--color-text-primary);
+  font-size: 1.6rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 2rem;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}

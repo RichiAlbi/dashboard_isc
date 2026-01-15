@@ -1,0 +1,46 @@
+# Dashboard Backend - Production
+# Pfad: /opt/disc/backend/docker-compose.yml
+# HINWEIS: Port 8000 wird vom Reverse Proxy geroutet, nicht direkt exposed
+
+services:
+  backend:
+    image: localhost:5000/dashboard-backend:latest
+    container_name: dashboard_backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - PYTHONPATH=/app/src
+    # Port nicht mehr exposen - Zugriff nur über Reverse Proxy
+    # ports:
+    #   - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - dashboard_network
+
+  db:
+    image: postgres:16
+    container_name: dashboard_postgres
+    volumes:
+      - dashboard_postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-dashboard_db}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - dashboard_network
+
+networks:
+  dashboard_network:
+    name: dashboard_network
+volumes:
+  dashboard_postgres_data:
