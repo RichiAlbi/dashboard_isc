@@ -24,6 +24,7 @@ import {
   SettingsIcon,
   WarningIcon,
   PlusIcon,
+  HomeIcon,
 } from './components/icons'
 import { useInfiniteUsers } from './services/userService'
 import { useDefaultWidgets, useUserWidgets, useHiddenUserWidgets, useBulkUpdateUserWidgets, useRemoveUserWidget, useAddUserWidget } from './services/widgetService'
@@ -64,6 +65,9 @@ function AppContent() {
   const mainContentRef = useRef<HTMLDivElement>(null)
   const [showHelp, setShowHelp] = useState(false);
   const helpContentRef = useRef<HTMLDivElement>(null);
+  const [embeddedUrl, setEmbeddedUrl] = useState<string | null>(null);
+  const [embeddedTitle, setEmbeddedTitle] = useState<string>('');
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   // Get auth state
   const { user: authenticatedUser, isAuthenticated, login, isLoading: authLoading } = useAuth()
@@ -118,6 +122,34 @@ function AppContent() {
     
     if (helpContentRef.current) {
       helpContentRef.current.innerHTML = html;
+    }
+  }
+
+  /**
+   * Open a URL in embedded view (iframe)
+   * Falls back to new tab if iframe loading fails
+   */
+  const openEmbeddedPage = (url: string, title: string) => {
+    setEmbeddedUrl(url);
+    setEmbeddedTitle(title);
+    setShowHelp(false); // Close help if open
+  }
+
+  /**
+   * Return to widget view
+   */
+  const closeEmbeddedPage = () => {
+    setEmbeddedUrl(null);
+    setEmbeddedTitle('');
+  }
+
+  /**
+   * Handle iframe load error - fallback to new tab
+   */
+  const handleIframeError = () => {
+    if (embeddedUrl) {
+      window.open(embeddedUrl, '_blank');
+      closeEmbeddedPage();
     }
   }
 
@@ -263,10 +295,15 @@ function AppContent() {
             <UserDropdown onUserSelect={setSelectedUser} />
           </div>
           <div className="header-center">
-            <h1 className="title">Dashboard</h1>
+            <h1 className="title">{embeddedUrl ? embeddedTitle : 'Dashboard'}</h1>
             <h2 className="subtitle">Industrieschule Chemnitz</h2>
           </div>
           <div className="header-right">
+            {embeddedUrl && (
+              <button className="icon-button" aria-label="Zurück zur Startseite" onClick={closeEmbeddedPage}>
+                <HomeIcon />
+              </button>
+            )}
             <button className="icon-button" aria-label="Hilfe" onClick={() => {loadHelp(); setShowHelp(!showHelp)}}>
               <HelpIcon />
             </button>
@@ -282,7 +319,17 @@ function AppContent() {
         </div>
       </main>
       <main className="main-content main-window" ref={mainContentRef}>
-        {widgetsLoading ? (
+        {embeddedUrl ? (
+          <div className="embedded-view">
+            <iframe
+              ref={iframeRef}
+              src={embeddedUrl}
+              title={embeddedTitle}
+              className="embedded-iframe"
+              onError={handleIframeError}
+            />
+          </div>
+        ) : widgetsLoading ? (
           <div className="loading-container">
             <div className="loading-spinner"></div>
             <p>Widgets werden geladen...</p>
@@ -307,6 +354,7 @@ function AppContent() {
                   target={widget.target}
                   showControls={isAuthenticated}
                   onDelete={() => setDeleteCandidate({ widgetId: widget.widgetId, title: widget.title })}
+                  onNavigate={openEmbeddedPage}
                 />
               </div>
             ))}

@@ -10,9 +10,10 @@ interface WidgetProps {
   target?: string
   onDelete?: () => void
   showControls?: boolean // Show drag handle and delete button
+  onNavigate?: (url: string, title: string) => void // Callback to open URL in embedded view
 }
 
-const Widget: React.FC<WidgetProps> = ({ title, icon, color, target, onDelete, showControls = false }) => {
+const Widget: React.FC<WidgetProps> = ({ title, icon, color, target, onDelete, showControls = false, onNavigate }) => {
   const { containerRef, isHovering, position } = useSpotlight()
   const isDragging = useRef(false)
 
@@ -34,7 +35,12 @@ const Widget: React.FC<WidgetProps> = ({ title, icon, color, target, onDelete, s
     }
 
     if (target) {
-      window.open(target, '_blank')
+      if (onNavigate) {
+        onNavigate(target, title)
+      } else {
+        // Fallback: open in new tab if no onNavigate provided
+        window.open(target, '_blank')
+      }
     }
   }
 
