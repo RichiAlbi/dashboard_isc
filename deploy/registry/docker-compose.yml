@@ -12,21 +12,30 @@ services:
       REGISTRY_STORAGE_DELETE_ENABLED: "true"
     volumes:
       - /opt/disc/registry/data:/var/lib/registry
+    networks:
+      - dashboard_network
 
   registry-ui:
     image: joxit/docker-registry-ui:latest
     container_name: registry-ui
     restart: unless-stopped
-    ports:
-      - "8080:80"
+    # Kein externer Port - nur über Nginx erreichbar
+    expose:
+      - "80"
     environment:
       - SINGLE_REGISTRY=true
       - REGISTRY_TITLE=Dashboard Registry
-      - REGISTRY_URL=http://registry:5000
+      - REGISTRY_URL=http://disc.industrieschule.de/v2
       - DELETE_IMAGES=true
       - SHOW_CONTENT_DIGEST=true
-      - NGINX_PROXY_PASS_URL=http://registry:5000
       - SHOW_CATALOG_NB_TAGS=true
       - REGISTRY_SECURED=false
     depends_on:
       - registry
+    networks:
+      - dashboard_network
+
+networks:
+  dashboard_network:
+    external: true
+    name: dashboard_network
