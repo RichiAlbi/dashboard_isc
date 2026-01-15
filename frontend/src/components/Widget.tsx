@@ -38,8 +38,16 @@ const Widget: React.FC<WidgetProps> = ({ title, icon, color, target, onDelete, s
       if (onNavigate) {
         onNavigate(target, title)
       } else {
-        // Fallback: open in new tab if no onNavigate provided
-        window.open(target, '_blank')
+        // Fallback: open in popup window if no onNavigate provided
+        const width = Math.min(1200, window.innerWidth * 0.8);
+        const height = Math.min(800, window.innerHeight * 0.8);
+        const left = (window.innerWidth - width) / 2;
+        const top = (window.innerHeight - height) / 2;
+        window.open(
+          target,
+          '_blank',
+          `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+        );
       }
     }
   }
