@@ -36,6 +36,7 @@ import { marked } from "marked";
 import ConfirmDeleteModal from './components/ConfirmDeleteModal'
 import type { User } from './types/user'
 import type { Widget as WidgetType, UserWidget, UserWidgetUpdate } from './types/widget'
+import WelcomeScreen from './components/WelcomeScreen'
 
 /**
  * Icon mapping - currently disabled, keeping for future use
@@ -122,6 +123,8 @@ function AppContent() {
   }
 
   const [deleteCandidate, setDeleteCandidate] = useState<{ widgetId: string; title: string } | null>(null)
+
+  const [welcomeMessage, setWelcomeMessage] = useState<string | null>(null)
 
   // Update grid width based on container size
   useEffect(() => {
@@ -336,6 +339,8 @@ function AppContent() {
             const success = await login(selectedUser, password)
             if (success) {
               setSelectedUser(null)
+              const fullName = getUserFullName(selectedUser)
+              setWelcomeMessage(`Willkommen ${selectedUser.firstName} ${selectedUser.lastName}!`)
             } else {
               setLoginError('Anmeldung fehlgeschlagen. Bitte Passwort überprüfen.')
             }
@@ -353,6 +358,12 @@ function AppContent() {
                 handleDeleteWidget(deleteCandidate.widgetId)
                 setDeleteCandidate(null)
             }}
+        />
+    )}
+    {welcomeMessage && (
+        <WelcomeScreen
+            message={welcomeMessage}
+            onClose={() => setWelcomeMessage(null)}
         />
     )}
     </>
