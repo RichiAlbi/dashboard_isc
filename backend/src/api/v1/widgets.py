@@ -66,6 +66,7 @@ async def get_user_widgets(user_id: UUID, limit: int = Query(50, ge=1, le=100), 
             "title": w.title,
             "color": w.color,
             "default": w.default,
+            "allow_iframe": w.allow_iframe,
             "visible": uw.visible,
             "config": uw.config,
         })
