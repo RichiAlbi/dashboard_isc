@@ -5,7 +5,7 @@ from typing import Optional
 
 class WidgetBase(BaseModel):
     target: str
-    icon: str
+    icon: Optional[str] = None
     title: str
     color: str
     default: bool = False
