@@ -56,8 +56,26 @@ export const LernsaxIcon = () => (
 )
 
 export const TicketIcon = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+        <path d="M1 6.5L12 1.5L23 6.5"/>
+        <rect x="4" y="8" width="16" height="15" rx="1"/>
+        <rect x="7" y="8" width="10" height="5" rx="0.5"/>
+        <line x1="7" y1="16" x2="17" y2="16"/>
+        <line x1="7" y1="20" x2="17" y2="20"/>
+    </svg>
+)
+
+export const DoorIcon = () => (
     <svg viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 1L1 6.5v1.5h22V6.5L12 1zm0 2.3L19.5 6h-15L12 3.3zM4 9v13a1 1 0 001 1h14a1 1 0 001-1V9H4zm2 1.5h12v4H6v-4zm1.5 1.5v1h9v-1h-9zM6 16.5h12v1.5H6v-1.5zm0 3h12v1.5H6v-1.5z"/>
+        <path d="M4 2h16v20H4V2zm2 2v16h12V4H6zm8 11a1.5 1.5 0 110-3 1.5 1.5 0 010 3z"/>
+    </svg>
+)
+
+export const ConsoleIcon = () => (
+    <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M4 4h16a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2zm0 2v4h16V6H4zm0 6v6h16v-6H4z"/>
+        <circle cx="14" cy="15" r="1"/>
+        <circle cx="18" cy="15" r="1"/>
     </svg>
 )
 

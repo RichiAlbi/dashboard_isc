@@ -9,6 +9,8 @@ import {
     NextcloudIcon,
     LernsaxIcon,
     TicketIcon,
+    ConsoleIcon,
+    DoorIcon,
 } from '../components/icons'
 
 /**
@@ -22,6 +24,8 @@ export const ICON_MAP = {
   nextcloud: <NextcloudIcon />,
   lernsax: <LernsaxIcon />,
   ticket: <TicketIcon />,
+  console: <ConsoleIcon />,
+  door: <DoorIcon />,
   grid: <GridIcon />,
   school: <SchoolIcon />,
   list: <ListIcon />,
