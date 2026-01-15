@@ -32,6 +32,7 @@ import ConfirmDeleteModal from './components/ConfirmDeleteModal'
 import type { User } from './types/user'
 import type { Widget as WidgetType, UserWidget, UserWidgetUpdate } from './types/widget'
 import WelcomeScreen from './components/WelcomeScreen'
+import { getRandomWelcome } from './utils/welcomeMessages'
 
 function AppContent() {
   const [gridWidth, setGridWidth] = useState(1200)
@@ -316,8 +317,8 @@ function AppContent() {
             const success = await login(selectedUser, password)
             if (success) {
               setSelectedUser(null)
-              const fullName = getUserFullName(selectedUser)
-              setWelcomeMessage(`Willkommen ${selectedUser.firstName} ${selectedUser.lastName}!`)
+              const text = getRandomWelcome()
+              setWelcomeMessage(`${text} ${selectedUser.firstName} ${selectedUser.lastName}!`)
             } else {
               setLoginError('Anmeldung fehlgeschlagen. Bitte Passwort überprüfen.')
             }
