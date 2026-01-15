@@ -39,7 +39,7 @@ body {
   flex: 1;
   height: 85vh;
   width: 100%;
-  background-color: var(--color-darkest-blue);
+  background-color: var(--color-darker-blue);
   overflow-y: auto;
   overflow-x: hidden;
   padding: 1.5rem;

@@ -90,7 +90,7 @@
 .login-modal-input {
   width: 100%;
   padding: 0.75rem;
-  background-color: var(--color-darkest-blue);
+  background-color: var(--color-darker-blue);
   border: 1px solid var(--color-primary-blue);
   border-radius: 8px;
   color: var(--color-text-primary);
@@ -137,7 +137,7 @@
 
 .login-modal-button.primary:hover {
   background-color: var(--color-gradient-start);
-  box-shadow: 0 4px 12px var(--color-button-primary-hover-shadow);
+  box-shadow: 0 4px 12px var(--color-shadow-blue-strong);
 }
 
 .login-modal-button.secondary {
@@ -147,7 +147,7 @@
 }
 
 .login-modal-button.secondary:hover {
-  background-color: var(--color-darkest-blue);
+  background-color: var(--color-darker-blue);
   border-color: var(--color-gradient-start);
 }
 
