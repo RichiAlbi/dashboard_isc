@@ -14,17 +14,12 @@ import AddWidget from './components/AddWidget'
 import LoginModal from './components/LoginModal'
 import { UserDropdown } from './components/UserDropdown'
 import {
-  FolderIcon,
-  CalendarIcon,
-  GridIcon,
-  SchoolIcon,
-  ListIcon,
-  NewsIcon,
   HelpIcon,
   SettingsIcon,
   WarningIcon,
   PlusIcon,
 } from './components/icons'
+import { getIcon } from './utils/iconMapping'
 import { useInfiniteUsers } from './services/userService'
 import { useDefaultWidgets, useUserWidgets, useHiddenUserWidgets, useBulkUpdateUserWidgets, useRemoveUserWidget, useAddUserWidget } from './services/widgetService'
 import { getUserFullName } from './types/user'
@@ -36,25 +31,6 @@ import { marked } from "marked";
 import ConfirmDeleteModal from './components/ConfirmDeleteModal'
 import type { User } from './types/user'
 import type { Widget as WidgetType, UserWidget, UserWidgetUpdate } from './types/widget'
-
-/**
- * Icon mapping - currently disabled, keeping for future use
- * Uncomment when icons are needed again
- */
-/*
-const iconMap: Record<string, React.ReactNode> = {
-  FolderIcon: <FolderIcon />,
-  CalendarIcon: <CalendarIcon />,
-  GridIcon: <GridIcon />,
-  SchoolIcon: <SchoolIcon />,
-  ListIcon: <ListIcon />,
-  NewsIcon: <NewsIcon />,
-}
-
-function getIconComponent(iconName: string): React.ReactNode {
-  return iconMap[iconName] || <GridIcon />
-}
-*/
 
 function AppContent() {
   const [gridWidth, setGridWidth] = useState(1200)
@@ -305,6 +281,7 @@ function AppContent() {
                   title={widget.title}
                   color={widget.color}
                   target={widget.target}
+                  icon={getIcon(widget.icon)}
                   showControls={isAuthenticated}
                   onDelete={() => setDeleteCandidate({ widgetId: widget.widgetId, title: widget.title })}
                 />
