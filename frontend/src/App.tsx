@@ -33,6 +33,7 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import { BackgroundGradient } from './components/BackgroundGradient'
 import { useDebouncedCallback } from './hooks/useDebouncedCallback'
 import { marked } from "marked";
+import ConfirmDeleteModal from './components/ConfirmDeleteModal'
 import type { User } from './types/user'
 import type { Widget as WidgetType, UserWidget, UserWidgetUpdate } from './types/widget'
 
@@ -119,6 +120,8 @@ function AppContent() {
       helpContentRef.current.innerHTML = html;
     }
   }
+
+  const [deleteCandidate, setDeleteCandidate] = useState<{ widgetId: string; title: string } | null>(null)
 
   // Update grid width based on container size
   useEffect(() => {
@@ -303,7 +306,7 @@ function AppContent() {
                   color={widget.color}
                   target={widget.target}
                   showControls={isAuthenticated}
-                  onDelete={() => handleDeleteWidget(widget.widgetId)}
+                  onDelete={() => setDeleteCandidate({ widgetId: widget.widgetId, title: widget.title })}
                 />
               </div>
             ))}
@@ -341,6 +344,17 @@ function AppContent() {
           isLoading={authLoading}
         />
       )}
+
+    {deleteCandidate && (
+        <ConfirmDeleteModal
+            title={deleteCandidate.title}
+            onClose={() => setDeleteCandidate(null)}
+            onConfirm={() => {
+                handleDeleteWidget(deleteCandidate.widgetId)
+                setDeleteCandidate(null)
+            }}
+        />
+    )}
     </>
   )
 }

@@ -1,0 +1,128 @@
+.confirm-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.confirm-modal {
+  background-color: var(--color-dark-blue);
+  border-radius: 12px;
+  width: 90%;
+  max-width: 420px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  animation: slideIn 0.3s ease-out;
+  border: 1px solid var(--color-primary-blue);
+}
+
+.confirm-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.2rem;
+  border-bottom: 1px solid var(--color-primary-blue);
+  position: relative;
+}
+
+.confirm-modal-title {
+  color: var(--color-text-primary);
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.confirm-modal-close {
+  position: absolute;
+  right: 1.2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: 28px;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.confirm-modal-close:hover {
+  background-color: var(--color-darker-blue);
+  color: var(--color-text-primary);
+}
+
+.confirm-modal-body {
+  padding: 1.2rem;
+  color: var(--color-text-secondary);
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+.confirm-modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  padding: 0 1.2rem 1.2rem;
+}
+
+.confirm-modal-button {
+  padding: 0.75rem 1.2rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  min-width: 110px;
+}
+
+.confirm-modal-button.secondary {
+  background-color: var(--color-darker-blue);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-primary-blue);
+}
+
+.confirm-modal-button.secondary:hover {
+  background-color: var(--color-darkest-blue);
+  border-color: var(--color-gradient-start);
+}
+
+.confirm-modal-button.danger {
+  background-color: var(--color-logout-bg);
+  color: var(--color-danger);
+  border: 1px solid var(--color-logout-border);
+}
+
+.confirm-modal-button.danger:hover {
+  background-color: var(--color-logout-bg-hover);
+  border-color: var(--color-logout-border-hover);
+  color: var(--color-danger-hover);
+}
+
+.confirm-modal-button:disabled,
+.confirm-modal-close:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}

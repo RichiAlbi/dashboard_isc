@@ -40,9 +40,7 @@ const Widget: React.FC<WidgetProps> = ({ title, icon, color, target, onDelete, s
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation()
-    if (onDelete) {
-      onDelete()
-    }
+    onDelete?.()
   }
 
   return (
