@@ -88,6 +88,7 @@ async def get_hidden_user_widgets(user_id: UUID, limit: int = Query(50, ge=1, le
             "title": w.title,
             "color": w.color,
             "default": w.default,
+            "allow_iframe": w.allow_iframe,
             "visible": uw.visible,
             "config": uw.config,
         })
@@ -117,6 +118,7 @@ async def bulk_update_user_widgets(user_id: UUID, payload: UserWidgetBulkUpdate,
                     "title": widget.title,
                     "color": widget.color,
                     "default": widget.default,
+                    "allow_iframe": widget.allow_iframe,
                     "visible": uw.visible,
                     "config": uw.config,
                 })

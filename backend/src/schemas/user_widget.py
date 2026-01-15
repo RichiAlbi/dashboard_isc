@@ -39,6 +39,7 @@ class UserWidgetRead(BaseModel):
     title: str
     color: str
     default: bool
+    allow_iframe: bool
     visible: bool
     config: dict
     model_config = ConfigDict(populate_by_name=True, from_attributes=True)
