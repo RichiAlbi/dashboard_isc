@@ -36,12 +36,14 @@ import type { User } from './types/user'
 import type { Widget as WidgetType, UserWidget, UserWidgetUpdate } from './types/widget'
 import WelcomeScreen from './components/WelcomeScreen'
 import { getRandomWelcome } from './utils/welcomeMessages'
+import { useInactivityLogout } from "./hooks/useInactivityLogout";
 
 function AppContent() {
   const [gridWidth, setGridWidth] = useState(1200)
   const [isBannerDismissed, setIsBannerDismissed] = useState(false)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [loginError, setLoginError] = useState<string | null>(null)
+  const [welcomeMessage, setWelcomeMessage] = useState<string | null>(null)
   const mainContentRef = useRef<HTMLDivElement>(null)
   const [showHelp, setShowHelp] = useState(false);
   const helpContentRef = useRef<HTMLDivElement>(null);
@@ -50,8 +52,18 @@ function AppContent() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(!!document.fullscreenElement);
 
-  // Get auth state
-  const { user: authenticatedUser, isAuthenticated, login, isLoading: authLoading } = useAuth()
+  const { user: authenticatedUser, isAuthenticated, login, logout, isLoading: authLoading } = useAuth()
+
+useInactivityLogout({
+  enabled: isAuthenticated,
+  timeoutMs: 20 * 60 * 1000,
+  onTimeout: () => {
+    logout()
+    setSelectedUser(null)
+    setLoginError(null)
+    setWelcomeMessage("Sie wurdest nach 20 Minuten Inaktivität automatisch abgemeldet.")
+  },
+})
 
   // Fetch users to check for connection errors (for banner display)
   const { error: usersError } = useInfiniteUsers('')
@@ -196,8 +208,6 @@ function AppContent() {
   }
 
   const [deleteCandidate, setDeleteCandidate] = useState<{ widgetId: string; title: string } | null>(null)
-
-  const [welcomeMessage, setWelcomeMessage] = useState<string | null>(null)
 
   // Update grid width based on container size
   useEffect(() => {
