@@ -11,10 +11,10 @@ interface WidgetProps {
   onDelete?: () => void
   showControls?: boolean // Show drag handle and delete button
   onNavigate?: (url: string, title: string) => void // Callback to open URL in embedded view
-  allowIframe?: boolean // Whether this widget allows iframe embedding
+  allow_iframe?: boolean // Whether this widget allows iframe embedding
 }
 
-const Widget: React.FC<WidgetProps> = ({ title, icon, color, target, onDelete, showControls = false, onNavigate, allowIframe = true }) => {
+const Widget: React.FC<WidgetProps> = ({ title, icon, color, target, onDelete, showControls = false, onNavigate, allow_iframe = true }) => {
   const { containerRef, isHovering, position } = useSpotlight()
   const isDragging = useRef(false)
 
@@ -36,8 +36,11 @@ const Widget: React.FC<WidgetProps> = ({ title, icon, color, target, onDelete, s
     }
 
     if (target) {
+      console.log('Widget clicked:', { title, allow_iframe, type: typeof allow_iframe, target });
+      
       // Check if iframe is allowed for this widget
-      if (!allowIframe) {
+      if (!allow_iframe) {
+        console.log('→ Opening in popup (allow_iframe is false)');
         // Open directly in popup window
         const width = Math.min(1200, window.innerWidth * 0.8);
         const height = Math.min(800, window.innerHeight * 0.8);
@@ -49,6 +52,7 @@ const Widget: React.FC<WidgetProps> = ({ title, icon, color, target, onDelete, s
           `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
         );
       } else if (onNavigate) {
+        console.log('→ Opening in iframe (allow_iframe is true)');
         // Try to load in iframe
         onNavigate(target, title)
       } else {

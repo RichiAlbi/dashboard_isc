@@ -414,7 +414,7 @@ useInactivityLogout({
                   showControls={isAuthenticated}
                   onDelete={() => setDeleteCandidate({ widgetId: widget.widgetId, title: widget.title })}
                   onNavigate={openEmbeddedPage}
-                  allowIframe={widget.allowIframe}
+                  allow_iframe={widget.allow_iframe}
                 />
               </div>
             ))}

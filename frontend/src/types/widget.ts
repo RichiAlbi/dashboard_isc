@@ -9,7 +9,7 @@ export interface Widget {
   title: string
   color: string
   default: boolean
-  allowIframe: boolean
+  allow_iframe: boolean
 }
 
 export interface WidgetCreate {
@@ -18,7 +18,7 @@ export interface WidgetCreate {
   title: string
   color: string
   default?: boolean
-  allowIframe?: boolean
+  allow_iframe?: boolean
 }
 
 export interface WidgetUpdate {
@@ -28,7 +28,7 @@ export interface WidgetUpdate {
   title?: string
   color?: string
   default?: boolean
-  allowIframe?: boolean
+  allow_iframe?: boolean
 }
 
 /**
