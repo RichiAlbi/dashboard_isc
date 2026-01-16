@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Boolean, DateTime
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 import uuid
 from typing import List, TYPE_CHECKING
 from datetime import datetime
@@ -23,7 +23,7 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     from_ldap: Mapped[bool] = mapped_column(Boolean, default=False)
     last_ldap_sync: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
-    theme: Mapped[str | None] = mapped_column(String, nullable=True)
+    settings: Mapped[dict | None] = mapped_column(JSONB, nullable=True, default=dict)
 
     # Beziehungen
     widgets: Mapped[List["UserWidget"]] = relationship(
