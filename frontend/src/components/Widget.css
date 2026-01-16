@@ -60,12 +60,13 @@
 
 .widget-title {
   color: white;
-  font-size: 1.1rem;
+  font-size: calc(1.1rem * var(--zoom-factor));
   font-weight: 600;
   text-align: center;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   position: relative;
   z-index: 1;
+  transition: font-size 0.2s ease;
 }
 
 .widget-delete-button {

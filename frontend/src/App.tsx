@@ -12,6 +12,7 @@ import GridLayout from 'react-grid-layout'
 import Widget from './components/Widget'
 import AddWidget from './components/AddWidget'
 import LoginModal from './components/LoginModal'
+import SettingsModal from './components/SettingsModal'
 import { UserDropdown } from './components/UserDropdown'
 import {
   HelpIcon,
@@ -24,10 +25,11 @@ import {
 } from './components/icons'
 import { getIcon } from './utils/iconMapping'
 import { useInfiniteUsers } from './services/userService'
-import { useDefaultWidgets, useUserWidgets, useHiddenUserWidgets, useBulkUpdateUserWidgets, useRemoveUserWidget, useAddUserWidget } from './services/widgetService'
+import { useDefaultWidgets, useUserWidgets, useHiddenUserWidgets, useBulkUpdateUserWidgets, useRemoveUserWidget, useAddUserWidget, useResetUserWidgets } from './services/widgetService'
 import { getUserFullName } from './types/user'
 import { MousePositionProvider } from './context/MousePositionContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { ZoomProvider } from './context/ZoomContext'
 import { BackgroundGradient } from './components/BackgroundGradient'
 import { useGridLayoutManager } from './hooks/useGridLayoutManager'
 import { indexToPosition } from './utils/gridLayoutUtils'
@@ -47,6 +49,7 @@ function AppContent() {
   const [welcomeMessage, setWelcomeMessage] = useState<string | null>(null)
   const mainContentRef = useRef<HTMLDivElement>(null)
   const [showHelp, setShowHelp] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const helpContentRef = useRef<HTMLDivElement>(null);
   const [embeddedUrl, setEmbeddedUrl] = useState<string | null>(null);
   const [embeddedTitle, setEmbeddedTitle] = useState<string>('');
@@ -108,6 +111,9 @@ useInactivityLogout({
 
   // Mutation for adding widgets
   const { mutate: addWidget } = useAddUserWidget()
+
+  // Mutation for resetting widgets to default
+  const { mutate: resetWidgets, isPending: isResettingWidgets } = useResetUserWidgets()
 
   const loadHelp = async () => {
     const response = await fetch("/help.md");
@@ -325,7 +331,7 @@ useInactivityLogout({
             <button className="icon-button" aria-label="Hilfe" onClick={() => {loadHelp(); setShowHelp(!showHelp)}}>
               <HelpIcon />
             </button>
-            <button className="icon-button" aria-label="Einstellungen">
+            <button className="icon-button" aria-label="Einstellungen" onClick={() => setShowSettings(true)}>
               <SettingsIcon />
             </button>
           </div>
@@ -435,6 +441,26 @@ useInactivityLogout({
             onClose={() => setWelcomeMessage(null)}
         />
     )}
+    {showSettings && (
+        <SettingsModal
+            onClose={() => setShowSettings(false)}
+            isAuthenticated={isAuthenticated}
+            onResetLayout={() => {
+              if (!authenticatedUser) return
+              // Combine visible and hidden widgets to get all user widgets
+              const allUserWidgets = [...userWidgets, ...hiddenWidgets]
+              resetWidgets({
+                userId: authenticatedUser.userId,
+                defaultWidgets,
+                allUserWidgets,
+                cols: 3,
+              }, {
+                onSuccess: () => setShowSettings(false)
+              })
+            }}
+            isResetting={isResettingWidgets}
+        />
+    )}
     </>
   )
 }
@@ -442,10 +468,12 @@ useInactivityLogout({
 function App() {
   return (
     <AuthProvider>
-      <MousePositionProvider>
-        <BackgroundGradient />
-        <AppContent />
-      </MousePositionProvider>
+      <ZoomProvider>
+        <MousePositionProvider>
+          <BackgroundGradient />
+          <AppContent />
+        </MousePositionProvider>
+      </ZoomProvider>
     </AuthProvider>
   )
 }

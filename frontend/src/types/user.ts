@@ -3,6 +3,19 @@
  * Based on backend/src/schemas/user.py
  */
 
+/**
+ * Zoom levels: 1=Klein (80%), 2=Normal (100%), 3=Groß (125%)
+ */
+export type ZoomLevel = 1 | 2 | 3
+
+/**
+ * User settings stored as JSON in the database
+ * Can be expanded with additional settings without schema changes
+ */
+export interface UserSettings {
+  zoom?: ZoomLevel;
+}
+
 export interface User {
   userId: string;
   username: string;
@@ -10,7 +23,7 @@ export interface User {
   firstName: string;
   lastName: string;
   isActive: boolean;
-  theme: 'light' | 'dark' | 'system';
+  settings: UserSettings | null;
   fromLdap: boolean;
   lastLdapSync: string | null;
 }
@@ -21,7 +34,7 @@ export interface UserCreate {
   firstName: string;
   lastName: string;
   isActive?: boolean;
-  theme?: 'light' | 'dark' | 'system';
+  settings?: UserSettings;
 }
 
 export interface UserUpdate {
@@ -29,7 +42,7 @@ export interface UserUpdate {
   firstName?: string;
   lastName?: string;
   isActive?: boolean;
-  theme?: 'light' | 'dark' | 'system';
+  settings?: UserSettings;
 }
 
 export interface UserSearchParams {

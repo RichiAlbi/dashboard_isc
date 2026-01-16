@@ -33,7 +33,7 @@ body {
 
 .main-content {
   position: absolute;
-  top: 12vh;
+  top: calc(12vh * var(--zoom-factor));
   left: 0;
   right: 0;
   bottom: 0;
@@ -43,6 +43,7 @@ body {
   overflow-x: hidden;
   padding: 1.5rem;
   box-sizing: border-box;
+  transition: top 0.2s ease;
 }
 
 .main-content::-webkit-scrollbar {

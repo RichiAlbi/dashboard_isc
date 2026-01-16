@@ -11,7 +11,7 @@
   padding: 0 1.25rem;
   height: 52px;
   color: var(--color-text-primary);
-  font-size: 0.95rem;
+  font-size: calc(0.95rem * var(--zoom-factor));
   font-weight: 500;
   cursor: pointer;
   display: flex;

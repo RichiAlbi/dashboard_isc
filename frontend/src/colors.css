@@ -1,6 +1,9 @@
-/* Color Palette for Dashboard ISC */
+/* Color Palette and Global Variables for Dashboard ISC */
 
 :root {
+  /* Zoom Factor - controlled by ZoomContext, default is 1 (100%) */
+  --zoom-factor: 1;
+
   /* Primary Brand Colors */
   --color-primary-blue: #33A3FF;
   --color-dark-blue: #00346A;
