@@ -287,7 +287,7 @@ function AppContent() {
             <WarningIcon />
           </div>
           <div className="status-banner-message">
-            Datenbank nicht erreichbar. Die Anwendung läuft im Offline-Modus.
+            Es ist ein Fehler aufgetreten.
           </div>
           <button
             className="status-banner-close"
