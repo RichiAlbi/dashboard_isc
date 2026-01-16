@@ -1,14 +1,12 @@
-# Help
-
-## Verwaltungstafel
+# Verwaltungstafel
 In der Verwaltungstafel werden verschiedene Elemente angezeigt.  
 Diese Elemente können:
 * Webseiten öffnen
 * nach eigenen Präferenzen angeordnet und ausgewählt werden
 
-## Benutzer
+# Benutzer
 
-### Anmelden
+## Anmelden
 Über die Schaltfläche **Benutzer auswählen** kann ein Benutzerprofil ausgewählt werden.  
 Es wird eine Liste aller Nutzer angezeigt, welche über das **Benutzer suchen...**‑Feld nach
 * Profilnamen und
@@ -22,22 +20,22 @@ Wenn sich die Anmeldemaske schließt, haben Sie sich erfolgreich angemeldet.
 
 Soll die Anmeldemaske geschlossen werden, kann dies durch Klicken auf das **X** oben rechts oder die **Abbrechen**‑Taste getan werden.
 
-### Abmelden
+## Abmelden
 Die Abmeldung geschieht über **Profilname → Abmelden**.  
 Die Schaltfläche ist am Ende des erscheinenden Fensters zu finden.
 
-### Individualisierung
+## Individualisierung
 Das Anmelden bietet Personalisierung über eine Reihe von Einstellungen:
 * Anzeigen personalisierter Schaltflächen
 * Personalisierte Schaltflächenanordnung
 
-## Einstellungen
+# Einstellungen
 
-### Nutzer
+## Nutzer
 Nach dem Anmelden erreicht man über das Zahnrad oben rechts die Einstellungen.  
 Hier kann ausgewählt werden, welche Schaltflächen angezeigt werden und wie diese angeordnet sind.
 
-### Admin
+## Admin
 Administratoren können über das Zahnrad oben rechts auf der Standard‑Verwaltungstafel allgemeine Einstellungen ändern.  
 Hierfür müssen sie sich über das erscheinende Fenster als Administrator anmelden.
 
@@ -48,6 +46,3 @@ Administratoren können:
 * Schaltflächenfarben festlegen
 * Standardschaltflächen auswählen
 * Standardschaltflächen anordnen
-
-## Hilfe
-Die Hilfe können sie durch erneutes klicken des **?** oben rechts wieder verlassen.

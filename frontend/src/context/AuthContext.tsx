@@ -40,7 +40,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Restore auth state from localStorage on mount
+  // Restore auth state from sessionStorage on mount
   useEffect(() => {
     const storedUser = getStoredAuthUser();
     if (storedUser) {

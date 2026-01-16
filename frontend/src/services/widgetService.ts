@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiFetch, ApiError } from '../config/api'
 import type { Widget, WidgetCreate, WidgetUpdate, UserWidget, UserWidgetUpdate, UserWidgetBulkUpdate } from '../types/widget'
+import { indexToPosition } from '../utils/gridLayoutUtils'
 
 /**
  * Query keys for React Query cache management
@@ -236,6 +237,64 @@ export function useAddUserWidget() {
 
   return useMutation<UserWidget, ApiError, { userId: string; widgetId: string; position: { x: number; y: number } }>({
     mutationFn: ({ userId, widgetId, position }) => addUserWidget(userId, widgetId, position),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: widgetKeys.userWidgets(variables.userId) })
+      queryClient.invalidateQueries({ queryKey: widgetKeys.hiddenWidgets(variables.userId) })
+    },
+  })
+}
+
+/**
+ * Reset user widgets to default layout
+ * - Makes all default widgets visible
+ * - Resets positions to default order
+ * - Hides any widgets that are not in the default set
+ */
+export async function resetUserWidgetsToDefault(
+  userId: string,
+  defaultWidgets: Widget[],
+  allUserWidgets: UserWidget[],
+  cols: number = 3
+): Promise<UserWidget[]> {
+  const defaultWidgetIds = new Set(defaultWidgets.map(w => w.widgetId))
+
+  // Create updates: show default widgets with reset positions, hide non-defaults
+  const updates: UserWidgetUpdate[] = allUserWidgets.map(userWidget => {
+    const isDefault = defaultWidgetIds.has(userWidget.widgetId)
+
+    if (isDefault) {
+      // Find index in default widgets order
+      const defaultIndex = defaultWidgets.findIndex(dw => dw.widgetId === userWidget.widgetId)
+      return {
+        widgetId: userWidget.widgetId,
+        visible: true,
+        config: indexToPosition(defaultIndex, cols),
+      }
+    } else {
+      // Non-default widget: hide it
+      return {
+        widgetId: userWidget.widgetId,
+        visible: false,
+      }
+    }
+  })
+
+  return bulkUpdateUserWidgets(userId, updates)
+}
+
+/**
+ * React Query mutation hook to reset user widgets to default layout
+ */
+export function useResetUserWidgets() {
+  const queryClient = useQueryClient()
+
+  return useMutation<
+    UserWidget[],
+    ApiError,
+    { userId: string; defaultWidgets: Widget[]; allUserWidgets: UserWidget[]; cols?: number }
+  >({
+    mutationFn: ({ userId, defaultWidgets, allUserWidgets, cols }) =>
+      resetUserWidgetsToDefault(userId, defaultWidgets, allUserWidgets, cols),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: widgetKeys.userWidgets(variables.userId) })
       queryClient.invalidateQueries({ queryKey: widgetKeys.hiddenWidgets(variables.userId) })

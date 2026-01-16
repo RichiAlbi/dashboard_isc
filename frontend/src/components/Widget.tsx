@@ -10,9 +10,11 @@ interface WidgetProps {
   target?: string
   onDelete?: () => void
   showControls?: boolean // Show drag handle and delete button
+  onNavigate?: (url: string, title: string) => void // Callback to open URL in embedded view
+  allow_iframe?: boolean // Whether this widget allows iframe embedding
 }
 
-const Widget: React.FC<WidgetProps> = ({ title, icon, color, target, onDelete, showControls = false }) => {
+const Widget: React.FC<WidgetProps> = ({ title, icon, color, target, onDelete, showControls = false, onNavigate, allow_iframe = true }) => {
   const { containerRef, isHovering, position } = useSpotlight()
   const isDragging = useRef(false)
 
@@ -34,7 +36,37 @@ const Widget: React.FC<WidgetProps> = ({ title, icon, color, target, onDelete, s
     }
 
     if (target) {
-      window.open(target, '_blank')
+      console.log('Widget clicked:', { title, allow_iframe, type: typeof allow_iframe, target });
+      
+      // Check if iframe is allowed for this widget
+      if (!allow_iframe) {
+        console.log('→ Opening in popup (allow_iframe is false)');
+        // Open directly in popup window
+        const width = Math.min(1200, window.innerWidth * 0.8);
+        const height = Math.min(800, window.innerHeight * 0.8);
+        const left = (window.innerWidth - width) / 2;
+        const top = (window.innerHeight - height) / 2;
+        window.open(
+          target,
+          '_blank',
+          `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+        );
+      } else if (onNavigate) {
+        console.log('→ Opening in iframe (allow_iframe is true)');
+        // Try to load in iframe
+        onNavigate(target, title)
+      } else {
+        // Fallback: open in popup window if no onNavigate provided
+        const width = Math.min(1200, window.innerWidth * 0.8);
+        const height = Math.min(800, window.innerHeight * 0.8);
+        const left = (window.innerWidth - width) / 2;
+        const top = (window.innerHeight - height) / 2;
+        window.open(
+          target,
+          '_blank',
+          `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+        );
+      }
     }
   }
 

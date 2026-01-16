@@ -10,7 +10,7 @@ class UserBase(BaseModel):
     first_name: Optional[str] = Field(None, alias="firstName")
     last_name: Optional[str] = Field(None, alias="lastName")
     is_active: Optional[bool] = Field(True, alias="isActive")
-    theme: Optional[str] = None  # light|dark|system
+    settings: Optional[dict] = None  # JSON object for user settings (e.g., {"zoom": 2})
 
 
 class UserCreate(UserBase):
@@ -22,7 +22,7 @@ class UserUpdate(BaseModel):
     first_name: Optional[str] = Field(None, alias="firstName")
     last_name: Optional[str] = Field(None, alias="lastName")
     is_active: Optional[bool] = Field(None, alias="isActive")
-    theme: Optional[str] = None
+    settings: Optional[dict] = None  # JSON object for user settings (e.g., {"zoom": 2})
 
 
 class UserRead(UserBase):

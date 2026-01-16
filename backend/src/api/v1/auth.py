@@ -107,6 +107,7 @@ async def verify_credentials(
             "firstName": db_user.first_name,
             "lastName": db_user.last_name,
             "isActive": db_user.is_active,
+            "settings": db_user.settings,
         }
     else:
         # Benutzer existiert in LDAP aber nicht in DB - hole Daten aus LDAP
@@ -118,6 +119,7 @@ async def verify_credentials(
             "firstName": ldap_user.get("first_name") if ldap_user else None,
             "lastName": ldap_user.get("last_name") if ldap_user else None,
             "isActive": True,
+            "settings": {},
         }
     
     return VerifyResponse(

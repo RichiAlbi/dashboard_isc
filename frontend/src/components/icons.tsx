@@ -56,8 +56,26 @@ export const LernsaxIcon = () => (
 )
 
 export const TicketIcon = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+        <path d="M1 6.5L12 1.5L23 6.5"/>
+        <rect x="4" y="8" width="16" height="15" rx="1"/>
+        <rect x="7" y="8" width="10" height="5" rx="0.5"/>
+        <line x1="7" y1="16" x2="17" y2="16"/>
+        <line x1="7" y1="20" x2="17" y2="20"/>
+    </svg>
+)
+
+export const DoorIcon = () => (
     <svg viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 1L1 6.5v1.5h22V6.5L12 1zm0 2.3L19.5 6h-15L12 3.3zM4 9v13a1 1 0 001 1h14a1 1 0 001-1V9H4zm2 1.5h12v4H6v-4zm1.5 1.5v1h9v-1h-9zM6 16.5h12v1.5H6v-1.5zm0 3h12v1.5H6v-1.5z"/>
+        <path d="M4 2h16v20H4V2zm2 2v16h12V4H6zm8 11a1.5 1.5 0 110-3 1.5 1.5 0 010 3z"/>
+    </svg>
+)
+
+export const ConsoleIcon = () => (
+    <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M4 4h16a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2zm0 2v4h16V6H4zm0 6v6h16v-6H4z"/>
+        <circle cx="14" cy="15" r="1"/>
+        <circle cx="18" cy="15" r="1"/>
     </svg>
 )
 
@@ -105,5 +123,23 @@ export const DragHandleIcon = () => (
 export const CloseIcon = () => (
   <svg viewBox="0 0 24 24" fill="currentColor">
     <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+  </svg>
+)
+
+export const HomeIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor">
+    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+  </svg>
+)
+
+export const FullscreenIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor">
+    <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z" />
+  </svg>
+)
+
+export const FullscreenExitIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor">
+    <path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z" />
   </svg>
 )

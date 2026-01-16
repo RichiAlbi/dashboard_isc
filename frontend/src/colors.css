@@ -1,11 +1,13 @@
-/* Color Palette for Dashboard ISC */
+/* Color Palette and Global Variables for Dashboard ISC */
 
 :root {
+  /* Zoom Factor - controlled by ZoomContext, default is 1 (100%) */
+  --zoom-factor: 1;
+
   /* Primary Brand Colors */
   --color-primary-blue: #33A3FF;
   --color-dark-blue: #00346A;
   --color-darker-blue: #001E3D;
-  --color-darkest-blue: #001E3D;
   --color-gradient-start: #33A3FF;
   --color-gradient-end: #00346A;
 
@@ -13,10 +15,13 @@
   --color-text-primary: #FFFFFF;
   --color-text-secondary: #33A3FF;
   --color-text-muted: rgba(51, 163, 255, 0.7);
+  --color-text-muted-strong: rgba(51, 163, 255, 0.6);
 
-  /* Alert Colors */
+  /* Alert/Danger Colors */
   --color-danger: #DC3545;
   --color-danger-hover: #FF4757;
+  --color-dark-red: #4A1515;
+  --color-dark-red-hover: #5C1A1A;
 
   /* Button Background Colors with Opacity */
   --color-button-bg: rgba(51, 163, 255, 0.15);
@@ -34,7 +39,6 @@
   --color-dropdown-search-bg-focus: rgba(51, 163, 255, 0.15);
   --color-dropdown-search-border: rgba(51, 163, 255, 0.3);
   --color-dropdown-search-border-focus: rgba(51, 163, 255, 0.6);
-  --color-dropdown-search-placeholder: rgba(51, 163, 255, 0.6);
   --color-dropdown-divider: rgba(51, 163, 255, 0.2);
 
   /* User Item Colors */
@@ -48,15 +52,15 @@
   --color-scrollbar-thumb: rgba(51, 163, 255, 0.3);
   --color-scrollbar-thumb-hover: rgba(51, 163, 255, 0.5);
 
-  /* Logout Button Colors */
-  --color-logout-bg: rgba(220, 53, 69, 0.15);
-  --color-logout-bg-hover: rgba(220, 53, 69, 0.25);
-  --color-logout-bg-active: rgba(220, 53, 69, 0.35);
-  --color-logout-bg-disabled: rgba(255, 255, 255, 0.05);
-  --color-logout-border: rgba(220, 53, 69, 0.3);
-  --color-logout-border-hover: rgba(220, 53, 69, 0.6);
-  --color-logout-border-disabled: rgba(255, 255, 255, 0.1);
-  --color-logout-text-disabled: rgba(255, 255, 255, 0.3);
+  /* Danger Button Colors (logout, delete, etc.) */
+  --color-danger-bg: rgba(220, 53, 69, 0.25);
+  --color-danger-bg-hover: rgba(220, 53, 69, 0.4);
+  --color-danger-bg-active: rgba(220, 53, 69, 0.5);
+  --color-danger-bg-disabled: rgba(255, 255, 255, 0.05);
+  --color-danger-border: rgba(220, 53, 69, 0.5);
+  --color-danger-border-hover: rgba(220, 53, 69, 0.8);
+  --color-danger-border-disabled: rgba(255, 255, 255, 0.1);
+  --color-danger-text-disabled: rgba(255, 255, 255, 0.3);
 
   /* Shadow Colors */
   --color-shadow-default: rgba(0, 0, 0, 0.3);
@@ -64,11 +68,8 @@
   --color-shadow-blue: rgba(51, 163, 255, 0.2);
   --color-shadow-blue-strong: rgba(51, 163, 255, 0.3);
   --color-shadow-focus: rgba(51, 163, 255, 0.1);
-  --color-button-primary-hover-shadow: rgba(51, 163, 255, 0.3);
+  --color-shadow-danger: rgba(220, 53, 69, 0.3);
 
   /* Spotlight Effect */
   --color-spotlight: #ffffff;
-
-  /* No Results Text */
-  --color-no-results: rgba(51, 163, 255, 0.6);
 }

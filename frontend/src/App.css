@@ -33,17 +33,17 @@ body {
 
 .main-content {
   position: absolute;
-  top: 12vh;
+  top: calc(12vh * var(--zoom-factor));
   left: 0;
+  right: 0;
+  bottom: 0;
 
-  flex: 1;
-  height: 85vh;
-  width: 100%;
-  background-color: var(--color-darkest-blue);
+  background-color: var(--color-darker-blue);
   overflow-y: auto;
   overflow-x: hidden;
   padding: 1.5rem;
   box-sizing: border-box;
+  transition: top 0.2s ease;
 }
 
 .main-content::-webkit-scrollbar {
@@ -61,20 +61,6 @@ body {
 
 .main-content::-webkit-scrollbar-thumb:hover {
   background: var(--color-scrollbar-thumb-hover);
-}
-
-.main-window {
-  z-index: 2;
-}
-
-.help-window {
-  z-index: 1;
-  padding: 5%;
-}
-
-.markdown-body {
-  background-color: transparent;
-  color: white;
 }
 
 /* Loading and Empty States */
@@ -107,4 +93,20 @@ body {
 .empty-state p {
   font-size: 1.1rem;
   color: var(--color-text-secondary);
+}
+
+/* Embedded View (iframe) Styles */
+.embedded-view {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.embedded-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 8px;
+  background-color: white;
 }

@@ -8,9 +8,10 @@
   background: var(--color-button-bg);
   border: 2px solid var(--color-button-border);
   border-radius: 10px;
-  padding: 0.75rem 1.25rem;
+  padding: 0 1.25rem;
+  height: 52px;
   color: var(--color-text-primary);
-  font-size: 0.95rem;
+  font-size: calc(0.95rem * var(--zoom-factor));
   font-weight: 500;
   cursor: pointer;
   display: flex;
@@ -92,7 +93,7 @@
 }
 
 .dropdown-search::placeholder {
-  color: var(--color-dropdown-search-placeholder);
+  color: var(--color-text-muted-strong);
 }
 
 .dropdown-search:focus {
@@ -164,7 +165,7 @@
 
 .no-users {
   text-align: center;
-  color: var(--color-no-results);
+  color: var(--color-text-muted-strong);
   padding: 2rem 1rem;
   font-size: 0.9rem;
 }
@@ -172,9 +173,9 @@
 .logout-button {
   width: 100%;
   padding: 1rem;
-  background: var(--color-logout-bg);
+  background: var(--color-dark-red);
   border: none;
-  border-top: 2px solid var(--color-logout-border);
+  border-top: 2px solid var(--color-danger);
   color: var(--color-danger);
   font-size: 0.95rem;
   font-weight: 600;
@@ -185,27 +186,27 @@
 }
 
 .logout-button:hover {
-  background: var(--color-logout-bg-hover);
-  border-top-color: var(--color-logout-border-hover);
+  background: var(--color-dark-red-hover);
+  border-top-color: var(--color-danger-hover);
   color: var(--color-danger-hover);
 }
 
 .logout-button:active {
-  background: var(--color-logout-bg-active);
+  background: var(--color-dark-red-hover);
 }
 
 .logout-button:disabled {
-  background: var(--color-logout-bg-disabled);
-  border-top-color: var(--color-logout-border-disabled);
-  color: var(--color-logout-text-disabled);
+  background: var(--color-danger-bg-disabled);
+  border-top-color: var(--color-danger-border-disabled);
+  color: var(--color-danger-text-disabled);
   cursor: not-allowed;
   opacity: 0.5;
 }
 
 .logout-button:disabled:hover {
-  background: var(--color-logout-bg-disabled);
-  border-top-color: var(--color-logout-border-disabled);
-  color: var(--color-logout-text-disabled);
+  background: var(--color-danger-bg-disabled);
+  border-top-color: var(--color-danger-border-disabled);
+  color: var(--color-danger-text-disabled);
 }
 
 /* Authenticated User Info */

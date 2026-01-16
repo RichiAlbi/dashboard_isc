@@ -40,7 +40,7 @@ const AddWidget: React.FC<AddWidgetProps> = ({ hiddenWidgets = [], onAddWidget, 
     <>
       <div
         ref={containerRef}
-        className="add-widget"
+        className={`add-widget ${isModalOpen ? 'add-widget-hidden' : ''}`}
         style={spotlightStyle}
         onClick={handleClick}
       >

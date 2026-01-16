@@ -1,4 +1,4 @@
-.confirm-modal-overlay {
+.help-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -12,17 +12,20 @@
   animation: fadeIn 0.2s ease-out;
 }
 
-.confirm-modal {
+.help-modal {
   background-color: var(--color-dark-blue);
   border-radius: 12px;
   width: 90%;
-  max-width: 420px;
+  max-width: 1024px;
+  height: 90%;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   animation: slideIn 0.3s ease-out;
   border: 1px solid var(--color-primary-blue);
+  display: flex;
+  flex-direction: column;
 }
 
-.confirm-modal-header {
+.help-modal-header {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -31,14 +34,14 @@
   position: relative;
 }
 
-.confirm-modal-title {
+.help-modal-title {
   color: var(--color-text-primary);
-  font-size: 1.2rem;
+  font-size: 1.8rem;
   font-weight: 600;
   margin: 0;
 }
 
-.confirm-modal-close {
+.help-modal-close {
   position: absolute;
   right: 1.2rem;
   top: 50%;
@@ -46,7 +49,7 @@
   background: none;
   border: none;
   color: var(--color-text-secondary);
-  font-size: 28px;
+  font-size: 32px;
   cursor: pointer;
   padding: 0;
   width: 32px;
@@ -58,26 +61,24 @@
   transition: all 0.2s;
 }
 
-.confirm-modal-close:hover {
+.help-modal-close:hover {
   background-color: var(--color-darker-blue);
   color: var(--color-text-primary);
 }
 
-.confirm-modal-body {
-  padding: 1.2rem;
-  color: var(--color-text-secondary);
-  text-align: center;
-  font-size: 0.95rem;
+.help-modal-body {
+  padding: 3%;
+  overflow-y: auto;
 }
 
-.confirm-modal-actions {
+.help-modal-actions {
   display: flex;
   gap: 0.75rem;
   justify-content: center;
   padding: 0 1.2rem 1.2rem;
 }
 
-.confirm-modal-button {
+.help-modal-button {
   padding: 0.75rem 1.2rem;
   border-radius: 8px;
   font-size: 0.95rem;
@@ -88,31 +89,15 @@
   min-width: 110px;
 }
 
-.confirm-modal-button.secondary {
-  background-color: var(--color-darker-blue);
-  color: var(--color-text-primary);
-  border: 1px solid var(--color-primary-blue);
-}
-
-.confirm-modal-button.secondary:hover {
-  background-color: var(--color-darker-blue);
-  border-color: var(--color-gradient-start);
-}
-
-.confirm-modal-button.danger {
-  background-color: var(--color-danger);
-  color: var(--color-text-primary);
-}
-
-.confirm-modal-button.danger:hover {
-  background-color: var(--color-danger-hover);
-  box-shadow: 0 4px 12px var(--color-shadow-danger);
-}
-
-.confirm-modal-button:disabled,
-.confirm-modal-close:disabled {
+.help-modal-button:disabled,
+.help-modal-close:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.markdown-body {
+  background-color: transparent;
+  color: var(--color-text-primary);
 }
 
 @keyframes fadeIn {

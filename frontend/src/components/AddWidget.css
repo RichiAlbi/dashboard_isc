@@ -55,6 +55,19 @@
   transform: scale(1.1);
 }
 
+.add-widget-hidden {
+  background-color: var(--color-darker-blue);
+  border-color: transparent;
+}
+
+.add-widget-hidden::before {
+  display: none;
+}
+
+.add-widget-hidden .add-widget-icon {
+  opacity: 0;
+}
+
 .add-widget-icon svg {
   width: 100%;
   height: 100%;
@@ -67,11 +80,14 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  /* Hintergrund wie Main-Content: */
+  background: var(--color-darker-blue, #181e2a);
+  /* Alternativ komplett transparent: */
+  /* background: transparent; */
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 10000;
   backdrop-filter: blur(4px);
 }
 

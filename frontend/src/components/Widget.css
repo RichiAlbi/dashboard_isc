@@ -60,12 +60,13 @@
 
 .widget-title {
   color: white;
-  font-size: 1.1rem;
+  font-size: calc(1.1rem * var(--zoom-factor));
   font-weight: 600;
   text-align: center;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   position: relative;
   z-index: 1;
+  transition: font-size 0.2s ease;
 }
 
 .widget-delete-button {
@@ -75,8 +76,8 @@
   width: 40px;
   height: 40px;
   border-radius: 6px;
-  background-color: var(--color-logout-bg);
-  border: 1px solid var(--color-logout-border);
+  background-color: var(--color-danger-bg);
+  border: 1px solid var(--color-danger-border);
   color: var(--color-danger);
   display: flex;
   align-items: center;
@@ -93,14 +94,14 @@
 }
 
 .widget-delete-button:hover {
-  background-color: var(--color-logout-bg-hover);
-  border-color: var(--color-logout-border-hover);
+  background-color: var(--color-danger-bg-hover);
+  border-color: var(--color-danger-border-hover);
   color: var(--color-danger-hover);
   transform: scale(1.05);
 }
 
 .widget-delete-button:active {
-  background-color: var(--color-logout-bg-active);
+  background-color: var(--color-danger-bg-active);
   transform: scale(0.95);
 }
 

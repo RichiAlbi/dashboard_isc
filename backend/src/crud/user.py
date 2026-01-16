@@ -40,7 +40,7 @@ async def create(session: AsyncSession, obj_in: UserCreate) -> User:
         first_name=obj_in.first_name,
         last_name=obj_in.last_name,
         is_active=obj_in.is_active if obj_in.is_active is not None else True,
-        theme=obj_in.theme,
+        settings=obj_in.settings,
         from_ldap=False
     )
     session.add(db_obj)
