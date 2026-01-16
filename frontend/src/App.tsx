@@ -1,5 +1,4 @@
 import './colors.css'
-import 'github-markdown-css/github-markdown.css'
 import './App.css'
 import './components/Header.css'
 import './components/Dropdown.css'
@@ -31,10 +30,12 @@ import { MousePositionProvider } from './context/MousePositionContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { ZoomProvider } from './context/ZoomContext'
 import { BackgroundGradient } from './components/BackgroundGradient'
+import { useDebouncedCallback } from './hooks/useDebouncedCallback'
 import { useGridLayoutManager } from './hooks/useGridLayoutManager'
 import { indexToPosition } from './utils/gridLayoutUtils'
 import { marked } from "marked";
 import ConfirmDeleteModal from './components/ConfirmDeleteModal'
+import HelpModal from './components/HelpModal'
 import type { User } from './types/user'
 import type { Widget as WidgetType, UserWidget, UserWidgetUpdate } from './types/widget'
 import WelcomeScreen from './components/WelcomeScreen'
@@ -48,26 +49,24 @@ function AppContent() {
   const [loginError, setLoginError] = useState<string | null>(null)
   const [welcomeMessage, setWelcomeMessage] = useState<string | null>(null)
   const mainContentRef = useRef<HTMLDivElement>(null)
-  const [showHelp, setShowHelp] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-  const helpContentRef = useRef<HTMLDivElement>(null);
   const [embeddedUrl, setEmbeddedUrl] = useState<string | null>(null);
   const [embeddedTitle, setEmbeddedTitle] = useState<string>('');
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(!!document.fullscreenElement);
-
+  const [showSettings, setShowSettings] = useState(false);
+  
   const { user: authenticatedUser, isAuthenticated, login, logout, isLoading: authLoading } = useAuth()
 
-useInactivityLogout({
-  enabled: isAuthenticated,
-  timeoutMs: 20 * 60 * 1000,
-  onTimeout: () => {
-    logout()
-    setSelectedUser(null)
-    setLoginError(null)
-    setWelcomeMessage("Sie wurdest nach 20 Minuten Inaktivität automatisch abgemeldet.")
-  },
-})
+  useInactivityLogout({
+    enabled: isAuthenticated,
+    timeoutMs: 20 * 60 * 1000,
+    onTimeout: () => {
+      logout()
+      setSelectedUser(null)
+      setLoginError(null)
+      setWelcomeMessage("Sie wurdest nach 20 Minuten Inaktivität automatisch abgemeldet.")
+    },
+  })
 
   // Fetch users to check for connection errors (for banner display)
   const { error: usersError } = useInfiniteUsers('')
@@ -111,19 +110,9 @@ useInactivityLogout({
 
   // Mutation for adding widgets
   const { mutate: addWidget } = useAddUserWidget()
-
+  
   // Mutation for resetting widgets to default
   const { mutate: resetWidgets, isPending: isResettingWidgets } = useResetUserWidgets()
-
-  const loadHelp = async () => {
-    const response = await fetch("/help.md");
-    const mdText = await response.text();
-    const html = await marked.parse(mdText);
-    
-    if (helpContentRef.current) {
-      helpContentRef.current.innerHTML = html;
-    }
-  }
 
   /**
    * Open a URL in embedded view (iframe)
@@ -132,7 +121,6 @@ useInactivityLogout({
   const openEmbeddedPage = (url: string, title: string) => {
     setEmbeddedUrl(url);
     setEmbeddedTitle(title);
-    setShowHelp(false); // Close help if open
   }
 
   /**
@@ -215,6 +203,7 @@ useInactivityLogout({
   }
 
   const [deleteCandidate, setDeleteCandidate] = useState<{ widgetId: string; title: string } | null>(null)
+  const [helpMessage, showHelpMessage] = useState<{ title: string } | null>(null)
 
   // Update grid width based on container size
   useEffect(() => {
@@ -328,7 +317,7 @@ useInactivityLogout({
             <button className="icon-button" aria-label="Vollbildmodus" onClick={toggleFullscreen}>
               {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
             </button>
-            <button className="icon-button" aria-label="Hilfe" onClick={() => {loadHelp(); setShowHelp(!showHelp)}}>
+            <button className="icon-button" aria-label="Hilfe" onClick={() => {showHelpMessage({ title: "help" })}}>
               <HelpIcon />
             </button>
             <button className="icon-button" aria-label="Einstellungen" onClick={() => setShowSettings(true)}>
@@ -337,11 +326,7 @@ useInactivityLogout({
           </div>
         </div>
       </header>
-      <main className="main-content help-window" style={{ zIndex: showHelp ? 3 : 1}}>
-        <div className="markdown-body" ref={helpContentRef}>
-          
-        </div>
-      </main>
+
       <main className="main-content main-window" ref={mainContentRef}>
         {embeddedUrl ? (
           <div className="embedded-view">
@@ -434,6 +419,12 @@ useInactivityLogout({
                 setDeleteCandidate(null)
             }}
         />
+    )}
+    {helpMessage && (
+      <HelpModal
+        title={helpMessage.title}
+        onClose={() => showHelpMessage(null)}
+      />
     )}
     {welcomeMessage && (
         <WelcomeScreen

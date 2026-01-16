@@ -63,20 +63,6 @@ body {
   background: var(--color-scrollbar-thumb-hover);
 }
 
-.main-window {
-  z-index: 2;
-}
-
-.help-window {
-  z-index: 1;
-  padding: 5%;
-}
-
-.markdown-body {
-  background-color: transparent;
-  color: white;
-}
-
 /* Loading and Empty States */
 .loading-container,
 .empty-state {
