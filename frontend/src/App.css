@@ -35,10 +35,9 @@ body {
   position: absolute;
   top: 12vh;
   left: 0;
+  right: 0;
+  bottom: 0;
 
-  flex: 1;
-  height: 85vh;
-  width: 100%;
   background-color: var(--color-darker-blue);
   overflow-y: auto;
   overflow-x: hidden;

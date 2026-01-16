@@ -8,7 +8,7 @@ import 'react-grid-layout/css/styles.css'
 import './components/Grid.css'
 import './components/StatusBanner.css'
 import { useState, useRef, useEffect } from 'react'
-import GridLayout, { type Layout } from 'react-grid-layout'
+import GridLayout from 'react-grid-layout'
 import Widget from './components/Widget'
 import AddWidget from './components/AddWidget'
 import LoginModal from './components/LoginModal'
@@ -29,7 +29,8 @@ import { getUserFullName } from './types/user'
 import { MousePositionProvider } from './context/MousePositionContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { BackgroundGradient } from './components/BackgroundGradient'
-import { useDebouncedCallback } from './hooks/useDebouncedCallback'
+import { useGridLayoutManager } from './hooks/useGridLayoutManager'
+import { indexToPosition } from './utils/gridLayoutUtils'
 import { marked } from "marked";
 import ConfirmDeleteModal from './components/ConfirmDeleteModal'
 import type { User } from './types/user'
@@ -227,73 +228,33 @@ useInactivityLogout({
   }, [])
 
   /**
-   * Generate grid layout based on widgets
-   * For authenticated users: Use positions from backend config if available
-   * For non-authenticated users: Arrange in 3-column grid
-   * AddWidget only shown for authenticated users
+   * Grid layout manager hook
+   * - Manages widget order (source of truth)
+   * - Derives layout positions from order
+   * - Handles drag-to-reorder with shift behavior
+   * - Enforces maxRows based on widget count
    */
-  const layout: Layout[] = [
-    ...widgets.map((widget, index) => {
-      // For user widgets, use saved position from config if available
-      const userWidget = widget as UserWidget
-      if (isAuthenticated && userWidget.config && 'x' in userWidget.config && 'y' in userWidget.config) {
-        return {
-          i: widget.widgetId,
-          x: userWidget.config.x,
-          y: userWidget.config.y,
-          w: 1,
-          h: 1,
-        }
+  const {
+    layout,
+    handleDragStart,
+    handleDrag,
+    handleDragStop,
+    insertWidget,
+    maxRows,
+  } = useGridLayoutManager({
+    widgets: widgets as UserWidget[],
+    config: { cols: 3, rowHeight: 200 },
+    gridWidth,
+    onSave: (updates) => {
+      if (authenticatedUser) {
+        saveWidgetPositions({
+          userId: authenticatedUser.userId,
+          updates,
+        })
       }
-
-      // Fallback: calculate position in 3-column grid
-      return {
-        i: widget.widgetId,
-        x: index % 3,
-        y: Math.floor(index / 3),
-        w: 1,
-        h: 1,
-      }
-    }),
-    // Add widget only for authenticated users
-    ...(isAuthenticated ? [{
-      i: 'add-widget',
-      x: widgets.length % 3,
-      y: Math.floor(widgets.length / 3),
-      w: 1,
-      h: 1,
-      static: true, // Prevent dragging the add widget button
-    }] : []),
-  ]
-
-  /**
-   * Handle layout changes (drag/drop)
-   * Debounced to avoid excessive API calls during dragging
-   */
-  const handleLayoutChange = useDebouncedCallback((newLayout: Layout[]) => {
-    // Only save if user is authenticated
-    if (!isAuthenticated || !authenticatedUser) return
-
-    // Filter out the add-widget element
-    const widgetLayouts = newLayout.filter(item => item.i !== 'add-widget')
-
-    // Create update payload for all visible widgets (userId is now in the path)
-    const updates: UserWidgetUpdate[] = widgetLayouts.map(item => ({
-      widgetId: item.i,
-      config: {
-        x: item.x,
-        y: item.y,
-      },
-    }))
-
-    // Save to backend
-    if (updates.length > 0) {
-      saveWidgetPositions({
-        userId: authenticatedUser.userId,
-        updates,
-      })
-    }
-  }, 500)
+    },
+    isAuthenticated,
+  })
 
   /**
    * Handle widget deletion (sets visible=false)
@@ -312,10 +273,10 @@ useInactivityLogout({
   const handleAddWidget = (widgetId: string) => {
     if (!isAuthenticated || !authenticatedUser) return
     // Calculate position for the new widget (add at the end)
-    const nextPosition = {
-      x: widgets.length % 3,
-      y: Math.floor(widgets.length / 3),
-    }
+    const nextPosition = indexToPosition(widgets.length, 3)
+    // Insert into grid layout manager order
+    insertWidget(widgetId)
+    // Persist to backend
     addWidget({
       userId: authenticatedUser.userId,
       widgetId,
@@ -399,10 +360,13 @@ useInactivityLogout({
             cols={3}
             rowHeight={200}
             width={gridWidth}
-            isDraggable={isAuthenticated} // Only allow dragging for logged-in users
+            maxRows={maxRows}
+            isDraggable={isAuthenticated}
             isResizable={false}
             draggableHandle=".react-grid-drag-handle"
-            onLayoutChange={handleLayoutChange}
+            onDragStart={handleDragStart}
+            onDrag={handleDrag}
+            onDragStop={handleDragStop}
           >
             {widgets.map((widget) => (
               <div key={widget.widgetId}>
