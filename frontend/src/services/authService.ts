@@ -17,6 +17,7 @@ export interface VerifyResponse {
     firstName: string | null;
     lastName: string | null;
     isActive: boolean;
+    settings?: Record<string, any>;
   };
 }
 
@@ -65,7 +66,7 @@ export async function verifyCredentials(
         firstName: data.user.firstName || '',
         lastName: data.user.lastName || '',
         isActive: data.user.isActive,
-        theme: 'system',
+        settings: data.user.settings || null,
         fromLdap: true,
         lastLdapSync: null,
       };
