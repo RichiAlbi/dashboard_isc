@@ -72,7 +72,7 @@ function toZoomLevel(value: unknown): ZoomLevel {
 export function ZoomProvider({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated } = useAuth()
   const [zoomLevel, setZoomLevelState] = useState<ZoomLevel>(getLocalStorageZoom)
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const saveTimeoutRef = useRef<number | null>(null)
   const isInitializedRef = useRef(false)
 
   const zoomFactor = ZOOM_FACTORS[zoomLevel]
