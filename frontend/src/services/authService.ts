@@ -87,7 +87,7 @@ export async function verifyCredentials(
 }
 
 /**
- * Logout - clears local storage (no backend session to clear)
+ * Logout - clears session storage (no backend session to clear)
  */
 export async function logout(): Promise<void> {
   clearStoredAuthUser();
@@ -99,18 +99,20 @@ export async function logout(): Promise<void> {
 const AUTH_STORAGE_KEY = 'dashboard_auth_user';
 
 /**
- * Save authenticated user to localStorage
+ * Save authenticated user to sessionStorage
+ * Session data is cleared when browser is closed
  */
 export function saveAuthUser(user: User): void {
-  localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
+  sessionStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
 }
 
 /**
- * Get authenticated user from localStorage
+ * Get authenticated user from sessionStorage
+ * Session data is cleared when browser is closed
  */
 export function getStoredAuthUser(): User | null {
   try {
-    const stored = localStorage.getItem(AUTH_STORAGE_KEY);
+    const stored = sessionStorage.getItem(AUTH_STORAGE_KEY);
     if (stored) {
       return JSON.parse(stored) as User;
     }
@@ -121,8 +123,8 @@ export function getStoredAuthUser(): User | null {
 }
 
 /**
- * Clear authenticated user from localStorage
+ * Clear authenticated user from sessionStorage
  */
 export function clearStoredAuthUser(): void {
-  localStorage.removeItem(AUTH_STORAGE_KEY);
+  sessionStorage.removeItem(AUTH_STORAGE_KEY);
 }
