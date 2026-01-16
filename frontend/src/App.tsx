@@ -158,7 +158,7 @@ function AppContent() {
       document.documentElement.requestFullscreen().catch(() => {
         // Fullscreen request failed (e.g., user denied) - that's ok
       });
-      setIsFullscreen(true);
+      setIsFullscreen(!!document.fullscreenElement);
     }
     
     document.addEventListener('fullscreenchange', handleFullscreenChange);
