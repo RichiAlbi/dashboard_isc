@@ -1,8 +1,9 @@
 export const welcomeMessages = [
     'Willkommen',
-    'Ich hoffe Sie haben einen wundervollen Tag,',
+    'Ich hoffe, Sie haben einen wundervollen Tag,',
     'Auf einen guten Unterrichtstag,',
     'Schön, dass Sie heute da sind,',
+    'Jetzt erstmal nen Kaffee für',
     ]
 
 export function getRandomWelcome():string {

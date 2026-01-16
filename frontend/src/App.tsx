@@ -409,7 +409,7 @@ useInactivityLogout({
             if (success) {
               setSelectedUser(null)
               const text = getRandomWelcome()
-              setWelcomeMessage(`${text} ${selectedUser.firstName} ${selectedUser.lastName}!`)
+              setWelcomeMessage(`${text} ${selectedUser.firstName} ${selectedUser.lastName}.`)
             } else {
               setLoginError('Anmeldung fehlgeschlagen. Bitte Passwort überprüfen.')
             }
