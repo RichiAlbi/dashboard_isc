@@ -5,7 +5,7 @@
 export interface Widget {
   widgetId: string
   target: string
-  icon: string
+  icon?: string | null
   title: string
   color: string
   default: boolean
@@ -14,7 +14,7 @@ export interface Widget {
 
 export interface WidgetCreate {
   target: string
-  icon: string
+  icon?: string
   title: string
   color: string
   default?: boolean

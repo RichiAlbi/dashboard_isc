@@ -35,7 +35,7 @@ class UserWidgetRead(BaseModel):
     user_id: UUID = Field(alias="userId")
     widget_id: UUID = Field(alias="widgetId")
     target: str
-    icon: str
+    icon: Optional[str] = None
     title: str
     color: str
     default: bool

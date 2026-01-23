@@ -23,12 +23,13 @@ class UserUpdate(BaseModel):
     last_name: Optional[str] = Field(None, alias="lastName")
     is_active: Optional[bool] = Field(None, alias="isActive")
     settings: Optional[dict] = None  # JSON object for user settings (e.g., {"zoom": 2})
-
+    is_admin: Optional[bool] = Field(None, alias="isAdmin")
 
 class UserRead(UserBase):
     user_id: UUID = Field(alias="userId")
     from_ldap: bool = Field(False, alias="fromLdap")
     last_ldap_sync: Optional[datetime] = Field(None, alias="lastLdapSync")
+    is_admin: bool = Field(False, alias="isAdmin")
 
     model_config = ConfigDict(
         from_attributes=True,

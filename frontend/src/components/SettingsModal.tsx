@@ -2,12 +2,14 @@ import React, { useState } from 'react'
 import { useBlockSpotlight } from '../context/MousePositionContext'
 import { useZoom, type ZoomLevel } from '../context/ZoomContext'
 import './SettingsModal.css'
+import { useAuth } from '../context/AuthContext'
 
 interface SettingsModalProps {
   onClose: () => void
   isAuthenticated: boolean
   onResetLayout: () => void
   isResetting?: boolean
+  onOpenAdmin: () => void
 }
 
 const ZOOM_LABELS: Record<ZoomLevel, string> = {
@@ -21,9 +23,11 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   isAuthenticated,
   onResetLayout,
   isResetting = false,
+  onOpenAdmin,
 }) => {
   const { zoomLevel, setZoomLevel } = useZoom()
   const [showResetConfirm, setShowResetConfirm] = useState(false)
+  const { isAdmin } = useAuth()
 
   // Block spotlight effect while modal is open
   useBlockSpotlight(true)
@@ -130,6 +134,28 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
               )}
             </div>
           </div>
+
+          {/* Admin Einstellungen */}
+          {isAuthenticated && isAdmin && !isResetting && (
+              <div className="settings-section">
+                <div className="settings-section-header">
+                  <h3 className="settings-section-title">Admin Einstellungen</h3>
+                </div>
+
+                <p className="settings-section-description">
+                  Erweiterte Einstellungen für Administratoren.
+                </p>
+
+                <div className="settings-reset-actions">
+                  <button
+                      className="settings-button secondary"
+                      onClick={onOpenAdmin}
+                  >
+                    Einstellungen
+                  </button>
+                </div>
+              </div>
+          )}
         </div>
       </div>
     </div>

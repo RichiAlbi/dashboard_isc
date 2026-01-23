@@ -1,7 +1,8 @@
 from typing import List, Optional
 from uuid import UUID
-from sqlalchemy import select, join
+from sqlalchemy import select, join, delete
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 from models.user_widget import UserWidget
 from models.widget import Widget
 from schemas.user_widget import UserWidgetCreate, UserWidgetUpdate
@@ -161,3 +162,96 @@ async def initialize_user_widgets(session: AsyncSession, user_id: UUID, default_
     except Exception:
         await session.rollback()
         raise
+
+async def sync_missing_user_widgets(
+        session: AsyncSession,
+        user_id: UUID,
+        cols: int = 3
+) -> int:
+    """
+    Erstellt fehlende user_widget-Einträge automatisch.
+
+    - default=True  -> visible=True + Grid-Position
+    - default=False -> visible=False (hidden)
+    """
+
+    # Alle vorhandenen Widgets des Users
+    existing_stmt = select(UserWidget.widget_id).where(
+        UserWidget.user_id == user_id
+    )
+    res = await session.execute(existing_stmt)
+    existing_ids = set(res.scalars().all())
+
+    # Alle globalen Widgets
+    widgets_stmt = select(Widget.widget_id, Widget.default)
+    widgets_res = await session.execute(widgets_stmt)
+    widgets = widgets_res.all()
+
+    missing = [(wid, is_default) for wid, is_default in widgets if wid not in existing_ids]
+    if not missing:
+        return 0
+
+    # Anzahl sichtbarer Widgets → Position ans Ende anhängen
+    visible_stmt = select(UserWidget).where(
+        UserWidget.user_id == user_id,
+        UserWidget.visible == True
+    )
+    visible_res = await session.execute(visible_stmt)
+    visible_count = len(visible_res.scalars().all())
+
+    created = []
+    index = visible_count
+
+    for widget_id, is_default in missing:
+        if is_default:
+            x = index % cols
+            y = index // cols
+            index += 1
+            created.append(UserWidget(
+                user_id=user_id,
+                widget_id=widget_id,
+                visible=True,
+                config={"x": x, "y": y},
+            ))
+        else:
+            created.append(UserWidget(
+                user_id=user_id,
+                widget_id=widget_id,
+                visible=False,
+                config={}
+            ))
+
+    session.add_all(created)
+
+    try:
+        await session.commit()
+        return len(created)
+    except IntegrityError:
+        await session.rollback()
+        return 0
+
+async def cleanup_orphan_user_widgets(session: AsyncSession, user_id: UUID) -> int:
+    """
+    Löscht user_widget Zeilen für user_id, deren widget_id nicht mehr in widgets existiert.
+    """
+    existing_widgets_subq = select(Widget.widget_id)
+
+    stmt = (
+        delete(UserWidget)
+        .where(UserWidget.user_id == user_id)
+        .where(UserWidget.widget_id.not_in(existing_widgets_subq))
+    )
+    res = await session.execute(stmt)
+    await session.commit()
+    return int(res.rowcount or 0)
+
+
+async def remove_all_by_widget_id(session: AsyncSession, widget_id: UUID) -> int:
+    """
+    Löscht alle user_widget Zeilen (für alle User) zu einer widget_id.
+    Nützlich beim hard delete eines globalen Widgets (falls kein ON DELETE CASCADE).
+    """
+    stmt = delete(UserWidget).where(UserWidget.widget_id == widget_id)
+    res = await session.execute(stmt)
+    await session.commit()
+    return int(res.rowcount or 0)
