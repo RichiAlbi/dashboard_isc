@@ -41,6 +41,9 @@ import type { Widget as WidgetType, UserWidget, UserWidgetUpdate } from './types
 import WelcomeScreen from './components/WelcomeScreen'
 import { getRandomWelcome } from './utils/welcomeMessages'
 import { useInactivityLogout } from "./hooks/useInactivityLogout";
+import AdminModal from './components/AdminModal.tsx'
+import GlobalWidgetsModal from './components/GlobalWidgetsModal'
+import UserAdminModal from './components/UserAdminModal'
 
 function AppContent() {
   const [gridWidth, setGridWidth] = useState(1200)
@@ -54,7 +57,9 @@ function AppContent() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(!!document.fullscreenElement);
   const [showSettings, setShowSettings] = useState(false);
-  
+  const [showAdmin, setShowAdmin] = useState(false);
+  const [showGlobalWidgets, setShowGlobalWidgets] = useState(false)
+
   const { user: authenticatedUser, isAuthenticated, login, logout, isLoading: authLoading } = useAuth()
 
   useInactivityLogout({
@@ -262,6 +267,8 @@ function AppContent() {
     })
   }
 
+  const [showUserAdmin, setShowUserAdmin] = useState(false)
+
   /**
    * Handle adding a widget back (sets visible=true)
    */
@@ -287,7 +294,7 @@ function AppContent() {
             <WarningIcon />
           </div>
           <div className="status-banner-message">
-            Datenbank nicht erreichbar. Die Anwendung läuft im Offline-Modus.
+            Es ist ein Fehler aufgetreten.
           </div>
           <button
             className="status-banner-close"
@@ -365,7 +372,7 @@ function AppContent() {
                   title={widget.title}
                   color={widget.color}
                   target={widget.target}
-                  icon={getIcon(widget.icon)}
+                  icon={getIcon(widget.icon ?? '')}
                   showControls={isAuthenticated}
                   onDelete={() => setDeleteCandidate({ widgetId: widget.widgetId, title: widget.title })}
                   onNavigate={openEmbeddedPage}
@@ -450,8 +457,33 @@ function AppContent() {
               })
             }}
             isResetting={isResettingWidgets}
+            onOpenAdmin={() => {
+              setShowSettings(false)
+              setShowAdmin(true)
+            }}
         />
     )}
+      {showAdmin && (
+          <AdminModal
+            onClose={() => setShowAdmin(false)}
+            onManageGlobalWidgets={() => {
+              setShowAdmin(false)
+              setShowGlobalWidgets(true)
+            }}
+            onManageUsers={() => {
+              setShowAdmin(false)
+              setShowUserAdmin(true)
+            }}
+          />
+      )}
+      {showGlobalWidgets && (
+          <GlobalWidgetsModal
+            onClose={() => setShowGlobalWidgets(false)}
+          />
+      )}
+      {showUserAdmin && (
+          <UserAdminModal onClose={() => setShowUserAdmin(false)} />
+      )}
     </>
   )
 }

@@ -301,3 +301,31 @@ export function useResetUserWidgets() {
     },
   })
 }
+
+/**
+ * Delete a global widget (hard delete)
+ */
+export async function deleteWidget(widgetId: string): Promise<void> {
+  return apiFetch<void>(`/widget/${widgetId}`, {
+    method: 'DELETE',
+  })
+}
+
+/**
+ * React Query mutation hook to delete a global widget
+ */
+export function useDeleteWidget() {
+  const queryClient = useQueryClient()
+
+  return useMutation<void, ApiError, string>({
+    mutationFn: deleteWidget,
+    onSuccess: (_, widgetId) => {
+      // Detail-Cache weg, falls du den irgendwann nutzt
+      queryClient.removeQueries({ queryKey: widgetKeys.detail(widgetId) })
+
+      // Alle Listen neu laden (inkl. filter/limit Variationen)
+      queryClient.invalidateQueries({ queryKey: widgetKeys.lists() })
+    },
+  })
+}
+

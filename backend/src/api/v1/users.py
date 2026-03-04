@@ -64,33 +64,30 @@ async def create_user(
 
 
 @router.put("/{user_id}", response_model=UserRead)
-async def update_user(
-        user_id: UUID,
-        user_in: UserUpdate,
-        db: AsyncSession = Depends(get_db)
-):
-    """Lehrer aktualisieren"""
+async def update_user(user_id: UUID, user_in: UserUpdate, db: AsyncSession = Depends(get_db)):
     user = await crud_user.get(db, user_id)
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User with id {user_id} not found"
-        )
+        raise HTTPException(404, detail=f"User with id {user_id} not found")
+
+    if user.is_admin and user_in.is_admin is False:
+        admin_count = await crud_user.count_admins(db)
+        if admin_count <= 1:
+            raise HTTPException(400, detail="Es muss mindestens ein Admin im System verbleiben.")
+
     return await crud_user.update(db, user, user_in)
 
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_user(
-        user_id: UUID,
-        db: AsyncSession = Depends(get_db)
-):
-    """Lehrer löschen"""
+async def delete_user(user_id: UUID, db: AsyncSession = Depends(get_db)):
     user = await crud_user.get(db, user_id)
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User with id {user_id} not found"
-        )
+        raise HTTPException(404, detail=f"User with id {user_id} not found")
+
+    if user.is_admin:
+        admin_count = await crud_user.count_admins(db)
+        if admin_count <= 1:
+            raise HTTPException(400, detail="Der letzte Admin kann nicht gelöscht werden.")
+
     await crud_user.remove(db, user)
 
 

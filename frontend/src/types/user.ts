@@ -26,6 +26,7 @@ export interface User {
   settings: UserSettings | null;
   fromLdap: boolean;
   lastLdapSync: string | null;
+  isAdmin: boolean;
 }
 
 export interface UserCreate {
@@ -43,6 +44,7 @@ export interface UserUpdate {
   lastName?: string;
   isActive?: boolean;
   settings?: UserSettings;
+  isAdmin?: boolean;
 }
 
 export interface UserSearchParams {

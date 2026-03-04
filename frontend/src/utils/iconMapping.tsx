@@ -1,3 +1,4 @@
+import React from 'react'
 import {
     FolderIcon,
     CalendarIcon,
@@ -36,6 +37,8 @@ export const ICON_MAP = {
  * Valid icon keys for TypeScript type checking
  */
 export type IconKey = keyof typeof ICON_MAP
+
+export const ICON_KEYS = Object.keys(ICON_MAP) as IconKey[]
 
 /**
  * Get icon component by key with no fallback (returns null for invalid keys)

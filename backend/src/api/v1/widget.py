@@ -5,6 +5,7 @@ from uuid import UUID
 from schemas.widget import WidgetRead, WidgetUpdate
 from crud import widget as crud_widget
 from api.v1.deps import get_db
+from crud import user_widget as crud_user_widget
 
 router = APIRouter(prefix="/widget", tags=["widgets"])
 
@@ -30,15 +31,12 @@ async def update_widget(
 
 
 @router.delete("/{widget_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_widget(
-        widget_id: UUID,
-        db: AsyncSession = Depends(get_db)
-):
-    """Widget löschen"""
+async def delete_widget(widget_id: UUID, db: AsyncSession = Depends(get_db)):
     widget = await crud_widget.get(db, widget_id)
     if not widget:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Widget with id {widget_id} not found"
-        )
+        raise HTTPException(status_code=404, detail=f"Widget with id {widget_id} not found")
+
+    await crud_user_widget.remove_all_by_widget_id(db, widget_id)
+
     await crud_widget.remove(db, widget)
+

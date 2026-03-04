@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 import logging
+from core.config import settings
 
 from api.v1.deps import get_db
 from services.ldap_service import ldap_service
@@ -108,6 +109,7 @@ async def verify_credentials(
             "lastName": db_user.last_name,
             "isActive": db_user.is_active,
             "settings": db_user.settings,
+            "isAdmin": db_user.is_admin,
         }
     else:
         # Benutzer existiert in LDAP aber nicht in DB - hole Daten aus LDAP
@@ -120,6 +122,7 @@ async def verify_credentials(
             "lastName": ldap_user.get("last_name") if ldap_user else None,
             "isActive": True,
             "settings": {},
+            "isAdmin": False,
         }
     
     return VerifyResponse(

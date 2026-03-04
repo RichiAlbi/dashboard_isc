@@ -24,6 +24,7 @@ class User(Base):
     from_ldap: Mapped[bool] = mapped_column(Boolean, default=False)
     last_ldap_sync: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     settings: Mapped[dict | None] = mapped_column(JSONB, nullable=True, default=dict)
+    is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
 
     # Beziehungen
     widgets: Mapped[List["UserWidget"]] = relationship(
