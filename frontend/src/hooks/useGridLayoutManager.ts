@@ -54,7 +54,6 @@ interface UseGridLayoutManagerReturn {
     element: HTMLElement
   ) => void
   insertWidget: (widgetId: string, atIndex?: number) => void
-  removeWidget: (widgetId: string) => void
   maxRows: number
 }
 
@@ -255,20 +254,12 @@ export function useGridLayoutManager({
     [debouncedSave]
   )
 
-  // Remove widget from order (called when widget is hidden)
-  const removeWidget = useCallback((widgetId: string) => {
-    const newOrder = widgetOrderRef.current.filter(id => id !== widgetId)
-    setWidgetOrder(newOrder)
-    // Don't save here - widget removal is handled by separate API
-  }, [])
-
   return {
     layout,
     handleDragStart,
     handleDrag,
     handleDragStop,
     insertWidget,
-    removeWidget,
     maxRows,
   }
 }

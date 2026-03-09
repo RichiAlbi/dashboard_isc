@@ -40,10 +40,6 @@ export async function verifyCredentials(
     // Passwort verschlüsseln falls aktiviert
     const encryptedPassword = encryptPassword(password);
     
-    if (isEncryptionEnabled()) {
-      console.debug('Passwort wurde für Übertragung verschlüsselt');
-    }
-
     const apiBaseUrl = getApiBaseUrl();
     const response = await fetch(`${apiBaseUrl}/auth/verify`, {
       method: 'POST',

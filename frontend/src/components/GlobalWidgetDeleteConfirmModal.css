@@ -6,7 +6,7 @@
     align-items: center;
     justify-content: center;
     z-index: 10050;
-    animation: gwdcFadeIn 0.2s ease-out;
+    animation: fadeIn 0.2s ease-out;
 }
 
 .gwdc-modal {
@@ -16,7 +16,7 @@
     max-width: 460px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     border: 1px solid var(--color-primary-blue);
-    animation: gwdcSlideIn 0.25s ease-out;
+    animation: slideIn 0.25s ease-out;
 }
 
 .gwdc-header {
@@ -134,12 +134,3 @@
     cursor: not-allowed;
 }
 
-@keyframes gwdcFadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes gwdcSlideIn {
-    from { transform: translateY(-14px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}

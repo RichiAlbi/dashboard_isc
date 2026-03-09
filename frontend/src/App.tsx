@@ -1,4 +1,5 @@
 import './colors.css'
+import './animations.css'
 import './App.css'
 import './components/Header.css'
 import './components/Dropdown.css'
@@ -33,7 +34,6 @@ import { BackgroundGradient } from './components/BackgroundGradient'
 import { useDebouncedCallback } from './hooks/useDebouncedCallback'
 import { useGridLayoutManager } from './hooks/useGridLayoutManager'
 import { indexToPosition } from './utils/gridLayoutUtils'
-import { marked } from "marked";
 import ConfirmDeleteModal from './components/ConfirmDeleteModal'
 import HelpModal from './components/HelpModal'
 import type { User } from './types/user'
@@ -429,7 +429,6 @@ function AppContent() {
     )}
     {helpMessage && (
       <HelpModal
-        title={helpMessage.title}
         onClose={() => showHelpMessage(null)}
       />
     )}

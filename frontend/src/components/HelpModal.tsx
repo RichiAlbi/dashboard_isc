@@ -5,34 +5,30 @@ import './HelpModal.css'
 import { marked } from "marked";
 
 interface HelpModalProps {
-  title: string
   onClose: () => void
-  isLoading?: boolean
 }
 
-const HelpModal: React.FC<HelpModalProps> = ({
-  title,
-  onClose,
-  isLoading = false,
-}) => {
+const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
 
   const helpContentRef = React.useRef<HTMLDivElement>(null);
-    
-  const loadHelp = async () => {
-    const response = await fetch("/help.md");
-    const mdText = await response.text();
-    const html = await marked.parse(mdText);
- 
-    if (helpContentRef.current) {
-        helpContentRef.current.innerHTML = html;
-    }
-  }
 
-  loadHelp()
+  React.useEffect(() => {
+    const loadHelp = async () => {
+      const response = await fetch("/help.md");
+      const mdText = await response.text();
+      const html = await marked.parse(mdText);
+
+      if (helpContentRef.current) {
+        helpContentRef.current.innerHTML = html;
+      }
+    }
+    loadHelp()
+  }, [])
+
   useBlockSpotlight(true)
 
   const handleOverlayClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget && !isLoading) onClose()
+    if (e.target === e.currentTarget) onClose()
   }
 
   return (

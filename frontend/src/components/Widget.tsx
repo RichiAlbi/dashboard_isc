@@ -36,11 +36,8 @@ const Widget: React.FC<WidgetProps> = ({ title, icon, color, target, onDelete, s
     }
 
     if (target) {
-      console.log('Widget clicked:', { title, allow_iframe, type: typeof allow_iframe, target });
-      
       // Check if iframe is allowed for this widget
       if (!allow_iframe) {
-        console.log('→ Opening in popup (allow_iframe is false)');
         // Open directly in popup window
         const width = Math.min(1200, window.innerWidth * 0.8);
         const height = Math.min(800, window.innerHeight * 0.8);
@@ -52,7 +49,6 @@ const Widget: React.FC<WidgetProps> = ({ title, icon, color, target, onDelete, s
           `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
         );
       } else if (onNavigate) {
-        console.log('→ Opening in iframe (allow_iframe is true)');
         // Try to load in iframe
         onNavigate(target, title)
       } else {
