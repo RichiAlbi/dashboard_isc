@@ -4,7 +4,7 @@
   height: calc(12vh * var(--zoom-factor));
   min-height: 60px;
   width: 100%;
-  background-color: var(--color-dark-blue);
+  background-color: var(--color-header-bg);
   display: flex;
   align-items: center;
   padding: 0 2rem;

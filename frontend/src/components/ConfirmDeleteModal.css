@@ -96,7 +96,7 @@
 
 .confirm-modal-button.secondary:hover {
   background-color: var(--color-darker-blue);
-  border-color: var(--color-gradient-start);
+  border-color: var(--color-primary-blue);
 }
 
 .confirm-modal-button.danger {

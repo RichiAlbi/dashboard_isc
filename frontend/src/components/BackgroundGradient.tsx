@@ -1,4 +1,5 @@
 import { useMousePosition } from '../context/MousePositionContext';
+import { useWidgetHover } from '../context/WidgetHoverContext';
 import './BackgroundGradient.css';
 
 interface BackgroundGradientProps {
@@ -23,6 +24,7 @@ export function BackgroundGradient({
   damping = 0.3,
 }: BackgroundGradientProps) {
   const { position } = useMousePosition();
+  const { hoveredColor, widgetColorEnabled } = useWidgetHover();
 
   // Calculate center of viewport
   const centerX = window.innerWidth / 2;
@@ -32,12 +34,16 @@ export function BackgroundGradient({
   const dampedX = centerX + (position.x - centerX) * damping;
   const dampedY = centerY + (position.y - centerY) * damping;
 
+  // Use widget hover color only if the setting is enabled
+  const activeColorStart = (widgetColorEnabled && hoveredColor) ? hoveredColor : colorStart;
+
   const gradientStyle = {
     background: `radial-gradient(
       ${sizeX}px ${sizeY}px at ${dampedX}px ${dampedY}px,
-      ${colorStart} 0%,
+      ${activeColorStart} 30%,
       ${colorEnd} 100%
     )`,
+    transition: 'background 0.3s ease',
   };
 
   return <div className="background-gradient" style={gradientStyle} />;

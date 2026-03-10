@@ -101,7 +101,7 @@
 
 .login-modal-input:focus {
   outline: none;
-  border-color: var(--color-gradient-start);
+  border-color: var(--color-primary-blue);
   box-shadow: 0 0 0 3px var(--color-shadow-focus);
 }
 
@@ -136,7 +136,7 @@
 }
 
 .login-modal-button.primary:hover {
-  background-color: var(--color-gradient-start);
+  background-color: var(--color-primary-blue);
   box-shadow: 0 4px 12px var(--color-shadow-blue-strong);
 }
 
@@ -148,7 +148,7 @@
 
 .login-modal-button.secondary:hover {
   background-color: var(--color-darker-blue);
-  border-color: var(--color-gradient-start);
+  border-color: var(--color-primary-blue);
 }
 
 /* Full Name Display */

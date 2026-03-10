@@ -86,7 +86,7 @@
 }
 
 .gwdc-input:focus {
-    border-color: var(--color-gradient-start);
+    border-color: var(--color-primary-blue);
     box-shadow: 0 0 0 3px rgba(51, 163, 255, 0.15);
 }
 
@@ -115,7 +115,7 @@
 }
 
 .gwdc-btn.secondary:hover {
-    border-color: var(--color-gradient-start);
+    border-color: var(--color-primary-blue);
 }
 
 .gwdc-btn.danger {

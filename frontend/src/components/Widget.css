@@ -8,7 +8,7 @@
   height: 100%;
   border-radius: 12px;
   background-color: var(--color-dark-blue);
-  border: 2px solid var(--color-button-border);
+  border: 2px solid var(--color-widget-border);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -38,7 +38,7 @@
 }
 
 .widget:hover {
-  border-color: var(--color-button-border-hover);
+  border-color: var(--color-widget-border-hover);
   box-shadow: 0 4px 12px var(--color-shadow-blue);
 }
 
