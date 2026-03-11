@@ -53,7 +53,7 @@ Es kann zwischen folgenden Schriftgrößen gewählt werden:
 * groß
 
 ## Angemeldet
-Nach dem Anmelden wird zusätzlich die Funktion "personalisierte Verwaltungstafel auf die Standardverwaltungstafel zurücksetzen" verfügbar.
+Nach dem Anmelden wird zusätzlich die Funktion _"Layout Zurücksetzen"_ verfügbar, welche die personalisierte Verwaltungstafel auf die Standardverwaltungstafel zurücksetz. Nachdem man die **Zurücksetzen** Schaltfläche klickt, muss man zusätzlich noch durch kliken von **Bestätigen** oder **Abbrechen** seine intensionen bestätigen.
 
 # Administratoren
 Administratoren können allgemeine Einstellungen ändern.  
