@@ -38,62 +38,61 @@ async def bulk_update_widgets(updates: list[WidgetUpdate], db: AsyncSession = De
 
 
 @router.get("/{user_id}", response_model=list[UserWidgetRead])
-async def get_user_widgets(user_id: UUID, limit: int = Query(50, ge=1, le=100), offset: int = Query(0, ge=0),
-                           db: AsyncSession = Depends(get_db)):
-    """Get all visible user widgets. Auto-initializes default widgets for new users."""
-    rows = await crud_user_widget.list_for_user_with_widgets(db, user_id, skip=offset, limit=limit, visible_only=True)
+async def get_user_widgets(
+        user_id: UUID,
+        limit: int = Query(50, ge=1, le=100),
+        offset: int = Query(0, ge=0),
+        db: AsyncSession = Depends(get_db)
+):
+    await crud_user_widget.cleanup_orphan_user_widgets(db, user_id)
+    await crud_user_widget.sync_missing_user_widgets(db, user_id)
 
-    # Auto-initialize for new users: if no user_widgets exist, create them from default widgets
-    if not rows:
-        # Check if user has ANY widgets (including hidden ones)
-        all_rows = await crud_user_widget.list_for_user_with_widgets(db, user_id, skip=0, limit=1, visible_only=False)
-        if not all_rows:
-            # User has no widgets at all - initialize with defaults
-            default_widgets = await crud_widget.get_multi(db, default=True, limit=100)
-            if default_widgets:
-                await crud_user_widget.initialize_user_widgets(db, user_id, default_widgets)
-                # Refetch after initialization
-                rows = await crud_user_widget.list_for_user_with_widgets(db, user_id, skip=offset, limit=limit, visible_only=True)
+    rows = await crud_user_widget.list_for_user_with_widgets(
+        db, user_id, skip=offset, limit=limit, visible_only=True
+    )
 
-    # Transformiere Tupel (UserWidget, Widget) in Schema-Dicts
-    resp = []
-    for uw, w in rows:
-        resp.append({
-            "userId": uw.user_id,
-            "widgetId": w.widget_id,
-            "target": w.target,
-            "icon": w.icon,
-            "title": w.title,
-            "color": w.color,
-            "default": w.default,
-            "allow_iframe": w.allow_iframe,
-            "visible": uw.visible,
-            "config": uw.config,
-        })
-    return resp
+    return [{
+        "userId": uw.user_id,
+        "widgetId": w.widget_id,
+        "target": w.target,
+        "icon": w.icon,
+        "title": w.title,
+        "color": w.color,
+        "default": w.default,
+        "allow_iframe": w.allow_iframe,
+        "visible": uw.visible,
+        "config": uw.config,
+    } for uw, w in rows]
+
 
 
 @router.get("/{user_id}/hidden", response_model=list[UserWidgetRead])
-async def get_hidden_user_widgets(user_id: UUID, limit: int = Query(50, ge=1, le=100), offset: int = Query(0, ge=0),
-                                   db: AsyncSession = Depends(get_db)):
-    """Get all hidden user widgets (can be re-added to the dashboard)."""
-    rows = await crud_user_widget.list_hidden_for_user_with_widgets(db, user_id, skip=offset, limit=limit)
+async def get_hidden_user_widgets(
+        user_id: UUID,
+        limit: int = Query(50, ge=1, le=100),
+        offset: int = Query(0, ge=0),
+        db: AsyncSession = Depends(get_db)
+):
+    await crud_user_widget.cleanup_orphan_user_widgets(db, user_id)
+    await crud_user_widget.sync_missing_user_widgets(db, user_id)
 
-    resp = []
-    for uw, w in rows:
-        resp.append({
-            "userId": uw.user_id,
-            "widgetId": w.widget_id,
-            "target": w.target,
-            "icon": w.icon,
-            "title": w.title,
-            "color": w.color,
-            "default": w.default,
-            "allow_iframe": w.allow_iframe,
-            "visible": uw.visible,
-            "config": uw.config,
-        })
-    return resp
+    rows = await crud_user_widget.list_hidden_for_user_with_widgets(
+        db, user_id, skip=offset, limit=limit
+    )
+
+    return [{
+        "userId": uw.user_id,
+        "widgetId": w.widget_id,
+        "target": w.target,
+        "icon": w.icon,
+        "title": w.title,
+        "color": w.color,
+        "default": w.default,
+        "allow_iframe": w.allow_iframe,
+        "visible": uw.visible,
+        "config": uw.config,
+    } for uw, w in rows]
+
 
 
 @router.put("/{user_id}", response_model=list[UserWidgetRead])

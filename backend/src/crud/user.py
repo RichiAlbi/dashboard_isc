@@ -1,10 +1,9 @@
 from typing import Optional, List
 from uuid import UUID
-from sqlalchemy import select, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from models.user import User
 from schemas.user import UserCreate, UserUpdate
-
+from sqlalchemy import select, or_, func
 
 async def get(session: AsyncSession, user_id: UUID) -> Optional[User]:
     result = await session.execute(select(User).where(User.user_id == user_id))
@@ -62,3 +61,10 @@ async def remove(session: AsyncSession, user: User) -> User:
     await session.delete(user)
     await session.commit()
     return user
+
+async def count_admins(session: AsyncSession) -> int:
+    result = await session.execute(
+        select(func.count()).select_from(User).where(User.is_admin == True)
+    )
+    return int(result.scalar_one())
+

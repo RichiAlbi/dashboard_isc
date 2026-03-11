@@ -18,6 +18,7 @@ export interface VerifyResponse {
     lastName: string | null;
     isActive: boolean;
     settings?: Record<string, any>;
+    isAdmin?: boolean;
   };
 }
 
@@ -69,6 +70,7 @@ export async function verifyCredentials(
         settings: data.user.settings || null,
         fromLdap: true,
         lastLdapSync: null,
+        isAdmin: data.user.isAdmin ?? false,
       };
 
       return { success: true, user };

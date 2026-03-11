@@ -27,6 +27,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   /** Check if user is authenticated */
   isAuthenticated: boolean;
+  isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -91,6 +92,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     login,
     logout,
     isAuthenticated: user !== null,
+    isAdmin: user?.isAdmin === true
   };
 
   return (

@@ -9,7 +9,7 @@ interface WelcomeScreenProps {
 
 const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   message,
-  duration = 1500,
+  duration = 2500,
   onClose,
 }) => {
   useEffect(() => {

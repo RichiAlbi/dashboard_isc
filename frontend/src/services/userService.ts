@@ -155,10 +155,11 @@ export function useUpdateUser() {
 
   return useMutation<User, Error, { userId: string; data: UserUpdate }>({
     mutationFn: ({ userId, data }) => updateUser(userId, data),
-    onSuccess: (data, variables) => {
-      // Invalidate the specific user and the list
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: userKeys.detail(variables.userId) });
       queryClient.invalidateQueries({ queryKey: userKeys.lists() });
+
+      queryClient.invalidateQueries({ queryKey: ['users', 'infinite'], exact: false });
     },
   });
 }
