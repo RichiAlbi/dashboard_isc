@@ -25,12 +25,11 @@
     top: 0;
     z-index: 2;
     padding: 1rem 1.2rem;
-    border-bottom: 1px solid rgba(255,255,255,0.10);
+    border-bottom: 1px solid var(--color-button-border);
     display: flex;
     justify-content: center;
     align-items: center;
-    background: rgba(0,0,0,0.06);
-    backdrop-filter: blur(6px);
+    background-color: var(--color-header-bg);
 }
 
 .ua-title {
@@ -45,14 +44,23 @@
     right: 0.9rem;
     top: 50%;
     transform: translateY(-50%);
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.10);
+    background: var(--color-button-bg);
+    border: 1px solid var(--color-button-border);
     color: var(--color-text-primary);
     font-size: 26px;
     cursor: pointer;
     width: 34px;
     height: 34px;
     border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.ua-close:hover {
+    background: var(--color-button-bg-hover);
+    border-color: var(--color-button-border-hover);
 }
 
 .ua-toolbar {
@@ -194,29 +202,16 @@
 .ua-error { color: var(--color-danger); margin-top: 0.6rem; }
 
 .ua-list::-webkit-scrollbar,
-.ua-editor::-webkit-scrollbar {
-    width: 10px;
-}
-
-.ua-list::-webkit-scrollbar-thumb,
-.ua-editor::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.14);
-    border-radius: 999px;
-}
-
-.ua-list::-webkit-scrollbar-thumb:hover,
-.ua-editor::-webkit-scrollbar-thumb:hover {
-    background: rgba(255,255,255,0.22);
-}
-
+.ua-editor::-webkit-scrollbar { width: 10px; }
 .ua-list::-webkit-scrollbar-track,
-.ua-editor::-webkit-scrollbar-track {
-    background: rgba(0,0,0,0.12);
-    border-radius: 999px;
-}
+.ua-editor::-webkit-scrollbar-track { background: var(--color-scrollbar-track); }
+.ua-list::-webkit-scrollbar-thumb,
+.ua-editor::-webkit-scrollbar-thumb { background: var(--color-scrollbar-thumb); border-radius: 5px; }
+.ua-list::-webkit-scrollbar-thumb:hover,
+.ua-editor::-webkit-scrollbar-thumb:hover { background: var(--color-scrollbar-thumb-hover); }
 
 .ua-list,
 .ua-editor {
     scrollbar-width: thin;
-    scrollbar-color: rgba(255,255,255,0.22) rgba(0,0,0,0.12);
+    scrollbar-color: var(--color-scrollbar-thumb) var(--color-scrollbar-track);
 }

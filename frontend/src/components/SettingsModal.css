@@ -21,9 +21,11 @@
   max-width: 420px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   animation: slideIn 0.3s ease-out;
-  border: 1px solid var(--color-primary-blue);
+  border: 1px solid var(--color-button-border);
   max-height: 80vh;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 /* Modal Header */
@@ -32,8 +34,10 @@
   align-items: center;
   justify-content: center;
   padding: 1.2rem;
-  border-bottom: 1px solid var(--color-primary-blue);
+  background-color: var(--color-header-bg);
+  border-bottom: 1px solid var(--color-button-border);
   position: relative;
+  flex-shrink: 0;
 }
 
 .settings-modal-title {
@@ -64,14 +68,22 @@
 }
 
 .settings-modal-close:hover {
-  background-color: var(--color-darker-blue);
+  background-color: var(--color-button-bg);
+  border: 1px solid var(--color-button-border-hover);
   color: var(--color-text-primary);
 }
 
 /* Modal Content */
 .settings-modal-content {
   padding: 1.2rem;
+  overflow-y: auto;
+  flex: 1;
 }
+
+.settings-modal-content::-webkit-scrollbar { width: 10px; }
+.settings-modal-content::-webkit-scrollbar-track { background: var(--color-scrollbar-track); }
+.settings-modal-content::-webkit-scrollbar-thumb { background: var(--color-scrollbar-thumb); border-radius: 5px; }
+.settings-modal-content::-webkit-scrollbar-thumb:hover { background: var(--color-scrollbar-thumb-hover); }
 
 /* Settings Section */
 .settings-section {
@@ -113,6 +125,51 @@
   font-size: 0.85rem;
   margin: 0 0 1rem 0;
   line-height: 1.4;
+}
+
+/* Toggle Switch */
+.settings-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.settings-toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.settings-toggle-track {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background-color: var(--color-darker-blue);
+  border-radius: 12px;
+  border: 1px solid var(--color-primary-blue);
+  transition: background-color 0.2s ease;
+}
+
+.settings-toggle input:checked + .settings-toggle-track {
+  background-color: var(--color-primary-blue);
+}
+
+.settings-toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  background-color: var(--color-text-primary);
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+}
+
+.settings-toggle input:checked + .settings-toggle-track .settings-toggle-thumb {
+  transform: translateX(20px);
 }
 
 /* Slider Container */
@@ -161,7 +218,7 @@
 }
 
 .settings-slider::-webkit-slider-thumb:hover {
-  background: var(--color-gradient-start);
+  background: var(--color-primary-blue);
   transform: scale(1.1);
 }
 
@@ -177,7 +234,7 @@
 }
 
 .settings-slider::-moz-range-thumb:hover {
-  background: var(--color-gradient-start);
+  background: var(--color-primary-blue);
   transform: scale(1.1);
 }
 
@@ -219,14 +276,14 @@
 }
 
 .settings-button.secondary {
-  background-color: var(--color-darker-blue);
+  background-color: var(--color-button-bg);
   color: var(--color-text-primary);
-  border: 1px solid var(--color-primary-blue);
+  border: 1px solid var(--color-button-border);
 }
 
 .settings-button.secondary:hover {
-  background-color: var(--color-darker-blue);
-  border-color: var(--color-gradient-start);
+  background-color: var(--color-button-bg-hover);
+  border-color: var(--color-button-border-hover);
 }
 
 .settings-button.danger {

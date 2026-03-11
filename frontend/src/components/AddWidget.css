@@ -92,7 +92,7 @@
 }
 
 .add-widget-modal {
-  background: var(--color-bg-secondary, #1a1a2e);
+  background: var(--color-dark-blue);
   border-radius: 16px;
   width: 90%;
   max-width: 400px;
@@ -101,6 +101,7 @@
   flex-direction: column;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   border: 1px solid var(--color-button-border);
+  overflow: hidden;
 }
 
 .add-widget-modal-header {
@@ -108,7 +109,9 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.25rem 1.5rem;
+  background-color: var(--color-header-bg);
   border-bottom: 1px solid var(--color-button-border);
+  flex-shrink: 0;
 }
 
 .add-widget-modal-header h2 {
@@ -131,8 +134,9 @@
 }
 
 .add-widget-modal-close:hover {
-  color: var(--color-text-primary, #fff);
-  background: var(--color-bg-hover, rgba(255, 255, 255, 0.1));
+  color: var(--color-text-primary);
+  background: var(--color-button-bg);
+  border: 1px solid var(--color-button-border-hover);
 }
 
 .add-widget-modal-close svg {
@@ -144,6 +148,11 @@
   padding: 1rem;
   overflow-y: auto;
 }
+
+.add-widget-modal-content::-webkit-scrollbar { width: 10px; }
+.add-widget-modal-content::-webkit-scrollbar-track { background: var(--color-scrollbar-track); }
+.add-widget-modal-content::-webkit-scrollbar-thumb { background: var(--color-scrollbar-thumb); border-radius: 5px; }
+.add-widget-modal-content::-webkit-scrollbar-thumb:hover { background: var(--color-scrollbar-thumb-hover); }
 
 .add-widget-loading,
 .add-widget-empty {
@@ -169,7 +178,7 @@
 }
 
 .add-widget-list-item:hover {
-  background: var(--color-bg-hover, rgba(255, 255, 255, 0.1));
+  background: var(--color-button-bg-hover);
 }
 
 .add-widget-list-item-color {

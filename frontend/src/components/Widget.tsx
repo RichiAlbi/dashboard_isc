@@ -1,5 +1,6 @@
-import React, { useRef } from 'react'
+import React, { useRef, useEffect } from 'react'
 import { useSpotlight } from '../hooks/useSpotlight'
+import { useWidgetHover } from '../context/WidgetHoverContext'
 import { BinIcon, DragHandleIcon } from './icons'
 import './Widget.css'
 
@@ -16,7 +17,19 @@ interface WidgetProps {
 
 const Widget: React.FC<WidgetProps> = ({ title, icon, color, target, onDelete, showControls = false, onNavigate, allow_iframe = true }) => {
   const { containerRef, isHovering, position } = useSpotlight()
+  const { setHoveredColor } = useWidgetHover()
   const isDragging = useRef(false)
+
+  // Report hover state to context for background gradient sync.
+  // When leaving, only clear if this widget's color is still active — prevents
+  // a race condition where the leaving widget overwrites the entering widget's color.
+  useEffect(() => {
+    if (isHovering) {
+      setHoveredColor(color)
+    } else {
+      setHoveredColor(prev => (prev === color ? null : prev))
+    }
+  }, [isHovering, color, setHoveredColor])
 
   const spotlightStyle = {
     '--spotlight-color': color,

@@ -29,6 +29,7 @@ import { getUserFullName } from './types/user'
 import { MousePositionProvider } from './context/MousePositionContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { ZoomProvider } from './context/ZoomContext'
+import { WidgetHoverProvider } from './context/WidgetHoverContext'
 import { BackgroundGradient } from './components/BackgroundGradient'
 import { useDebouncedCallback } from './hooks/useDebouncedCallback'
 import { useGridLayoutManager } from './hooks/useGridLayoutManager'
@@ -493,8 +494,10 @@ function App() {
     <AuthProvider>
       <ZoomProvider>
         <MousePositionProvider>
-          <BackgroundGradient />
-          <AppContent />
+          <WidgetHoverProvider>
+            <BackgroundGradient />
+            <AppContent />
+          </WidgetHoverProvider>
         </MousePositionProvider>
       </ZoomProvider>
     </AuthProvider>

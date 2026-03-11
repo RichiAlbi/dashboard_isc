@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useBlockSpotlight } from '../context/MousePositionContext'
 import { useZoom, type ZoomLevel } from '../context/ZoomContext'
+import { useWidgetHover } from '../context/WidgetHoverContext'
 import './SettingsModal.css'
 import { useAuth } from '../context/AuthContext'
 
@@ -26,6 +27,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   onOpenAdmin,
 }) => {
   const { zoomLevel, setZoomLevel } = useZoom()
+  const { widgetColorEnabled, setWidgetColorEnabled } = useWidgetHover()
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const { isAdmin } = useAuth()
 
@@ -92,6 +94,26 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
               <span>Normal</span>
               <span>Groß</span>
             </div>
+          </div>
+
+          {/* Widget Color on Background Setting */}
+          <div className="settings-section">
+            <div className="settings-section-header">
+              <h3 className="settings-section-title">Hintergrundfarbe</h3>
+              <label className="settings-toggle" aria-label="Hintergrundfarbe aktivieren">
+                <input
+                  type="checkbox"
+                  checked={widgetColorEnabled}
+                  onChange={e => setWidgetColorEnabled(e.target.checked)}
+                />
+                <span className="settings-toggle-track">
+                  <span className="settings-toggle-thumb" />
+                </span>
+              </label>
+            </div>
+            <p className="settings-section-description">
+              Der Hintergrund übernimmt die Farbe des Widget-Spotlights beim Darüberfahren.
+            </p>
           </div>
 
           {/* Reset Layout Setting - Always visible, disabled when not authenticated */}

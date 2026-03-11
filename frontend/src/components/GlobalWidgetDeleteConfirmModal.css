@@ -15,8 +15,9 @@
     width: 90%;
     max-width: 460px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-    border: 1px solid var(--color-primary-blue);
+    border: 1px solid var(--color-button-border);
     animation: gwdcSlideIn 0.25s ease-out;
+    overflow: hidden;
 }
 
 .gwdc-header {
@@ -24,7 +25,8 @@
     align-items: center;
     justify-content: center;
     padding: 1.1rem;
-    border-bottom: 1px solid var(--color-primary-blue);
+    background-color: var(--color-header-bg);
+    border-bottom: 1px solid var(--color-button-border);
     position: relative;
 }
 
@@ -52,7 +54,8 @@
 }
 
 .gwdc-close:hover {
-    background: var(--color-darker-blue);
+    background: var(--color-button-bg);
+    border: 1px solid var(--color-button-border-hover);
     color: var(--color-text-primary);
 }
 
@@ -79,15 +82,15 @@
     width: 100%;
     padding: 0.75rem 0.9rem;
     border-radius: 10px;
-    border: 1px solid var(--color-primary-blue);
+    border: 1px solid var(--color-button-border);
     background: var(--color-darker-blue);
     color: var(--color-text-primary);
     outline: none;
 }
 
 .gwdc-input:focus {
-    border-color: var(--color-gradient-start);
-    box-shadow: 0 0 0 3px rgba(51, 163, 255, 0.15);
+    border-color: var(--color-button-border-hover);
+    box-shadow: 0 0 0 3px var(--color-shadow-focus);
 }
 
 .gwdc-actions {
@@ -109,13 +112,14 @@
 }
 
 .gwdc-btn.secondary {
-    background: var(--color-darker-blue);
+    background: var(--color-button-bg);
     color: var(--color-text-primary);
-    border: 1px solid var(--color-primary-blue);
+    border: 1px solid var(--color-button-border);
 }
 
 .gwdc-btn.secondary:hover {
-    border-color: var(--color-gradient-start);
+    background: var(--color-button-bg-hover);
+    border-color: var(--color-button-border-hover);
 }
 
 .gwdc-btn.danger {

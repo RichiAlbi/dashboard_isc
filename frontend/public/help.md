@@ -4,6 +4,10 @@ Diese Elemente können:
 * Webseiten öffnen
 * nach eigenen Präferenzen angeordnet und ausgewählt werden
 
+Einige Webseiten werden hierbei in der Verwaltungstafel selbst geöffnet während andere ein separates Browserfenster öffnen.
+Wenn eine Webseite in der Verwaltungstafel angezeigt wird erscheint neben der **Benutzer auswählen** Schaltfläche eine Schaltfläche welche ein Haus zeigt.
+Durch drücken der erschienenen Schaltfläche wird wieder die Verwaltungstafel angezeigt und die Schaltfläche verschwindet.
+
 # Benutzer
 
 ## Anmelden
@@ -29,15 +33,31 @@ Das Anmelden bietet Personalisierung über eine Reihe von Einstellungen:
 * Anzeigen personalisierter Schaltflächen
 * Personalisierte Schaltflächenanordnung
 
+### Schaltflächen Verschieben
+Schaltflächen besitzen links eine angezeigte Fläche, an welcher man sie anfassen und im Raster verschieben kann.
+
+### Schaltflächen Entfernen
+Soll eine Schaltfläche nicht mehr angezeigt werden, klickt man auf den **Roten Papierkorb** in der oberen rechten Ecke der Schaltfläche und bestätigt die Aktion indem man im Bestätigungsdialog **Löschen** drückt.
+
+### Schaltflächen Hinzufügen
+Soll eine Schaltfläche angezeigt werden, klickt man auf die große **+ Schaltfläche** und wählt aus der dann angezeigten Liste welche Schaltfläche hinzugefügt werden soll.
+
 # Einstellungen
 
-## Nutzer
-Nach dem Anmelden erreicht man über das Zahnrad oben rechts die Einstellungen.  
-Hier kann ausgewählt werden, welche Schaltflächen angezeigt werden und wie diese angeordnet sind.
+## Allgemein
+über das Zahnrad oben rechts erreicht man die Einstellungen.
+Hier kann immer die Schriftgröße eingestellt werden.
+Es kann zwischen folgenden Schriftgrößen gewählt werden:
+* klein
+* normal
+* groß
 
-## Admin
-Administratoren können über das Zahnrad oben rechts auf der Standard‑Verwaltungstafel allgemeine Einstellungen ändern.  
-Hierfür müssen sie sich über das erscheinende Fenster als Administrator anmelden.
+## Angemeldet
+Nach dem Anmelden wird zusätzlich die Funktion "personalisierte Verwaltungstafel auf die Standardverwaltungstafel zurücksetzen" verfügbar.
+
+# Administratoren
+Administratoren können allgemeine Einstellungen ändern.  
+Hierfür müssen sie sich als Administrator anmelden.
 
 Administratoren können:
 * Schaltflächen erstellen

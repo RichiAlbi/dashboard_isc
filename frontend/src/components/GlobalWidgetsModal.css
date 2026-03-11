@@ -25,16 +25,11 @@
     top: 0;
     z-index: 2;
     padding: 1rem 1.2rem;
-    border-bottom: 1px solid rgba(255,255,255,0.10);
+    border-bottom: 1px solid var(--color-button-border);
     display: flex;
     justify-content: center;
     align-items: center;
-    background: linear-gradient(
-            180deg,
-            rgba(0,0,0,0.16),
-            rgba(0,0,0,0.06)
-    );
-    backdrop-filter: blur(6px);
+    background-color: var(--color-header-bg);
 }
 
 .gw-title {
@@ -50,18 +45,22 @@
     right: 0.9rem;
     top: 50%;
     transform: translateY(-50%);
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.10);
+    background: var(--color-button-bg);
+    border: 1px solid var(--color-button-border);
     color: var(--color-text-primary);
     font-size: 26px;
     cursor: pointer;
     width: 34px;
     height: 34px;
     border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
 }
 .gw-close:hover {
-    background: rgba(51,163,255,0.16);
-    border-color: rgba(51,163,255,0.40);
+    background: var(--color-button-bg-hover);
+    border-color: var(--color-button-border-hover);
 }
 
 .gw-toolbar {
@@ -104,20 +103,14 @@
     background: rgba(0,0,0,0.08);
 }
 
-/* Scrollbar optional (WebKit) */
 .gw-list::-webkit-scrollbar,
-.gw-editor::-webkit-scrollbar {
-    width: 10px;
-}
+.gw-editor::-webkit-scrollbar { width: 10px; }
+.gw-list::-webkit-scrollbar-track,
+.gw-editor::-webkit-scrollbar-track { background: var(--color-scrollbar-track); }
 .gw-list::-webkit-scrollbar-thumb,
-.gw-editor::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.14);
-    border-radius: 999px;
-}
+.gw-editor::-webkit-scrollbar-thumb { background: var(--color-scrollbar-thumb); border-radius: 5px; }
 .gw-list::-webkit-scrollbar-thumb:hover,
-.gw-editor::-webkit-scrollbar-thumb:hover {
-    background: rgba(255,255,255,0.22);
-}
+.gw-editor::-webkit-scrollbar-thumb:hover { background: var(--color-scrollbar-thumb-hover); }
 
 .gw-item {
     width: 100%;

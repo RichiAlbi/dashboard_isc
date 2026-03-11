@@ -21,7 +21,8 @@
   max-width: 400px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   animation: slideIn 0.3s ease-out;
-  border: 1px solid var(--color-primary-blue);
+  border: 1px solid var(--color-button-border);
+  overflow: hidden;
 }
 
 /* Modal Header */
@@ -30,7 +31,8 @@
   align-items: center;
   justify-content: center;
   padding: 1.2rem;
-  border-bottom: 1px solid var(--color-primary-blue);
+  background-color: var(--color-header-bg);
+  border-bottom: 1px solid var(--color-button-border);
   position: relative;
 }
 
@@ -62,7 +64,8 @@
 }
 
 .login-modal-close:hover {
-  background-color: var(--color-darker-blue);
+  background-color: var(--color-button-bg);
+  border: 1px solid var(--color-button-border-hover);
   color: var(--color-text-primary);
 }
 
@@ -91,7 +94,7 @@
   width: 100%;
   padding: 0.75rem;
   background-color: var(--color-darker-blue);
-  border: 1px solid var(--color-primary-blue);
+  border: 1px solid var(--color-button-border);
   border-radius: 8px;
   color: var(--color-text-primary);
   font-size: 1rem;
@@ -101,7 +104,7 @@
 
 .login-modal-input:focus {
   outline: none;
-  border-color: var(--color-gradient-start);
+  border-color: var(--color-button-border-hover);
   box-shadow: 0 0 0 3px var(--color-shadow-focus);
 }
 
@@ -136,19 +139,19 @@
 }
 
 .login-modal-button.primary:hover {
-  background-color: var(--color-gradient-start);
+  background-color: var(--color-primary-blue);
   box-shadow: 0 4px 12px var(--color-shadow-blue-strong);
 }
 
 .login-modal-button.secondary {
-  background-color: var(--color-darker-blue);
+  background-color: var(--color-button-bg);
   color: var(--color-text-primary);
-  border: 1px solid var(--color-primary-blue);
+  border: 1px solid var(--color-button-border);
 }
 
 .login-modal-button.secondary:hover {
-  background-color: var(--color-darker-blue);
-  border-color: var(--color-gradient-start);
+  background-color: var(--color-button-bg-hover);
+  border-color: var(--color-button-border-hover);
 }
 
 /* Full Name Display */

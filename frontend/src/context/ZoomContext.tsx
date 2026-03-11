@@ -82,15 +82,18 @@ export function ZoomProvider({ children }: { children: React.ReactNode }) {
     applyZoomFactor(zoomFactor)
   }, [zoomFactor])
 
-  // Sync zoom from user settings when user logs in
+  // Sync zoom from user settings when user logs in, reset to default on logout
   useEffect(() => {
     if (isAuthenticated && user?.settings?.zoom !== undefined) {
       const userZoom = toZoomLevel(user.settings.zoom)
       setZoomLevelState(userZoom)
       saveToLocalStorage(userZoom)
       isInitializedRef.current = true
-    } else if (!isAuthenticated) {
-      // When logged out, keep using localStorage value (already set as initial state)
+    } else if (!isAuthenticated && isInitializedRef.current) {
+      // When logged out, reset to default zoom level
+      const defaultZoom: ZoomLevel = 2
+      setZoomLevelState(defaultZoom)
+      saveToLocalStorage(defaultZoom)
       isInitializedRef.current = false
     }
   }, [isAuthenticated, user?.settings?.zoom])

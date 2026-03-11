@@ -14,6 +14,8 @@ export type ZoomLevel = 1 | 2 | 3
  */
 export interface UserSettings {
   zoom?: ZoomLevel;
+  /** Whether the background gradient adopts the hovered widget's color (default: true) */
+  widgetColorOnBackground?: boolean;
 }
 
 export interface User {
