@@ -6,23 +6,22 @@
 
   /* Primary Brand Colors */
   --color-primary-blue: #33A3FF;
+  --color-mid-blue: #004FA3;
   --color-dark-blue: #00346A;
   --color-darker-blue: #001E3D;
 
   /* Header Colors */
-  --color-header-bg: #00346A;
+  --color-header-bg: #0063CC;
 
   /* Widget Colors */
-  --color-widget-bg: #001E3D;
-  --color-widget-border: rgba(255, 255, 255, 0.8);
-  --color-widget-border-hover: rgba(255, 255, 255, 1);
+  --color-widget-bg: #004FA3;
 
   /* Panel / Main Content Area */
-  --color-panel-bg: #90c6ff;
+  --color-panel-bg: #00346A;
 
   /* Background Gradient */
-  --color-gradient-start: #ffffff;
-  --color-gradient-end: #90c6ff;
+  --color-gradient-start: #33A3FF;
+  --color-gradient-end: #00346A;
 
   /* Text Colors */
   --color-text-primary: #FFFFFF;
@@ -30,38 +29,38 @@
   --color-text-muted: rgba(51, 163, 255, 0.7);
   --color-text-muted-strong: rgba(51, 163, 255, 0.6);
 
-  /* Button Background Colors with Opacity */
-  --color-button-bg: rgba(51, 163, 255, 0.15);
-  --color-button-bg-hover: rgba(51, 163, 255, 0.25);
-  --color-button-bg-active: rgba(51, 163, 255, 0.3);
+  /* Button / Widget Background Colors (unified) */
+  --color-button-bg: #004FA3;
+  --color-button-bg-hover: #005FBF;
+  --color-button-bg-active: #0069CC;
 
-  /* Button Border Colors with Opacity */
-  --color-button-border: rgba(51, 163, 255, 0.4);
-  --color-button-border-hover: rgba(51, 163, 255, 0.6);
-  --color-button-border-strong: rgba(51, 163, 255, 0.7);
+  /* Button / Widget Border Colors (unified) */
+  --color-button-border: rgba(51, 163, 255, 0.55);
+  --color-button-border-hover: rgba(190, 225, 255, 0.9);
+  --color-button-border-strong: rgba(190, 225, 255, 0.9);
 
-  /* Widget Colors */
-  --color-widget-border: rgba(51, 163, 255, 0.4);
-  --color-widget-border-hover: rgba(51, 163, 255, 0.6);
+  /* Widget Border Colors */
+  --color-widget-border: rgba(51, 163, 255, 0.55);
+  --color-widget-border-hover: rgba(190, 225, 255, 0.9);
 
   /* Dropdown Colors */
-  --color-dropdown-bg: #001E3D;
+  --color-dropdown-bg: #00346A;
   --color-dropdown-search-bg: rgba(51, 163, 255, 0.1);
   --color-dropdown-search-bg-focus: rgba(51, 163, 255, 0.15);
   --color-dropdown-search-border: rgba(51, 163, 255, 0.3);
   --color-dropdown-search-border-focus: rgba(51, 163, 255, 0.6);
   --color-dropdown-divider: rgba(51, 163, 255, 0.2);
 
-  /* User Item Colors */
-  --color-user-item-bg: rgba(51, 163, 255, 0.08);
-  --color-user-item-bg-hover: rgba(51, 163, 255, 0.2);
-  --color-user-item-border: rgba(51, 163, 255, 0.2);
-  --color-user-item-border-hover: rgba(51, 163, 255, 0.4);
+  /* User Item Colors (unified with widget/button style) */
+  --color-user-item-bg: #004FA3;
+  --color-user-item-bg-hover: #005FBF;
+  --color-user-item-border: rgba(51, 163, 255, 0.55);
+  --color-user-item-border-hover: rgba(190, 225, 255, 0.9);
 
-  /* Scrollbar Colors (for light panel) */
-  --color-scrollbar-track: rgba(0, 52, 106, 0.1);
-  --color-scrollbar-thumb: rgba(0, 52, 106, 0.3);
-  --color-scrollbar-thumb-hover: rgba(0, 52, 106, 0.5);
+  /* Scrollbar Colors (for dark panel) */
+  --color-scrollbar-track: rgba(255, 255, 255, 0.05);
+  --color-scrollbar-thumb: rgba(255, 255, 255, 0.2);
+  --color-scrollbar-thumb-hover: rgba(255, 255, 255, 0.35);
 
   /* Shadow Colors */
   --color-shadow-default: rgba(0, 0, 0, 0.3);

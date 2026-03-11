@@ -19,7 +19,8 @@
   max-width: 420px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   animation: slideIn 0.3s ease-out;
-  border: 1px solid var(--color-primary-blue);
+  border: 1px solid var(--color-button-border);
+  overflow: hidden;
 }
 
 .confirm-modal-header {
@@ -27,7 +28,8 @@
   align-items: center;
   justify-content: center;
   padding: 1.2rem;
-  border-bottom: 1px solid var(--color-primary-blue);
+  background-color: var(--color-header-bg);
+  border-bottom: 1px solid var(--color-button-border);
   position: relative;
 }
 
@@ -59,7 +61,8 @@
 }
 
 .confirm-modal-close:hover {
-  background-color: var(--color-darker-blue);
+  background-color: var(--color-button-bg);
+  border: 1px solid var(--color-button-border-hover);
   color: var(--color-text-primary);
 }
 
@@ -89,14 +92,14 @@
 }
 
 .confirm-modal-button.secondary {
-  background-color: var(--color-darker-blue);
+  background-color: var(--color-button-bg);
   color: var(--color-text-primary);
-  border: 1px solid var(--color-primary-blue);
+  border: 1px solid var(--color-button-border);
 }
 
 .confirm-modal-button.secondary:hover {
-  background-color: var(--color-darker-blue);
-  border-color: var(--color-primary-blue);
+  background-color: var(--color-button-bg-hover);
+  border-color: var(--color-button-border-hover);
 }
 
 .confirm-modal-button.danger {
