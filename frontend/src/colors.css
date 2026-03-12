@@ -20,8 +20,8 @@
   --color-panel-bg: #00346A;
 
   /* Background Gradient */
-  --color-gradient-start: #33A3FF;
-  --color-gradient-end: #00346A;
+  --color-gradient-start: rgba(190, 225, 255, 0.9);
+  --color-gradient-end: #33A3FF;
 
   /* Text Colors */
   --color-text-primary: #FFFFFF;
