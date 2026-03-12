@@ -41,6 +41,24 @@ export type IconKey = keyof typeof ICON_MAP
 export const ICON_KEYS = Object.keys(ICON_MAP) as IconKey[]
 
 /**
+ * Human-readable display names for each icon key
+ */
+export const ICON_NAMES: Record<IconKey, string> = {
+  folder:    'Ordner',
+  calendar:  'Kalender',
+  google:    'Google',
+  nextcloud: 'Nextcloud',
+  lernsax:   'LernSax',
+  ticket:    'Ticket',
+  console:   'Konsole',
+  door:      'Tür',
+  grid:      'Raster',
+  school:    'Schule',
+  list:      'Liste',
+  news:      'Neuigkeiten',
+}
+
+/**
  * Get icon component by key with no fallback (returns null for invalid keys)
  * @param iconKey - The icon key from database (e.g., "folder", "calendar")
  * @returns React icon component or null if key is invalid/missing

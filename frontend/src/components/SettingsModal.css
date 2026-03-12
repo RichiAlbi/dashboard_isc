@@ -273,6 +273,14 @@
   cursor: pointer;
   transition: all 0.2s;
   border: none;
+  /* default = primary blue, overridden by .secondary and .danger */
+  background-color: var(--color-primary-blue);
+  color: var(--color-text-primary);
+}
+
+.settings-button:hover:not(:disabled):not(.secondary):not(.danger) {
+  box-shadow: 0 4px 12px var(--color-shadow-blue-strong);
+  filter: brightness(1.08);
 }
 
 .settings-button.secondary {

@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import './IconPicker.css'
-import { ICON_KEYS, getIcon, type IconKey } from '../utils/iconMapping'
+import { ICON_KEYS, ICON_NAMES, getIcon, type IconKey } from '../utils/iconMapping'
 
 type Props = {
     value: string | null | undefined
-    onChange: (next: string) => void // '' = kein Logo
+    onChange: (next: string) => void
     disabled?: boolean
 }
 
@@ -16,12 +16,15 @@ export const IconPicker: React.FC<Props> = ({ value, onChange, disabled }) => {
     const [q, setQ] = useState('')
 
     const safeValue = typeof value === 'string' && isIconKey(value) ? value : ''
-    const label = safeValue ? safeValue : 'Kein Logo'
+    const label = safeValue ? ICON_NAMES[safeValue as IconKey] : 'Kein Icon'
 
     const filteredKeys = useMemo(() => {
         const query = q.trim().toLowerCase()
         if (!query) return ICON_KEYS
-        return ICON_KEYS.filter((k) => k.toLowerCase().includes(query))
+        return ICON_KEYS.filter((k) =>
+            k.toLowerCase().includes(query) ||
+            ICON_NAMES[k].toLowerCase().includes(query)
+        )
     }, [q])
 
     useEffect(() => {
@@ -97,7 +100,7 @@ export const IconPicker: React.FC<Props> = ({ value, onChange, disabled }) => {
                                 onClick={() => pick('')}
                             >
                                 <span className="icon-item-ico" aria-hidden="true" />
-                                <div className="icon-item-text">Kein Logo</div>
+                                <div className="icon-item-text">Kein Icon</div>
                             </button>
 
                             {filteredKeys.map((k) => (
@@ -110,7 +113,7 @@ export const IconPicker: React.FC<Props> = ({ value, onChange, disabled }) => {
                   <span className="icon-item-ico" aria-hidden="true">
                     {getIcon(k)}
                   </span>
-                                    <div className="icon-item-text">{k}</div>
+                                    <div className="icon-item-text">{ICON_NAMES[k]}</div>
                                 </button>
                             ))}
                         </div>

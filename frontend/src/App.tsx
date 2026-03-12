@@ -486,10 +486,14 @@ function AppContent() {
       {showGlobalWidgets && (
           <GlobalWidgetsModal
             onClose={() => setShowGlobalWidgets(false)}
+            onBack={() => { setShowGlobalWidgets(false); setShowAdmin(true) }}
           />
       )}
       {showUserAdmin && (
-          <UserAdminModal onClose={() => setShowUserAdmin(false)} />
+          <UserAdminModal
+            onClose={() => setShowUserAdmin(false)}
+            onBack={() => { setShowUserAdmin(false); setShowAdmin(true) }}
+          />
       )}
     </>
   )
