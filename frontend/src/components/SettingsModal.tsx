@@ -112,7 +112,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
               </label>
             </div>
             <p className="settings-section-description">
-              Der Hintergrund übernimmt die Farbe des Widget-Spotlights beim Darüberfahren.
+              Die Auswahl-Farbe des Widgets wird mit dem Hintergrund synchronisiert.
             </p>
           </div>
 
@@ -123,7 +123,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
             <p className="settings-section-description">
               {isAuthenticated
-                ? 'Setzt alle Widgets auf die Standardansicht zurück. Ihre Anordnung und ausgeblendete Widgets werden zurückgesetzt.'
+                ? 'Setzt Anordnung und Widget-Sichtbarkeit auf die Standardansicht zurück.'
                 : 'Melden Sie sich an, um Ihr Layout zurückzusetzen.'}
             </p>
             <div className="settings-reset-actions">

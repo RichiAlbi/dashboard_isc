@@ -31,6 +31,7 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import { ZoomProvider } from './context/ZoomContext'
 import { WidgetHoverProvider } from './context/WidgetHoverContext'
 import { BackgroundGradient } from './components/BackgroundGradient'
+import iscLogo from './assets/isc-logo.png'
 import { useDebouncedCallback } from './hooks/useDebouncedCallback'
 import { useGridLayoutManager } from './hooks/useGridLayoutManager'
 import { indexToPosition } from './utils/gridLayoutUtils'
@@ -97,9 +98,12 @@ function AppContent() {
     isLoading: hiddenWidgetsLoading,
   } = useHiddenUserWidgets(authenticatedUser?.userId)
 
-  // Determine which widgets to show
-  const widgets = isAuthenticated && userWidgets.length > 0
-    ? userWidgets.filter(w => w.visible) // Only show visible user widgets
+  // Determine which widgets to show.
+  // Use user widgets whenever the user has any widget setup (visible or hidden).
+  // Only fall back to defaults for users who have never had widgets configured.
+  const hasUserWidgetSetup = userWidgets.length > 0 || hiddenWidgets.length > 0
+  const widgets = isAuthenticated && hasUserWidgetSetup
+    ? userWidgets.filter(w => w.visible)
     : defaultWidgets
 
   const widgetsLoading = isAuthenticated ? userWidgetsLoading : defaultWidgetsLoading
@@ -319,7 +323,9 @@ function AppContent() {
           </div>
           <div className="header-center">
             <h1 className="title">{embeddedUrl ? embeddedTitle : 'Dashboard'}</h1>
-            <h2 className="subtitle">Industrieschule Chemnitz</h2>
+            {!embeddedUrl && (
+              <img src={iscLogo} alt="Industrieschule Chemnitz" className="header-logo" />
+            )}
           </div>
           <div className="header-right">
             <button className="icon-button" aria-label="Vollbildmodus" onClick={toggleFullscreen}>

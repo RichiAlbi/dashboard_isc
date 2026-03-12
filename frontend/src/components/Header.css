@@ -28,9 +28,10 @@
 .header-center {
   flex: 1;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 0.25rem;
+  justify-content: center;
+  gap: 1rem;
 }
 
 .header-right {
@@ -41,9 +42,18 @@
   gap: 0.75rem;
 }
 
+.header-logo {
+  height: calc(9vh * var(--zoom-factor));
+  max-height: 108px;
+  min-height: 48px;
+  width: auto;
+  object-fit: contain;
+  transition: height 0.2s ease;
+}
+
 .title {
   margin: 0;
-  font-size: calc(1.5rem * var(--zoom-factor));
+  font-size: calc(1.75rem * var(--zoom-factor));
   font-weight: bold;
   color: var(--color-text-primary);
   transition: font-size 0.2s ease;
