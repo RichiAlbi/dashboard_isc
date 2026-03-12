@@ -40,20 +40,23 @@ Schaltflächen besitzen links eine angezeigte Fläche, an welcher man sie anfass
 Soll eine Schaltfläche nicht mehr angezeigt werden, klickt man auf den **Roten Papierkorb** in der oberen rechten Ecke der Schaltfläche und bestätigt die Aktion indem man im Bestätigungsdialog **Löschen** drückt.
 
 ### Schaltflächen Hinzufügen
-Soll eine Schaltfläche angezeigt werden, klickt man auf die große **+ Schaltfläche** und wählt aus der dann angezeigten Liste welche Schaltfläche hinzugefügt werden soll.
+Soll eine Schaltfläche angezeigt werden, klickt man auf die große **+ Schaltfläche** und wählt aus der dann angezeigten Liste welche Schaltflächen hinzugefügt werden sollen. Wenn mindestens eine Schaltfläche ausgewählt ist wird die **Hinzufügen** Schaltfläche verfügbar, durch Betätigung dieser werden die ausgewählten Schaltflächen hinzugefügt.
 
 # Einstellungen
 
 ## Allgemein
 über das Zahnrad oben rechts erreicht man die Einstellungen.
-Hier kann immer die Schriftgröße eingestellt werden.
+Hier kann immer die Schriftgröße eingestellt, und die Hintergrundfarben Synchronisation umgeschalten werden.
+
 Es kann zwischen folgenden Schriftgrößen gewählt werden:
 * klein
 * normal
 * groß
 
+Die Hintergrundfarben Synchronisation past die Akzentfarbe hinter der Verwaltungstafel an die Akzentfarbe des Elementes an über dem die Maus drüberfährt.
+
 ## Angemeldet
-Nach dem Anmelden wird zusätzlich die Funktion _"Layout Zurücksetzen"_ verfügbar, welche die personalisierte Verwaltungstafel auf die Standardverwaltungstafel zurücksetz. Nachdem man die **Zurücksetzen** Schaltfläche klickt, muss man zusätzlich noch durch kliken von **Bestätigen** oder **Abbrechen** seine intensionen bestätigen.
+Nach dem Anmelden wird zusätzlich die Funktion _"Layout Zurücksetzen"_ verfügbar, welche die personalisierte Verwaltungstafel auf die Standardverwaltungstafel zurücksetzt. Nachdem man die **Zurücksetzen** Schaltfläche klickt, muss man zusätzlich noch durch klicken von **Bestätigen** oder **Abbrechen** seine Intensionen bestätigen.
 
 # Administratoren
 Administratoren können allgemeine Einstellungen ändern.  
@@ -65,4 +68,48 @@ Administratoren können:
 * Schaltflächen bearbeiten
 * Schaltflächenfarben festlegen
 * Standardschaltflächen auswählen
-* Standardschaltflächen anordnen
+* Admin Status gewähren
+* Admin Status entziehen
+
+**ACHTUNG:** diese Einstellungen sind global und betreffen alle Nutzer!
+
+Diese Einstellungen sind ebenfalls über das Zahnrad oben rechts zu erreichen. Am ende des _Einstellungen_ Fensters gibt es nun die _Admin Einstellungen_, wird die **Einstellungen** Schaltfläche gedrückt erscheint ein Fenster in welchen ausgewählt werden kann ob Schaltflächen, **Globale Widgets verwalten** klicken, oder Nutzer, **Nutzer verwalten** klicken, verwaltet werden sollen. Das entsprechende Verwaltungsfenster öffnet sich dadurch.
+
+## Schaltflächen Verwalten
+Schaltflächen werden in der linken List angezeigt und können über die obere Suchleiste gefiltert und in der linken Liste ausgewählt werden. Am ende der Liste gibt es die Schaltfläche **(+) Widget hinzufügen** welche ein leeres Element auswählt.
+
+Ausgewählte Elemente haben folgende einstellbaren Eigenschaften:
+* Name
+* Link
+* Logo
+* Farbe(Hex)
+* Iframe erlauben
+* Default-Widget
+
+Name ist der Name der in der Verwaltungstafel angezeigt wird.<br>
+Link ist der Link den die Schaltfläche aufruft.<br>
+Logo ist das Logo das in der Verwaltungstafel angezeigt wird.<br>
+Farbe (Hex) ist die Farbe, in Hexadezimal, die beim mit der Maus drüberfahren angezeigt wird.<br>
+Iframe erlauben sorgt dafür dass der Link in der Verwaltungstafel selbst geöffnet wird.<br>
+Default-Widget bestimmt ob die Schaltfläche im nicht angemeldeten Modus verfügbar ist.
+
+Eine Schaltfläche braucht mindestens Name, Link und Farbe (Hex).
+
+Die **Abbrechen** Schaltfläche wählt die geöffnete Schaltfläche ab.
+
+Wenn alle notwendigen Eigenschaften ausgefüllt sind wird die Schaltfläche **Speichern**, oder bei neuen Schaltflächen **Hinzufügen**, verfügbar.
+
+Eine ausgewählte, nicht neue, Schaltfläche besitzt auch noch die Schaltfläche **Löschen** welches die Schaltfläche entfernt. Um die Schaltfläche tatsächlich zu entfernen muss in einem extra Fenster der Name der zu löschenden Schaltfläche Abgetippt werden und erneut eine **Löschen** Schaltfläche betätigt werden.
+
+## Nutzer Verwalten
+Nutzer werden in der linken List angezeigt und können über die obere Suchleiste gefiltert und in der linken Liste ausgewählt werden. Am ende der Liste gibt es die Schaltfläche **Mehr laden** welche benutzt werden kann falls der gesuchte Nutzer nicht in der geladenen liste zu finden ist. Gibt es die Schaltfläche **Mehr laden** nicht bedeutet dies, dass keine weitere Nutzer in der gefilterten Liste existieren.
+
+### Admin Rechte verwalten
+Nachdem ein Nutzer ausgewählt wurde kann dem Nutzer über die Schaltfläche **Admin hinzufügen** bzw. **Admin entfernen** die Rolle eines Administrators zugeteilt bzw. entzogen werden.
+
+Administratoren können Ihren eigenen Admin Status nicht entziehen.
+
+Die Schaltfläche **Abbrechen** wählt den ausgewählten Nutzer ab, getätigte Aktionen werden nicht rückgängig gemacht.
+
+### Neue Nutzer Accounts Hinzufügen/Entfernen
+Nutzer Accounts können in der Verwaltungstafel weder hinzugefügt noch entfernt werden. Die Nutzer Accounts in der Verwaltungstafel werden automatisch mit denen in _**LDAP**_ synchronisiert, daher müssen solche Aktionen über _**LDAP**_ getätigt werden.
