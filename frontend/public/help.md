@@ -26,7 +26,8 @@ Soll die Anmeldemaske geschlossen werden, kann dies durch Klicken auf das **X** 
 
 ## Abmelden
 Die Abmeldung geschieht über **Profilname → Abmelden**.  
-Die Schaltfläche ist am Ende des erscheinenden Fensters zu finden.
+Die Schaltfläche ist am Ende des erscheinenden Fensters zu finden.  
+Zusätzlich wird die Abmeldung nach 20 Minuten Inaktivität automatisch ausgeführt.
 
 ## Individualisierung
 Das Anmelden bietet Personalisierung über eine Reihe von Einstellungen:
