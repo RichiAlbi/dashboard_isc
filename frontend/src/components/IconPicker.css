@@ -203,6 +203,13 @@
     color: #ffffff;
 }
 
+.icon-item-ico img,
+.icon-dropdown-chip img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
 .icon-item-text {
     font-weight: 600;
     color: rgba(255,255,255,0.9);
