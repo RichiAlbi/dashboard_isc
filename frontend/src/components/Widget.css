@@ -53,9 +53,11 @@
   z-index: 1;
 }
 
-.widget-icon svg {
+.widget-icon svg,
+.widget-icon img {
   width: 100%;
   height: 100%;
+  object-fit: contain;
 }
 
 .widget-title {

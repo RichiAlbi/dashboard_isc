@@ -57,6 +57,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    color: #ffffff;
 }
 
 .icon-dropdown-arrow {
@@ -199,6 +200,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    color: #ffffff;
+}
+
+.icon-item-ico img,
+.icon-dropdown-chip img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
 }
 
 .icon-item-text {

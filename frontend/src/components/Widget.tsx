@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react'
 import { useSpotlight } from '../hooks/useSpotlight'
 import { useWidgetHover } from '../context/WidgetHoverContext'
-import { BinIcon, DragHandleIcon } from './icons'
+import { CloseIcon, DragHandleIcon } from './icons'
 import './Widget.css'
 
 interface WidgetProps {
@@ -109,7 +109,7 @@ const Widget: React.FC<WidgetProps> = ({ title, icon, color, target, onDelete, s
             onClick={handleDelete}
             aria-label="Widget löschen"
           >
-            <BinIcon />
+            <CloseIcon />
           </button>
         </>
       )}

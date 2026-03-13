@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import './UserAdminModal.css'
+import { BackIcon } from './icons'
 import { useBlockSpotlight } from '../context/MousePositionContext'
 import { useInfiniteUsers, useUpdateUser } from '../services/userService'
 import { useDebounce } from '../hooks/useDebounce'
@@ -9,9 +10,10 @@ import { useAuth } from '../context/AuthContext'
 
 interface Props {
     onClose: () => void
+    onBack?: () => void
 }
 
-const UserAdminModal: React.FC<Props> = ({ onClose }) => {
+const UserAdminModal: React.FC<Props> = ({ onClose, onBack }) => {
     useBlockSpotlight(true)
 
     const [search, setSearch] = useState('')
@@ -64,6 +66,11 @@ const UserAdminModal: React.FC<Props> = ({ onClose }) => {
         <div className="ua-overlay" onClick={handleOverlayClick}>
             <div className="ua-modal">
                 <div className="ua-header">
+                    {onBack && (
+                        <button className="ua-back" onClick={onBack} aria-label="Zurück">
+                            <BackIcon />
+                        </button>
+                    )}
                     <h2 className="ua-title">Nutzer verwalten</h2>
                     <button className="ua-close" onClick={onClose}>×</button>
                 </div>
@@ -95,7 +102,7 @@ const UserAdminModal: React.FC<Props> = ({ onClose }) => {
                                 }}
                             >
                                 <div className="ua-item-title">{getUserFullName(u)}</div>
-                                <div className="ua-item-sub">@{u.username}</div>
+                                <div className="ua-item-sub">{u.username}</div>
                             </button>
                         ))}
 

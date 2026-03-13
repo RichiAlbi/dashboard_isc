@@ -10,14 +10,25 @@ import {
 import type { WidgetCreate, WidgetUpdate } from '../types/widget'
 import GlobalWidgetDeleteConfirmModal from './GlobalWidgetDeleteConfirmModal'
 import { IconPicker } from './IconPicker'
+import { BackIcon } from './icons'
 
 interface Props {
     onClose: () => void
+    onBack?: () => void
 }
 
 const isHex = (v: string) => /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})$/.test(v.trim())
 
-const GlobalWidgetsModal: React.FC<Props> = ({ onClose }) => {
+// Normalise any valid hex to the 6-digit form required by <input type="color">
+const toColorInputHex = (v: string): string => {
+    const s = v.trim()
+    if (/^#[0-9a-fA-F]{6}$/.test(s)) return s
+    if (/^#[0-9a-fA-F]{3}$/.test(s))
+        return '#' + s[1].repeat(2) + s[2].repeat(2) + s[3].repeat(2)
+    return '#33A3FF'
+}
+
+const GlobalWidgetsModal: React.FC<Props> = ({ onClose, onBack }) => {
     useBlockSpotlight(true)
 
     const [search, setSearch] = useState('')
@@ -167,6 +178,11 @@ const GlobalWidgetsModal: React.FC<Props> = ({ onClose }) => {
         <div className="gw-overlay" onClick={handleOverlayClick}>
             <div className="gw-modal">
                 <div className="gw-header">
+                    {onBack && (
+                        <button className="gw-back" onClick={onBack} aria-label="Zurück">
+                            <BackIcon />
+                        </button>
+                    )}
                     <h2 className="gw-title">Globale Widgets verwalten</h2>
                     <button className="gw-close" onClick={onClose} aria-label="Schließen">×</button>
                 </div>
@@ -248,48 +264,67 @@ const GlobalWidgetsModal: React.FC<Props> = ({ onClose }) => {
                                     disabled={isBusy}
                                 />
 
-                                <label className="gw-label">Farbe (Hex)</label>
-                                <input
-                                    className="gw-input"
-                                    value={createDraft.color ?? ''}
-                                    onChange={(e) => setCreateDraft(s => ({ ...s, color: e.target.value }))}
-                                    placeholder="#33A3FF"
-                                />
+                                <label className="gw-label">Farbe</label>
+                                <div className="gw-color-picker">
+                                    <input
+                                        type="color"
+                                        className="gw-color-swatch"
+                                        value={toColorInputHex(createDraft.color ?? '')}
+                                        onChange={(e) => setCreateDraft(s => ({ ...s, color: e.target.value }))}
+                                    />
+                                    <input
+                                        type="text"
+                                        className="gw-color-hex"
+                                        value={createDraft.color ?? ''}
+                                        onChange={(e) => setCreateDraft(s => ({ ...s, color: e.target.value }))}
+                                        placeholder="#33A3FF"
+                                        maxLength={7}
+                                        spellCheck={false}
+                                    />
+                                </div>
                                 {!isHex(createDraft.color ?? '') && (
-                                    <div className="gw-error">Hex-Code z.B. #33A3FF oder #3AF</div>
+                                    <div className="gw-error">Hex-Code z.B. #33A3FF</div>
                                 )}
 
-                                <label className="gw-check">
-                                    <input
-                                        type="checkbox"
-                                        checked={!!createDraft.allow_iframe}
-                                        onChange={(e) => setCreateDraft(s => ({ ...s, allow_iframe: e.target.checked }))}
-                                    />
+                                <div className="gw-check">
+                                    <label className="gw-toggle">
+                                        <input
+                                            type="checkbox"
+                                            checked={!!createDraft.allow_iframe}
+                                            onChange={(e) => setCreateDraft(s => ({ ...s, allow_iframe: e.target.checked }))}
+                                        />
+                                        <span className="gw-toggle-track">
+                                            <span className="gw-toggle-thumb" />
+                                        </span>
+                                    </label>
                                     <span>Iframe erlauben</span>
-
                                     <span className="gw-tooltip">
-                                    <span className="gw-info" aria-hidden="true">!</span>
+                                        <span className="gw-info" aria-hidden="true">!</span>
                                         <span className="gw-tooltip-content" role="tooltip">
                                             Manche Websites lassen sich nicht in iFrames einbetten. Wenn dies der Fall ist, zeigt das Widget einen Fehler.
                                         </span>
                                     </span>
-                                </label>
+                                </div>
 
-                                <label className="gw-check">
-                                    <input
-                                        type="checkbox"
-                                        checked={!!createDraft.default}
-                                        onChange={(e) => setCreateDraft(s => ({ ...s, default: e.target.checked }))}
-                                    />
+                                <div className="gw-check">
+                                    <label className="gw-toggle">
+                                        <input
+                                            type="checkbox"
+                                            checked={!!createDraft.default}
+                                            onChange={(e) => setCreateDraft(s => ({ ...s, default: e.target.checked }))}
+                                        />
+                                        <span className="gw-toggle-track">
+                                            <span className="gw-toggle-thumb" />
+                                        </span>
+                                    </label>
                                     <span>Default-Widget</span>
-
                                     <span className="gw-tooltip">
                                         <span className="gw-info" aria-hidden="true">!</span>
                                         <span className="gw-tooltip-content" role="tooltip">
-                                            Default-Widgets werden automatisch bei Nutzern erstellt und wenn „Layout zurücksetzen“ genutzt wird.
+                                            Default-Widgets werden automatisch bei Nutzern erstellt und wenn „Layout zurücksetzen" genutzt wird.
                                         </span>
                                     </span>
-                                </label>
+                                </div>
 
                                 <div className="gw-actions">
                                     <button
@@ -341,48 +376,67 @@ const GlobalWidgetsModal: React.FC<Props> = ({ onClose }) => {
                                         disabled={isBusy}
                                     />
 
-                                    <label className="gw-label">Farbe (Hex)</label>
-                                    <input
-                                        className="gw-input"
-                                        value={draft.color ?? ''}
-                                        onChange={(e) => setDraft(s => s ? ({ ...s, color: e.target.value }) : s)}
-                                        placeholder="#33A3FF"
-                                    />
+                                    <label className="gw-label">Farbe</label>
+                                    <div className="gw-color-picker">
+                                        <input
+                                            type="color"
+                                            className="gw-color-swatch"
+                                            value={toColorInputHex(draft.color ?? '')}
+                                            onChange={(e) => setDraft(s => s ? ({ ...s, color: e.target.value }) : s)}
+                                        />
+                                        <input
+                                            type="text"
+                                            className="gw-color-hex"
+                                            value={draft.color ?? ''}
+                                            onChange={(e) => setDraft(s => s ? ({ ...s, color: e.target.value }) : s)}
+                                            placeholder="#33A3FF"
+                                            maxLength={7}
+                                            spellCheck={false}
+                                        />
+                                    </div>
                                     {!isHex(draft.color ?? '') && (
-                                        <div className="gw-error">Hex-Code z.B. #33A3FF oder #3AF</div>
+                                        <div className="gw-error">Hex-Code z.B. #33A3FF</div>
                                     )}
 
-                                    <label className="gw-check">
-                                        <input
-                                            type="checkbox"
-                                            checked={draft.allow_iframe ?? true}
-                                            onChange={(e) => setDraft(s => s ? ({ ...s, allow_iframe: e.target.checked }) : s)}
-                                        />
-                                        <span>Iframe erlauben</span>
-
-                                        <span className="gw-tooltip">
-                                        <span className="gw-info" aria-hidden="true">!</span>
-                                            <span className="gw-tooltip-content" role="tooltip">
-                                            Manche Websites lassen sich nicht in iFrames einbetten. Wenn dies der Fall ist, zeigt das Widget einen Fehler.
+                                    <div className="gw-check">
+                                        <label className="gw-toggle">
+                                            <input
+                                                type="checkbox"
+                                                checked={draft.allow_iframe ?? true}
+                                                onChange={(e) => setDraft(s => s ? ({ ...s, allow_iframe: e.target.checked }) : s)}
+                                            />
+                                            <span className="gw-toggle-track">
+                                                <span className="gw-toggle-thumb" />
                                             </span>
-                                        </span>
-                                    </label>
-
-                                    <label className="gw-check">
-                                        <input
-                                            type="checkbox"
-                                            checked={!!draft.default}
-                                            onChange={(e) => setDraft(s => s ? ({ ...s, default: e.target.checked }) : s)}
-                                        />
-                                        <span>Default-Widget</span>
-
+                                        </label>
+                                        <span>Iframe erlauben</span>
                                         <span className="gw-tooltip">
                                             <span className="gw-info" aria-hidden="true">!</span>
                                             <span className="gw-tooltip-content" role="tooltip">
-                                                Default-Widgets werden automatisch bei Nutzern erstellt und wenn „Layout zurücksetzen“ genutzt wird.
+                                                Manche Websites lassen sich nicht in iFrames einbetten. Wenn dies der Fall ist, zeigt das Widget einen Fehler.
                                             </span>
                                         </span>
-                                    </label>
+                                    </div>
+
+                                    <div className="gw-check">
+                                        <label className="gw-toggle">
+                                            <input
+                                                type="checkbox"
+                                                checked={!!draft.default}
+                                                onChange={(e) => setDraft(s => s ? ({ ...s, default: e.target.checked }) : s)}
+                                            />
+                                            <span className="gw-toggle-track">
+                                                <span className="gw-toggle-thumb" />
+                                            </span>
+                                        </label>
+                                        <span>Default-Widget</span>
+                                        <span className="gw-tooltip">
+                                            <span className="gw-info" aria-hidden="true">!</span>
+                                            <span className="gw-tooltip-content" role="tooltip">
+                                                Default-Widgets werden automatisch bei Nutzern erstellt und wenn „Layout zurücksetzen" genutzt wird.
+                                            </span>
+                                        </span>
+                                    </div>
 
                                     <div className="gw-actions">
                                         <button
