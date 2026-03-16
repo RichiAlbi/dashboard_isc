@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useBlockSpotlight } from '../context/MousePositionContext'
 import './LoginModal.css'
+import { CloseIcon } from './icons'
 
 interface LoginModalProps {
   username: string
@@ -54,9 +55,7 @@ const LoginModal: React.FC<LoginModalProps> = ({
             onClick={onClose}
             aria-label="Schließen"
             disabled={isLoading}
-          >
-            ×
-          </button>
+          ><CloseIcon /></button>
         </div>
         <form className="login-modal-form" onSubmit={handleSubmit}>
           <div className="login-modal-fullname">

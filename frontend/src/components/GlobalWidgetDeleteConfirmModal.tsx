@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { useBlockSpotlight } from '../context/MousePositionContext'
 import './GlobalWidgetDeleteConfirmModal.css'
+import { CloseIcon } from './icons'
 
 interface Props {
     title: string
@@ -39,7 +40,7 @@ const GlobalWidgetDeleteConfirmModal: React.FC<Props> = ({
                         aria-label="Schließen"
                         disabled={isLoading}
                     >
-                        ×
+                        <CloseIcon />
                     </button>
                 </div>
 

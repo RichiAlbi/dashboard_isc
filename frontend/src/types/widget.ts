@@ -24,7 +24,7 @@ export interface WidgetCreate {
 export interface WidgetUpdate {
   widgetId: string
   target?: string
-  icon?: string
+  icon?: string | null
   title?: string
   color?: string
   default?: boolean

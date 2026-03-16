@@ -70,7 +70,6 @@
     background: var(--color-button-bg);
     border: 1px solid var(--color-button-border);
     color: var(--color-text-primary);
-    font-size: 26px;
     cursor: pointer;
     width: 34px;
     height: 34px;
@@ -80,6 +79,7 @@
     justify-content: center;
     transition: all 0.2s;
 }
+.gw-close svg { width: 18px; height: 18px; }
 .gw-close:hover {
     background: var(--color-button-bg-hover);
     border-color: var(--color-button-border-hover);
@@ -455,9 +455,9 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-weight: 800;
-    line-height: 1;
     background: rgba(0,0,0,0.10);
+    flex-shrink: 0;
 }
+.gw-add-icon svg { width: 14px; height: 14px; }
 
 

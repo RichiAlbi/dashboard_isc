@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import './UserAdminModal.css'
-import { BackIcon } from './icons'
+import { BackIcon, CloseIcon } from './icons'
 import { useBlockSpotlight } from '../context/MousePositionContext'
 import { useInfiniteUsers, useUpdateUser } from '../services/userService'
 import { useDebounce } from '../hooks/useDebounce'
@@ -23,6 +23,25 @@ const UserAdminModal: React.FC<Props> = ({ onClose, onBack }) => {
         useInfiniteUsers(debounced)
 
     const users: User[] = useMemo(() => data?.pages.flatMap(p => p) ?? [], [data])
+
+    const listRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        const list = listRef.current
+        if (!list) return
+
+        const handleScroll = () => {
+            const { scrollTop, scrollHeight, clientHeight } = list
+            if (scrollHeight - scrollTop - clientHeight < 100) {
+                if (hasNextPage && !isFetchingNextPage) {
+                    fetchNextPage()
+                }
+            }
+        }
+
+        list.addEventListener('scroll', handleScroll)
+        return () => list.removeEventListener('scroll', handleScroll)
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage])
 
     const [selectedId, setSelectedId] = useState<string | null>(null)
     const selected = useMemo(
@@ -72,7 +91,7 @@ const UserAdminModal: React.FC<Props> = ({ onClose, onBack }) => {
                         </button>
                     )}
                     <h2 className="ua-title">Nutzer verwalten</h2>
-                    <button className="ua-close" onClick={onClose}>×</button>
+                    <button className="ua-close" onClick={onClose} aria-label="Schließen"><CloseIcon /></button>
                 </div>
 
                 <div className="ua-toolbar">
@@ -85,7 +104,7 @@ const UserAdminModal: React.FC<Props> = ({ onClose, onBack }) => {
                 </div>
 
                 <div className="ua-content">
-                    <div className="ua-list">
+                    <div className="ua-list" ref={listRef}>
                         {isLoading && <div className="ua-muted">Lade…</div>}
                         {error && <div className="ua-error">Fehler beim Laden.</div>}
                         {!isLoading && users.length === 0 && (
@@ -106,14 +125,8 @@ const UserAdminModal: React.FC<Props> = ({ onClose, onBack }) => {
                             </button>
                         ))}
 
-                        {hasNextPage && (
-                            <button
-                                className="ua-loadmore"
-                                onClick={() => fetchNextPage()}
-                                disabled={isFetchingNextPage}
-                            >
-                                {isFetchingNextPage ? 'Lade…' : 'Mehr laden'}
-                            </button>
+                        {isFetchingNextPage && (
+                            <div className="ua-muted ua-loading-more">Lade…</div>
                         )}
                     </div>
 

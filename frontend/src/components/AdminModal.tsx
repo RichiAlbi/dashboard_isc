@@ -1,6 +1,7 @@
 import React from 'react'
 import './AdminModal.css'
 import { useBlockSpotlight } from '../context/MousePositionContext'
+import { CloseIcon } from './icons'
 
 interface AdminModalProps {
     onClose: () => void
@@ -20,9 +21,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ onClose, onManageGlobalWidgets,
             <div className="admin-modal">
                 <div className="admin-modal-header">
                     <h2 className="admin-modal-title">Admin Einstellungen</h2>
-                    <button className="admin-modal-close" onClick={onClose} aria-label="Schließen">
-                        ×
-                    </button>
+                    <button className="admin-modal-close" onClick={onClose} aria-label="Schließen"><CloseIcon /></button>
                 </div>
 
                 <div className="admin-modal-content">

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { useSpotlight } from '../hooks/useSpotlight'
 import { useWidgetHover } from '../context/WidgetHoverContext'
 import { CloseIcon, DragHandleIcon } from './icons'
@@ -13,12 +13,12 @@ interface WidgetProps {
   showControls?: boolean // Show drag handle and delete button
   onNavigate?: (url: string, title: string) => void // Callback to open URL in embedded view
   allow_iframe?: boolean // Whether this widget allows iframe embedding
+  onDragHandlePointerDown?: (e: React.PointerEvent) => void
 }
 
-const Widget: React.FC<WidgetProps> = ({ title, icon, color, target, onDelete, showControls = false, onNavigate, allow_iframe = true }) => {
+const Widget: React.FC<WidgetProps> = ({ title, icon, color, target, onDelete, showControls = false, onNavigate, allow_iframe = true, onDragHandlePointerDown }) => {
   const { containerRef, isHovering, position } = useSpotlight()
   const { setHoveredColor } = useWidgetHover()
-  const isDragging = useRef(false)
 
   // Report hover state to context for background gradient sync.
   // When leaving, only clear if this widget's color is still active — prevents
@@ -38,15 +38,7 @@ const Widget: React.FC<WidgetProps> = ({ title, icon, color, target, onDelete, s
     '--spotlight-opacity': isHovering ? 1 : 0,
   } as React.CSSProperties
 
-  const handleDragStart = () => {
-    isDragging.current = true
-  }
-
   const handleClick = () => {
-    if (isDragging.current) {
-      isDragging.current = false
-      return
-    }
 
     if (target) {
       console.log('Widget clicked:', { title, allow_iframe, type: typeof allow_iframe, target });
@@ -98,8 +90,11 @@ const Widget: React.FC<WidgetProps> = ({ title, icon, color, target, onDelete, s
       {showControls && (
         <>
           <button
-            className="widget-drag-handle react-grid-drag-handle"
-            onMouseDown={handleDragStart}
+            className="widget-drag-handle"
+            onPointerDown={(e) => {
+              e.preventDefault() // prevents synthetic click on widget body after drag
+              onDragHandlePointerDown?.(e)
+            }}
             aria-label="Widget verschieben"
           >
             <DragHandleIcon />

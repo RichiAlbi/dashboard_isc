@@ -1,6 +1,7 @@
 import React from 'react'
 import { useBlockSpotlight } from '../context/MousePositionContext'
 import './ConfirmDeleteModal.css'
+import { CloseIcon } from './icons'
 
 interface ConfirmDeleteModalProps {
   title: string
@@ -31,9 +32,7 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
             onClick={onClose}
             aria-label="Schließen"
             disabled={isLoading}
-          >
-            ×
-          </button>
+          ><CloseIcon /></button>
         </div>
 
         <div className="confirm-modal-body">

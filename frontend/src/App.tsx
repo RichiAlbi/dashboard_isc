@@ -3,11 +3,9 @@ import './App.css'
 import './components/Header.css'
 import './components/Dropdown.css'
 import './components/Buttons.css'
-import 'react-grid-layout/css/styles.css'
-import './components/Grid.css'
 import './components/StatusBanner.css'
-import { useState, useRef, useEffect } from 'react'
-import GridLayout from 'react-grid-layout'
+import { useState, useMemo, useRef, useEffect } from 'react'
+import { WidgetGrid } from './components/WidgetGrid'
 import Widget from './components/Widget'
 import AddWidget from './components/AddWidget'
 import LoginModal from './components/LoginModal'
@@ -31,15 +29,14 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import { ZoomProvider } from './context/ZoomContext'
 import { WidgetHoverProvider } from './context/WidgetHoverContext'
 import { BackgroundGradient } from './components/BackgroundGradient'
-import iscLogo from './assets/isc-logo.png'
-import { useDebouncedCallback } from './hooks/useDebouncedCallback'
+import iscLogo from './assets/isc-logo.svg'
 import { useGridLayoutManager } from './hooks/useGridLayoutManager'
 import { indexToPosition } from './utils/gridLayoutUtils'
 import { marked } from "marked";
 import ConfirmDeleteModal from './components/ConfirmDeleteModal'
 import HelpModal from './components/HelpModal'
 import type { User } from './types/user'
-import type { Widget as WidgetType, UserWidget, UserWidgetUpdate } from './types/widget'
+import type { UserWidget } from './types/widget'
 import WelcomeScreen from './components/WelcomeScreen'
 import { getRandomWelcome } from './utils/welcomeMessages'
 import { useInactivityLogout } from "./hooks/useInactivityLogout";
@@ -47,13 +44,13 @@ import AdminModal from './components/AdminModal.tsx'
 import GlobalWidgetsModal from './components/GlobalWidgetsModal'
 import UserAdminModal from './components/UserAdminModal'
 
+const GRID_COLS = 3
+
 function AppContent() {
-  const [gridWidth, setGridWidth] = useState(1200)
   const [isBannerDismissed, setIsBannerDismissed] = useState(false)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [loginError, setLoginError] = useState<string | null>(null)
   const [welcomeMessage, setWelcomeMessage] = useState<string | null>(null)
-  const mainContentRef = useRef<HTMLDivElement>(null)
   const [embeddedUrl, setEmbeddedUrl] = useState<string | null>(null);
   const [embeddedTitle, setEmbeddedTitle] = useState<string>('');
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -215,57 +212,30 @@ function AppContent() {
   const [deleteCandidate, setDeleteCandidate] = useState<{ widgetId: string; title: string } | null>(null)
   const [helpMessage, showHelpMessage] = useState<{ title: string } | null>(null)
 
-  // Update grid width based on container size
-  useEffect(() => {
-    const updateWidth = () => {
-      if (mainContentRef.current) {
-        const computedStyle = window.getComputedStyle(mainContentRef.current)
-        const paddingLeft = parseFloat(computedStyle.paddingLeft)
-        const paddingRight = parseFloat(computedStyle.paddingRight)
-        const horizontalPadding = paddingLeft + paddingRight
-        setGridWidth(mainContentRef.current.clientWidth - horizontalPadding)
-      }
-    }
-
-    updateWidth()
-    window.addEventListener('resize', updateWidth)
-    return () => window.removeEventListener('resize', updateWidth)
-  }, [])
-
-  /**
-   * Grid layout manager hook
-   * - Manages widget order (source of truth)
-   * - Derives layout positions from order
-   * - Handles drag-to-reorder with shift behavior
-   * - Enforces maxRows based on widget count
-   */
-  const {
-    layout,
-    handleDragStart,
-    handleDrag,
-    handleDragStop,
-    insertWidget,
-    maxRows,
-  } = useGridLayoutManager({
+  const { widgetOrder, handleDrop, insertWidget, removeWidget: removeWidgetFromOrder } = useGridLayoutManager({
     widgets: widgets as UserWidget[],
-    config: { cols: 3, rowHeight: 200 },
-    gridWidth,
+    cols: GRID_COLS,
     onSave: (updates) => {
       if (authenticatedUser) {
-        saveWidgetPositions({
-          userId: authenticatedUser.userId,
-          updates,
-        })
+        saveWidgetPositions({ userId: authenticatedUser.userId, updates })
       }
     },
     isAuthenticated,
   })
+
+  // Build a lookup map for rendering
+  const widgetMap = useMemo(() => {
+    const map = new Map<string, typeof widgets[number]>()
+    for (const w of widgets) map.set(w.widgetId, w)
+    return map
+  }, [widgets])
 
   /**
    * Handle widget deletion (sets visible=false)
    */
   const handleDeleteWidget = (widgetId: string) => {
     if (!isAuthenticated || !authenticatedUser) return
+    removeWidgetFromOrder(widgetId)
     removeWidget({
       userId: authenticatedUser.userId,
       widgetId,
@@ -280,7 +250,7 @@ function AppContent() {
   const handleAddWidget = (widgetId: string) => {
     if (!isAuthenticated || !authenticatedUser) return
     // Calculate position for the new widget (add at the end)
-    const nextPosition = indexToPosition(widgets.length, 3)
+    const nextPosition = indexToPosition(widgets.length, GRID_COLS)
     // Insert into grid layout manager order
     insertWidget(widgetId)
     // Persist to backend
@@ -341,7 +311,7 @@ function AppContent() {
         </div>
       </header>
 
-      <main className="main-content main-window" ref={mainContentRef}>
+      <main className="main-content main-window">
         {embeddedUrl ? (
           <div className="embedded-view">
             <iframe
@@ -359,44 +329,36 @@ function AppContent() {
             <p>Widgets werden geladen...</p>
           </div>
         ) : (
-          <GridLayout
-            className="grid-layout"
-            layout={layout}
-            cols={3}
-            rowHeight={200}
-            width={gridWidth}
-            maxRows={maxRows}
-            isDraggable={isAuthenticated}
-            isResizable={false}
-            draggableHandle=".react-grid-drag-handle"
-            onDragStart={handleDragStart}
-            onDrag={handleDrag}
-            onDragStop={handleDragStop}
-          >
-            {widgets.map((widget) => (
-              <div key={widget.widgetId}>
+          <WidgetGrid
+            widgetOrder={widgetOrder}
+            isInteractive={isAuthenticated}
+            onDrop={handleDrop}
+            cols={GRID_COLS}
+            renderWidget={(id, cellProps) => {
+              const widget = widgetMap.get(id)
+              if (!widget) return null
+              return (
                 <Widget
                   title={widget.title}
                   color={widget.color}
                   target={widget.target}
                   icon={getIcon(widget.icon ?? '')}
                   showControls={isAuthenticated}
+                  onDragHandlePointerDown={cellProps.onDragHandlePointerDown}
                   onDelete={() => setDeleteCandidate({ widgetId: widget.widgetId, title: widget.title })}
                   onNavigate={openEmbeddedPage}
                   allow_iframe={widget.allow_iframe}
                 />
-              </div>
-            ))}
-            {isAuthenticated && (
-              <div key="add-widget">
-                <AddWidget
-                  hiddenWidgets={hiddenWidgets}
-                  onAddWidget={handleAddWidget}
-                  isLoading={hiddenWidgetsLoading}
-                />
-              </div>
+              )
+            }}
+            renderAddWidget={() => (
+              <AddWidget
+                hiddenWidgets={hiddenWidgets}
+                onAddWidget={handleAddWidget}
+                isLoading={hiddenWidgetsLoading}
+              />
             )}
-          </GridLayout>
+          />
         )}
       </main>
       </div>
@@ -458,7 +420,7 @@ function AppContent() {
                 userId: authenticatedUser.userId,
                 defaultWidgets,
                 allUserWidgets,
-                cols: 3,
+                cols: GRID_COLS,
               }, {
                 onSuccess: () => setShowSettings(false)
               })
