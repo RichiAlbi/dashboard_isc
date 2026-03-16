@@ -3,6 +3,7 @@ import 'github-markdown-css/github-markdown.css'
 import { useBlockSpotlight } from '../context/MousePositionContext'
 import './HelpModal.css'
 import { marked } from "marked";
+import { CloseIcon } from './icons'
 
 interface HelpModalProps {
   title: string
@@ -45,9 +46,7 @@ const HelpModal: React.FC<HelpModalProps> = ({
             onClick={onClose}
             aria-label="Schließen"
             disabled={isLoading}
-          >
-            ×
-          </button>
+          ><CloseIcon /></button>
         </div>
 
         <div className="help-modal-body">

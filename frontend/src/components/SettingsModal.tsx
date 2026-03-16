@@ -4,6 +4,7 @@ import { useZoom, type ZoomLevel } from '../context/ZoomContext'
 import { useWidgetHover } from '../context/WidgetHoverContext'
 import './SettingsModal.css'
 import { useAuth } from '../context/AuthContext'
+import { CloseIcon } from './icons'
 
 interface SettingsModalProps {
   onClose: () => void
@@ -63,9 +64,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
             className="settings-modal-close"
             onClick={onClose}
             aria-label="Schließen"
-          >
-            ×
-          </button>
+          ><CloseIcon /></button>
         </div>
 
         <div className="settings-modal-content">

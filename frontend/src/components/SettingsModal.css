@@ -55,7 +55,6 @@
   background: none;
   border: none;
   color: var(--color-text-secondary);
-  font-size: 28px;
   cursor: pointer;
   padding: 0;
   width: 32px;
@@ -66,6 +65,7 @@
   border-radius: 4px;
   transition: all 0.2s;
 }
+.settings-modal-close svg { width: 18px; height: 18px; }
 
 .settings-modal-close:hover {
   background-color: var(--color-button-bg);

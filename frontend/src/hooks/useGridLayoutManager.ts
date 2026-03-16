@@ -1,253 +1,103 @@
-import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
-import type { Layout } from 'react-grid-layout'
+import { useState, useCallback, useEffect, useRef } from 'react'
+import type { DropTarget } from './useWidgetDrag'
 import type { UserWidget, UserWidgetUpdate } from '../types/widget'
 import {
-  indexToPosition,
-  calculateMaxRows,
-  calculateTargetIndex,
+  swapWidgets,
   reorderArray,
   sortWidgetsByPosition,
-  orderToLayout,
   orderToPositionUpdates,
   syncOrderWithWidgets,
 } from '../utils/gridLayoutUtils'
 import { useDebouncedCallback } from './useDebouncedCallback'
 
-interface GridLayoutConfig {
-  cols: number
-  rowHeight: number
-}
-
 interface UseGridLayoutManagerProps {
   widgets: UserWidget[]
-  config: GridLayoutConfig
-  gridWidth: number
+  cols: number
   onSave: (updates: UserWidgetUpdate[]) => void
   saveDebounce?: number
   isAuthenticated: boolean
 }
 
 interface UseGridLayoutManagerReturn {
-  layout: Layout[]
-  handleDragStart: (
-    layout: Layout[],
-    oldItem: Layout,
-    newItem: Layout,
-    placeholder: Layout,
-    event: MouseEvent,
-    element: HTMLElement
-  ) => void
-  handleDrag: (
-    layout: Layout[],
-    oldItem: Layout,
-    newItem: Layout,
-    placeholder: Layout,
-    event: MouseEvent,
-    element: HTMLElement
-  ) => void
-  handleDragStop: (
-    layout: Layout[],
-    oldItem: Layout,
-    newItem: Layout,
-    placeholder: Layout,
-    event: MouseEvent,
-    element: HTMLElement
-  ) => void
+  widgetOrder: string[]
+  handleDrop: (sourceIndex: number, target: DropTarget) => void
   insertWidget: (widgetId: string, atIndex?: number) => void
   removeWidget: (widgetId: string) => void
-  maxRows: number
 }
 
-/**
- * Custom hook for managing grid layout with order-based positioning.
- *
- * Performance optimizations:
- * - Uses refs to track drag state without triggering re-renders
- * - Only updates preview order when target index actually changes
- * - Minimizes state updates during drag operations
- */
 export function useGridLayoutManager({
   widgets,
-  config,
-  gridWidth,
+  cols,
   onSave,
   saveDebounce = 500,
   isAuthenticated,
 }: UseGridLayoutManagerProps): UseGridLayoutManagerReturn {
-  const { cols } = config
-
-  // Widget order state - this is the source of truth
   const [widgetOrder, setWidgetOrder] = useState<string[]>([])
 
-  // Refs to track drag state without causing re-renders
-  const dragStateRef = useRef<{
-    isDragging: boolean
-    widgetId: string | null
-    originalIndex: number
-  }>({
-    isDragging: false,
-    widgetId: null,
-    originalIndex: -1,
-  })
-
-  // Track if order has been initialized from widgets
   const isInitializedRef = useRef(false)
-
-  // Store widgetOrder in ref for use in callbacks without dependencies
   const widgetOrderRef = useRef<string[]>([])
   widgetOrderRef.current = widgetOrder
 
-  // Total items = widgets + add-widget button
-  const totalItems = widgets.length + 1
-  const maxRows = calculateMaxRows(totalItems, cols)
-  const maxWidgetIndex = widgets.length - 1
-
-  // Initialize order from widgets (sorted by position) on first load
+  // Initialize order from widgets (sorted by stored position) on first load
   useEffect(() => {
     if (widgets.length > 0 && !isInitializedRef.current) {
-      const initialOrder = sortWidgetsByPosition(widgets, cols)
-      setWidgetOrder(initialOrder)
+      setWidgetOrder(sortWidgetsByPosition(widgets, cols))
       isInitializedRef.current = true
     }
   }, [widgets, cols])
 
-  // Sync order when widgets change (add/remove from other sources)
+  // Sync order when widget list changes (add/remove)
   useEffect(() => {
     if (!isInitializedRef.current || widgets.length === 0) return
 
-    const syncedOrder = syncOrderWithWidgets(widgetOrder, widgets)
+    const synced = syncOrderWithWidgets(widgetOrder, widgets)
 
-    // Only update if order actually changed
     if (
-      syncedOrder.length !== widgetOrder.length ||
-      syncedOrder.some((id, i) => widgetOrder[i] !== id)
+      synced.length !== widgetOrder.length ||
+      synced.some((id, i) => widgetOrder[i] !== id)
     ) {
-      setWidgetOrder(syncedOrder)
+      setWidgetOrder(synced)
     }
-  }, [widgets]) // Intentionally omit widgetOrder to avoid infinite loops
+  }, [widgets]) // intentionally omit widgetOrder to avoid infinite loops
 
-  // Debounced save function
   const debouncedSave = useDebouncedCallback((order: string[]) => {
     if (!isAuthenticated) return
-    const updates = orderToPositionUpdates(order, cols)
-    onSave(updates)
+    onSave(orderToPositionUpdates(order, cols))
   }, saveDebounce)
 
-  // Generate layout from widget order
-  const layout = useMemo(() => {
-    if (widgetOrder.length === 0) {
-      // Fallback: generate layout directly from widgets array
-      const fallbackLayout: Layout[] = widgets.map((widget, index) => ({
-        i: widget.widgetId,
-        ...indexToPosition(index, cols),
-        w: 1,
-        h: 1,
-      }))
+  /**
+   * Handle a drop event from the drag system.
+   *
+   * - swap: exchange source and target positions
+   * - insert: remove from source, insert before target index (adjusting for removal shift)
+   */
+  const handleDrop = useCallback(
+    (sourceIndex: number, target: DropTarget) => {
+      const order = widgetOrderRef.current
+      let newOrder: string[]
 
-      if (isAuthenticated) {
-        fallbackLayout.push({
-          i: 'add-widget',
-          ...indexToPosition(widgets.length, cols),
-          w: 1,
-          h: 1,
-          static: true,
-        })
+      if (target.type === 'swap') {
+        newOrder = swapWidgets(order, sourceIndex, target.index)
+      } else {
+        // Convert beforeIndex (in original array) to toIndex (after removal)
+        const toIndex =
+          sourceIndex < target.beforeIndex
+            ? target.beforeIndex - 1
+            : target.beforeIndex
+        newOrder = reorderArray(order, sourceIndex, toIndex)
       }
 
-      return fallbackLayout
-    }
-
-    return orderToLayout(widgetOrder, cols, isAuthenticated)
-  }, [widgetOrder, widgets, cols, isAuthenticated])
-
-  // Handle drag start - just mark that we're dragging
-  const handleDragStart = useCallback(
-    (
-      _layout: Layout[],
-      oldItem: Layout,
-      _newItem: Layout,
-      _placeholder: Layout,
-      _event: MouseEvent,
-      _element: HTMLElement
-    ) => {
-      if (!isAuthenticated || oldItem.i === 'add-widget') return
-
-      dragStateRef.current = {
-        isDragging: true,
-        widgetId: oldItem.i,
-        originalIndex: widgetOrderRef.current.indexOf(oldItem.i),
-      }
+      setWidgetOrder(newOrder)
+      debouncedSave(newOrder)
     },
-    [isAuthenticated]
+    [debouncedSave]
   )
 
-  // Handle drag - no-op, let react-grid-layout handle visual feedback
-  const handleDrag = useCallback(
-    (
-      _layout: Layout[],
-      _oldItem: Layout,
-      _newItem: Layout,
-      _placeholder: Layout,
-      _event: MouseEvent,
-      _element: HTMLElement
-    ) => {
-      // Intentionally empty - we only reorder on drop for smooth performance
-    },
-    []
-  )
-
-  // Handle drag stop (commit change)
-  const handleDragStop = useCallback(
-    (
-      _layout: Layout[],
-      _oldItem: Layout,
-      newItem: Layout,
-      _placeholder: Layout,
-      _event: MouseEvent,
-      _element: HTMLElement
-    ) => {
-      const dragState = dragStateRef.current
-
-      if (!dragState.isDragging || !dragState.widgetId) {
-        resetDragState()
-        return
-      }
-
-      if (dragState.widgetId === 'add-widget') {
-        resetDragState()
-        return
-      }
-
-      // Calculate final target index
-      const targetIndex = calculateTargetIndex(newItem.x, newItem.y, cols, maxWidgetIndex)
-      const fromIndex = dragState.originalIndex
-
-      if (targetIndex !== fromIndex && targetIndex >= 0 && targetIndex <= maxWidgetIndex) {
-        const newOrder = reorderArray(widgetOrderRef.current, fromIndex, targetIndex)
-        setWidgetOrder(newOrder)
-        debouncedSave(newOrder)
-      }
-
-      resetDragState()
-    },
-    [cols, maxWidgetIndex, debouncedSave]
-  )
-
-  // Reset drag state helper
-  const resetDragState = () => {
-    dragStateRef.current = {
-      isDragging: false,
-      widgetId: null,
-      originalIndex: -1,
-    }
-  }
-
-  // Insert widget at specific index (for add widget functionality)
   const insertWidget = useCallback(
     (widgetId: string, atIndex?: number) => {
-      const currentOrder = widgetOrderRef.current
-      const index = atIndex ?? currentOrder.length
-      const newOrder = [...currentOrder]
+      const current = widgetOrderRef.current
+      const index = atIndex ?? current.length
+      const newOrder = [...current]
       newOrder.splice(index, 0, widgetId)
       setWidgetOrder(newOrder)
       debouncedSave(newOrder)
@@ -255,20 +105,10 @@ export function useGridLayoutManager({
     [debouncedSave]
   )
 
-  // Remove widget from order (called when widget is hidden)
   const removeWidget = useCallback((widgetId: string) => {
-    const newOrder = widgetOrderRef.current.filter(id => id !== widgetId)
-    setWidgetOrder(newOrder)
-    // Don't save here - widget removal is handled by separate API
+    setWidgetOrder(widgetOrderRef.current.filter(id => id !== widgetId))
+    // Position is saved separately when the widget is re-added
   }, [])
 
-  return {
-    layout,
-    handleDragStart,
-    handleDrag,
-    handleDragStop,
-    insertWidget,
-    removeWidget,
-    maxRows,
-  }
+  return { widgetOrder, handleDrop, insertWidget, removeWidget }
 }

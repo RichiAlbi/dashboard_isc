@@ -45,13 +45,16 @@
     background: none;
     border: none;
     color: var(--color-text-secondary);
-    font-size: 28px;
     cursor: pointer;
     width: 32px;
     height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 6px;
     transition: all 0.2s;
 }
+.gwdc-close svg { width: 18px; height: 18px; }
 
 .gwdc-close:hover {
     background: var(--color-button-bg);

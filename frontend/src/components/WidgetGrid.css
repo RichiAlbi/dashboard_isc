@@ -1,0 +1,70 @@
+/* ──────────────────────────────────────────────
+   Custom widget grid (replaces react-grid-layout)
+   ────────────────────────────────────────────── */
+
+:root {
+  --widget-grid-gap: 16px;
+}
+
+.widget-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--widget-grid-cols, 3), 1fr);
+  grid-auto-rows: var(--widget-row-height, 200px);
+  gap: var(--widget-grid-gap);
+}
+
+/* Each cell fills the row height set by the grid */
+.widget-grid-cell {
+  position: relative;
+  overflow: visible; /* allow insert separator to bleed into the gap */
+}
+
+/* ── Source slot: faded, non-interactive ──────── */
+.widget-grid-cell--source > * {
+  opacity: 0.2;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+/* ── Swap target: highlighted outline ─────────── */
+.widget-grid-cell--swap-target > * {
+  outline: 2px solid var(--color-primary-blue);
+  outline-offset: 3px;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(51, 163, 255, 0.35);
+  transition: box-shadow 0.15s ease;
+}
+
+/* ── Insert separator: glowing vertical line ──── */
+/*    Appears on the LEFT edge of the target cell,
+      centered in the gap between two cells.        */
+.widget-grid-cell--insert-before::before {
+  content: '';
+  position: absolute;
+  /* center the 3px line in the gap */
+  left: calc(-1 * var(--widget-grid-gap) / 2 - 1.5px);
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--color-primary-blue);
+  border-radius: 2px;
+  box-shadow:
+    0 0 6px var(--color-primary-blue),
+    0 0 16px rgba(51, 163, 255, 0.5);
+  z-index: 10;
+}
+
+/* ── Ghost widget: follows cursor, slightly transparent ─ */
+.widget-ghost {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.8;
+  border-radius: 12px;
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.45),
+    0 0 0 2px rgba(51, 163, 255, 0.6);
+  transform: scale(1.03);
+  transform-origin: top left;
+  overflow: hidden;
+}

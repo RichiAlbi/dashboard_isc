@@ -10,7 +10,7 @@ import {
 import type { WidgetCreate, WidgetUpdate } from '../types/widget'
 import GlobalWidgetDeleteConfirmModal from './GlobalWidgetDeleteConfirmModal'
 import { IconPicker } from './IconPicker'
-import { BackIcon } from './icons'
+import { BackIcon, CloseIcon, PlusIcon } from './icons'
 
 interface Props {
     onClose: () => void
@@ -119,7 +119,7 @@ const GlobalWidgetsModal: React.FC<Props> = ({ onClose, onBack }) => {
             widgetId: draft.widgetId,
             title: (draft.title ?? '').trim(),
             target: (draft.target ?? '').trim(),
-            icon: (draft.icon ?? '').trim() || undefined,
+            icon: (draft.icon ?? '').trim() || null,
             color: (draft.color ?? '').trim(),
             allow_iframe: !!draft.allow_iframe,
             default: !!draft.default,
@@ -184,7 +184,7 @@ const GlobalWidgetsModal: React.FC<Props> = ({ onClose, onBack }) => {
                         </button>
                     )}
                     <h2 className="gw-title">Globale Widgets verwalten</h2>
-                    <button className="gw-close" onClick={onClose} aria-label="Schließen">×</button>
+                    <button className="gw-close" onClick={onClose} aria-label="Schließen"><CloseIcon /></button>
                 </div>
 
                 <div className="gw-toolbar">
@@ -233,7 +233,7 @@ const GlobalWidgetsModal: React.FC<Props> = ({ onClose, onBack }) => {
                                     })
                                 }}
                             >
-                                <span className="gw-add-icon" aria-hidden="true">+</span>
+                                <span className="gw-add-icon" aria-hidden="true"><PlusIcon /></span>
                                 <span>Widget hinzufügen</span>
                             </button>
                         )}

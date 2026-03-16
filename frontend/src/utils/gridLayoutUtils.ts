@@ -1,4 +1,3 @@
-import type { Layout } from 'react-grid-layout'
 import type { UserWidget, UserWidgetUpdate, WidgetPosition } from '../types/widget'
 
 /**
@@ -25,33 +24,20 @@ export function positionToIndex(x: number, y: number, cols: number): number {
 }
 
 /**
- * Calculate the maximum number of rows based on total item count
- * Includes the add-widget button in the count
+ * Swap two widgets by index. Used for direct swap drop behavior.
  */
-export function calculateMaxRows(itemCount: number, cols: number): number {
-  return Math.ceil(itemCount / cols)
+export function swapWidgets(order: string[], i: number, j: number): string[] {
+  if (i === j) return order
+  const result = [...order]
+  ;[result[i], result[j]] = [result[j], result[i]]
+  return result
 }
 
 /**
- * Calculate the target index when dropping a widget at a grid position.
- * Clamps the result to valid bounds [0, maxIndex].
- */
-export function calculateTargetIndex(
-  x: number,
-  y: number,
-  cols: number,
-  maxIndex: number
-): number {
-  const rawIndex = positionToIndex(x, y, cols)
-  return Math.max(0, Math.min(rawIndex, maxIndex))
-}
-
-/**
- * Reorder an array by moving an item from one index to another.
- * Implements splice-like behavior: items between shift to fill/make room.
+ * Move a widget from one index to another, shifting others to fill the gap.
+ * `toIndex` is the final position in the array after removal of `fromIndex`.
  *
  * Example: reorderArray([A,B,C,D,E], 4, 1) → [A,E,B,C,D]
- * (E moves from index 4 to index 1, B,C,D shift right)
  */
 export function reorderArray<T>(arr: T[], fromIndex: number, toIndex: number): T[] {
   if (fromIndex === toIndex) return arr
@@ -79,35 +65,6 @@ export function sortWidgetsByPosition(widgets: UserWidget[], cols: number): stri
 }
 
 /**
- * Generate react-grid-layout Layout array from widget order.
- * Optionally includes the static add-widget button at the end.
- */
-export function orderToLayout(
-  order: string[],
-  cols: number,
-  includeAddWidget: boolean = true
-): Layout[] {
-  const layout: Layout[] = order.map((widgetId, index) => ({
-    i: widgetId,
-    ...indexToPosition(index, cols),
-    w: 1,
-    h: 1,
-  }))
-
-  if (includeAddWidget) {
-    layout.push({
-      i: 'add-widget',
-      ...indexToPosition(order.length, cols),
-      w: 1,
-      h: 1,
-      static: true,
-    })
-  }
-
-  return layout
-}
-
-/**
  * Convert widget order to position updates for backend persistence.
  * Each widget gets {x, y} coordinates derived from its index in the order.
  */
@@ -129,10 +86,8 @@ export function syncOrderWithWidgets(
 ): string[] {
   const widgetIds = new Set(widgets.map(w => w.widgetId))
 
-  // Keep only IDs that still exist
   const filteredOrder = currentOrder.filter(id => widgetIds.has(id))
 
-  // Find new widgets not in current order
   const orderSet = new Set(currentOrder)
   const newWidgetIds = widgets
     .filter(w => !orderSet.has(w.widgetId))

@@ -69,7 +69,6 @@
     background: var(--color-button-bg);
     border: 1px solid var(--color-button-border);
     color: var(--color-text-primary);
-    font-size: 26px;
     cursor: pointer;
     width: 34px;
     height: 34px;
@@ -79,6 +78,7 @@
     justify-content: center;
     transition: all 0.2s;
 }
+.ua-close svg { width: 18px; height: 18px; }
 
 .ua-close:hover {
     background: var(--color-button-bg-hover);
@@ -162,29 +162,11 @@
     font-size: 0.85rem;
 }
 
-.ua-loadmore {
-    width: 100%;
-    margin-top: 0.75rem;
-    border: 2px dashed var(--color-button-border);
-    border-radius: 12px;
-    padding: 0.8rem 0.85rem;
-    background: transparent;
-    color: var(--color-text-secondary);
-    font-size: 0.9rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.ua-loadmore:hover:not(:disabled) {
-    border-color: var(--color-button-border-hover);
-    color: var(--color-text-primary);
-    box-shadow: 0 4px 12px var(--color-shadow-blue);
-}
-
-.ua-loadmore:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+.ua-loading-more {
+    padding: 0.6rem 0.85rem;
+    text-align: center;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
 }
 
 .ua-editor {
